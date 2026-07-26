@@ -1,0 +1,30 @@
+{
+  "name": "Lotus AI",
+  "short_name": "Lotus",
+  "description": "Modern AI Assistant",
+
+  "start_url": "./index.html",
+  "scope": "./",
+
+  "display": "standalone",
+
+  "background_color": "#050505",
+  "theme_color": "#ff2bd6",
+
+  "orientation": "portrait",
+
+  "lang": "tr",
+
+  "icons": [
+    {
+      "src": "assets/icons/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+
+  "categories": [
+    "productivity",
+    "utilities"
+  ]
+}

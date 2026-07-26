@@ -1,1 +1,85 @@
+#menu-button {
+    background: transparent;
+    border: none;
+    color: var(--pink);
+    font-size: 30px;
+    cursor: pointer;
+    z-index: 1000;
+}
 
+
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+
+    width: 280px;
+    height: 100vh;
+
+    background: var(--panel);
+    border-right: 1px solid var(--pink);
+
+    padding: 20px;
+    transition: 0.3s ease;
+    z-index: 999;
+}
+#sidebar-menu {
+    margin-top: 20px;
+}
+
+
+#sidebar-menu button {
+    width: 100%;
+    padding: 14px;
+
+    margin-bottom: 10px;
+
+    background: transparent;
+    color: var(--text);
+
+    border: 1px solid transparent;
+    border-radius: 12px;
+
+    text-align: left;
+    font-size: 16px;
+
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+
+#sidebar-menu button:hover {
+    background: rgba(255, 43, 214, 0.12);
+    border-color: var(--pink);
+    color: var(--pink);
+}
+#new-chat-button {
+    width: 100%;
+    padding: 14px;
+
+    background: var(--pink);
+    color: black;
+
+    border: none;
+    border-radius: 12px;
+
+    font-weight: bold;
+    cursor: pointer;
+}#sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin-bottom: 25px;
+}
+
+#sidebar-logo {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+}
+
+#sidebar-header h2 {
+    color: var(--text);
+    font-family: "Cormorant Garamond", serif;
+}

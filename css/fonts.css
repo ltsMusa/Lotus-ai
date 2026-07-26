@@ -1,0 +1,19 @@
+@font-face {
+    font-family: "LotusTitle";
+    src: url("../assets/fonts/CormorantGaramond-Regular.ttf");
+}
+
+@font-face {
+    font-family: "LotusText";
+    src: url("../assets/fonts/DMSans-Regular.ttf");
+}
+
+
+body {
+    font-family: "LotusText", sans-serif;
+}
+
+
+h1, h2 {
+    font-family: "LotusTitle", serif;
+}

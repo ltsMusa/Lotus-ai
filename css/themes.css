@@ -1,0 +1,23 @@
+:root {
+    --bg: #050505;
+    --panel: #0d0d0d;
+    --pink: #ff2bd6;
+    --green: #39ff88;
+    --text: #ffffff;
+}
+:root {
+    --bg: #050505;
+    --panel: rgba(20, 20, 25, 0.75);
+
+    --pink: #ff2bd6;
+    --green: #39ff88;
+
+    --text: #ffffff;
+    --muted: #a0a0a0;
+}
+.glass {
+    background: var(--panel);
+    backdrop-filter: blur(15px);
+
+    border: 1px solid rgba(255,255,255,0.1);
+}

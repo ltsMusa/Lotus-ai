@@ -95,6 +95,53 @@ export default class ChatManager {
         this.chat.appendChild(message);
 
     }
+    addAIMessage(text) {
+
+    const message = document.createElement("div");
+
+    message.className = "message ai-message";
+
+    message.innerHTML = `
+        <div class="message-content">
+            ${text}
+        </div>
+    `;
+
+    this.chat.appendChild(message);
+
+    this.scrollToBottom();
+
+    }
+    showTyping() {
+
+    if (this.typingElement) return;
+
+    const typing = document.createElement("div");
+
+    typing.className = "message ai-message typing-message";
+
+    typing.innerHTML = `
+        <div class="message-content">
+            Lotus düşünüyor...
+        </div>
+    `;
+
+    this.chat.appendChild(typing);
+
+    this.typingElement = typing;
+
+    this.scrollToBottom();
+
+    }
+    hideTyping() {
+
+    if (!this.typingElement) return;
+
+    this.typingElement.remove();
+
+    this.typingElement = null;
+
+    }
     clearInput() {
 
         this.input.value = "";

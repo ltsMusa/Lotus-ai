@@ -1,96 +1,122 @@
-const messageInput = document.getElementById("message-input");
-const sendButton = document.getElementById("send-button");
-const chat = document.getElementById("chat");
+/**
+ * ==========================================================
+ * Lotus AI - Chat Manager
+ * Version : 3.0 Alpha
+ * Author  : ltsMusa
+ * Description : Handles chat, messages and conversations.
+ * ==========================================================
+ */
 
+export default class ChatManager {
 
-function addMessage(text, type) {
+    constructor() {
 
-    const message = document.createElement("div");
+        this.chat = null;
+        this.input = null;
+        this.sendButton = null;
 
-    message.className = `message ${type}-message`;
+        this.messages = [];
+        this.isTyping = false;
+        this.typingElement = null;
 
-    message.innerHTML = `
-        <div class="message-content">
-            ${text}
-        </div>
-    `;
-
-    chat.appendChild(message);
-
-    chat.scrollTop = chat.scrollHeight;
-}
-
-
-function sendMessage() {
-
-    const text = messageInput.value.trim();
-
-    if (!text) return;
-
-
-    addMessage(text, "user");
-
-    messageInput.value = "";
-
-
-    localResponse(text);
-
-}
-
-
-function localResponse(text) {
-
-    const message = text.toLowerCase();
-
-
-    if (message.includes("merhaba") ||
-        message.includes("selam")) {
-
-        addMessage(
-            "Merhaba! Ben Lotus AI. Sana nasıl yardımcı olabilirim?",
-            "ai"
-        );
-
-        return;
-    }
-
-
-    if (message.includes("sen kimsin")) {
-
-        addMessage(
-            "Ben Lotus AI, kişisel yapay zeka asistanınım.",
-            "ai"
-        );
-
-        return;
-    }
-
-
-    addMessage(
-        "Bu konuda henüz API bağlantım yok ama yakında öğrenebileceğim.",
-        "ai"
-    );
-
-}
-
-
-sendButton.addEventListener(
-    "click",
-    sendMessage
-);
-
-
-messageInput.addEventListener(
-    "keydown",
-    (event) => {
-
-        if (event.key === "Enter" && !event.shiftKey) {
-
-            event.preventDefault();
-
-            sendMessage();
-
-        }
+        this.init();
 
     }
-);
+
+    init() {
+
+        this.cacheElements();
+        this.bindEvents();
+
+        console.log("✅ ChatManager initialized.");
+
+    }
+    cacheElements() {
+
+        this.chat = document.getElementById("chat");
+
+        this.input = document.getElementById("message-input");
+
+        this.sendButton = document.getElementById("send-button");
+
+    }
+    bindEvents() {
+
+        this.sendButton.addEventListener("click", () => {
+
+            this.sendMessage();
+
+        });
+
+        this.input.addEventListener("keydown", (event) => {
+
+            if (event.key === "Enter" && !event.shiftKey) {
+
+                event.preventDefault();
+
+                this.sendMessage();
+
+            }
+
+        });
+
+    }
+    sendMessage() {
+
+        const text = this.input.value.trim();
+
+        if (!text) return;
+
+        this.addUserMessage(text);
+
+        this.clearInput();
+
+        this.scrollToBottom();
+
+        this.processMessage(text);
+
+    }
+    addUserMessage(text) {
+
+        const message = document.createElement("div");
+
+        message.className = "message user-message";
+
+        message.innerHTML = `
+
+            <div class="message-content">
+
+                ${text}
+
+            </div>
+
+        `;
+
+        this.chat.appendChild(message);
+
+    }
+    clearInput() {
+
+        this.input.value = "";
+
+    }
+
+    scrollToBottom() {
+
+        this.chat.scrollTop = this.chat.scrollHeight;
+
+    }
+    async processMessage(text) {
+
+        console.log("Mesaj alındı:", text);
+
+    }
+
+}
+const chatManager = new ChatManager();
+
+
+
+
+
+

@@ -108,7 +108,15 @@ export default class ChatManager {
     }
     async processMessage(text) {
 
-        console.log("Mesaj alındı:", text);
+    this.showTyping();
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    this.hideTyping();
+
+    this.addAIMessage(
+        "Merhaba! Ben Lotus AI. Şu anda yerel modda çalışıyorum."
+    );
 
     }
 

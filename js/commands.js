@@ -53,6 +53,14 @@ export default class CommandManager {
 
         }
 
+        if (message.includes("tarih")) {
+
+    const now = new Date();
+
+    return `Bugünün tarihi ${now.toLocaleDateString("tr-TR")}.`;
+
+        }
+
         for (const command of this.commands) {
 
             if (command.keywords.some(keyword => message.includes(keyword))) {

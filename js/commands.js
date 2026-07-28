@@ -38,21 +38,22 @@ export default class CommandManager {
 
     }
 
-}
-handleCommand(text) {
+    handleCommand(text) {
 
-    const message = text.toLowerCase();
+        const message = text.toLowerCase();
 
-    for (const command of this.commands) {
+        for (const command of this.commands) {
 
-        if (command.keywords.some(keyword => message.includes(keyword))) {
+            if (command.keywords.some(keyword => message.includes(keyword))) {
 
-            return command.response;
+                return command.response;
+
+            }
 
         }
 
-    }
+        return null;
 
-    return null;
+    }
 
 }

@@ -1,42 +1,57 @@
-function getTime() {
+/**
+ * ==========================================================
+ * Lotus AI - Command Manager
+ * Version : 3.0 Alpha
+ * Author  : ltsMusa
+ * Description : Handles local commands.
+ * ==========================================================
+ */
 
-    const now = new Date();
+export default class CommandManager {
 
-    return now.toLocaleTimeString("tr-TR", {
-        hour: "2-digit",
-        minute: "2-digit"
-    });
+    constructor() {
+
+        this.commands = this.registerCommands();
+
+    }
+
+    registerCommands() {
+
+        return [
+
+            {
+                keywords: ["merhaba", "selam", "selamlar"],
+                response: "Merhaba! Ben Lotus AI. 😊"
+            },
+
+            {
+                keywords: ["sen kimsin", "kimsin"],
+                response: "Ben Lotus AI. Senin kişisel yapay zekâ asistanınım."
+            },
+
+            {
+                keywords: ["yardım", "help"],
+                response: "Şu an saat, tarih ve temel sohbet komutlarını destekliyorum."
+            }
+
+        ];
+
+    }
 
 }
-
-
-function getDate() {
-
-    const now = new Date();
-
-    return now.toLocaleDateString("tr-TR");
-
-}
-
-
-export function checkCommand(text) {
+handleCommand(text) {
 
     const message = text.toLowerCase();
 
+    for (const command of this.commands) {
 
-    if (message.includes("saat kaç")) {
+        if (command.keywords.some(keyword => message.includes(keyword))) {
 
-        return `Saat şu an ${getTime()}`;
+            return command.response;
 
-    }
-
-
-    if (message.includes("tarih")) {
-
-        return `Bugünün tarihi ${getDate()}`;
+        }
 
     }
-
 
     return null;
 

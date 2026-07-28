@@ -180,3 +180,7 @@ export default class ChatManager {
     );
 
     }
+
+    }
+
+const chatManager = new ChatManager();

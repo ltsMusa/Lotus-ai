@@ -42,6 +42,17 @@ export default class CommandManager {
 
         const message = text.toLowerCase();
 
+        if (message.includes("saat")) {
+
+    const now = new Date();
+
+    return `Şu an saat ${now.toLocaleTimeString("tr-TR", {
+        hour: "2-digit",
+        minute: "2-digit"
+    })}.`;
+
+        }
+
         for (const command of this.commands) {
 
             if (command.keywords.some(keyword => message.includes(keyword))) {

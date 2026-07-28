@@ -61,6 +61,28 @@ export default class CommandManager {
 
         }
 
+        if (
+    message.includes("günlerden ne") ||
+    message.includes("hangi gün") ||
+    message === "gün ne"
+) {
+
+    const days = [
+        "Pazar",
+        "Pazartesi",
+        "Salı",
+        "Çarşamba",
+        "Perşembe",
+        "Cuma",
+        "Cumartesi"
+    ];
+
+    const today = days[new Date().getDay()];
+
+    return `📅 Bugün ${today}.`;
+
+        }
+
         for (const command of this.commands) {
 
             if (command.keywords.some(keyword => message.includes(keyword))) {

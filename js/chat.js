@@ -7,10 +7,14 @@
  * ==========================================================
  */
 
+import CommandManager from "./commands.js";
+
 export default class ChatManager {
 
     constructor() {
 
+        this.commandManager = new CommandManager();
+        
         this.chat = null;
         this.input = null;
         this.sendButton = null;
@@ -157,21 +161,22 @@ export default class ChatManager {
 
     this.showTyping();
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    const commandResponse = this.commandManager.handleCommand(text);
 
     this.hideTyping();
 
-    this.addAIMessage(
-        "Merhaba! Ben Lotus AI. Şu anda yerel modda çalışıyorum."
-    );
+    if (commandResponse) {
+
+        this.addAIMessage(commandResponse);
+
+        return;
 
     }
 
-}
-const chatManager = new ChatManager();
+    this.addAIMessage(
+        "Bu komutu henüz bilmiyorum. Yakında API desteği eklenecek."
+    );
 
-
-
-
-
-
+    }

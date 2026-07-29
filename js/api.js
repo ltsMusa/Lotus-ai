@@ -7,21 +7,6 @@
  * ==========================================================
  */
 
-export default class APIManager {
-
-    constructor() {
-
-        this.provider = "none";
-
-    }
-
-    async sendMessage(message) {
-
-        return "API henüz bağlanmadı.";
-
-    }
-
-}
 import config from "./config.js";
 
 import GeminiProvider from "./providers/gemini.js";
@@ -47,6 +32,12 @@ export default class APIManager {
     async sendMessage(message) {
 
         const provider = this.providers[config.provider];
+
+        if (!provider) {
+
+            return "Geçersiz API sağlayıcısı.";
+
+        }
 
         return await provider.sendMessage(message);
 

@@ -20,7 +20,7 @@ export default class GroqProvider {
                         messages: [
                             {
                                 role: "system",
-                                content: "systemPromt"
+                                content: systemPromt
                             },
                             {
                                 role: "user",

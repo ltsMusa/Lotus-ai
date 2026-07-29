@@ -1,3 +1,5 @@
+console.log("groq.js yüklendi");
+
 import config from "../config.js";
 import systemPrompt from "../prompts/systemPrompt.js";
 

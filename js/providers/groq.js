@@ -1,4 +1,5 @@
 import config from "../config.js";
+import systemPrompt from "../prompts/systemPrompt.js";
 
 export default class GroqProvider {
 
@@ -18,6 +19,10 @@ export default class GroqProvider {
                         model: "llama-3.3-70b-versatile",
                         messages: [
                             {
+                                role: "system",
+                                content: systemPrompt
+                            },
+                            {
                                 role: "user",
                                 content: message
                             }
@@ -27,7 +32,9 @@ export default class GroqProvider {
             );
 
             if (!response.ok) {
+
                 return `Groq Hatası (${response.status})`;
+
             }
 
             const data = await response.json();

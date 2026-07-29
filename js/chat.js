@@ -15,6 +15,7 @@ export default class ChatManager {
     constructor() {
 
         this.commandManager = new CommandManager();
+        this.apiManager = new APIManager();
         
         this.chat = null;
         this.input = null;

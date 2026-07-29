@@ -177,9 +177,9 @@ export default class ChatManager {
 
     }
 
-    this.addAIMessage(
-        "Bu komutu henüz bilmiyorum. Yakında API desteği eklenecek."
-    );
+    const apiResponse = await this.apiManager.sendMessage(text);
+
+this.addAIMessage(apiResponse);
 
     }
 

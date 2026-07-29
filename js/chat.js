@@ -8,6 +8,7 @@
  */
 
 import CommandManager from "./commands.js";
+import APIManager from "./api.js";
 
 export default class ChatManager {
 

@@ -15,7 +15,7 @@ const config = {
         },
 
         groq: {
-            apiKey: "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"
+            apiKey: ""
         },
 
         openai: {

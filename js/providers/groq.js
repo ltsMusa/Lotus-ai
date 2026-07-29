@@ -20,7 +20,7 @@ export default class GroqProvider {
                         messages: [
                             {
                                 role: "system",
-                                content: "Sen Lotus AI'sın."
+                                content: "systemPromt"
                             },
                             {
                                 role: "user",

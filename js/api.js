@@ -6,6 +6,7 @@
  * Description : Handles AI API requests.
  * ==========================================================
  */
+console.log("api.js yüklendi");
 
 import config from "./config.js";
 

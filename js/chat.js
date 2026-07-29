@@ -6,6 +6,7 @@
  * Description : Handles chat, messages and conversations.
  * ==========================================================
  */
+console.log("chat.js yüklendi");
 
 import CommandManager from "./commands.js";
 import APIManager from "./api.js";

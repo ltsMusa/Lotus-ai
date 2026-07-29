@@ -6,7 +6,7 @@
 
 const config = {
 
-    provider: "gemini",
+    provider: "groq",
 
     providers: {
 
@@ -15,7 +15,7 @@ const config = {
         },
 
         groq: {
-            apiKey: ""
+            apiKey: "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"
         },
 
         openai: {

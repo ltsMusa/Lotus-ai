@@ -1,85 +1,1087 @@
-#menu-button {
-    background: transparent;
-    border: none;
-    color: var(--pink);
-    font-size: 30px;
-    cursor: pointer;
-    z-index: 1000;
+/* ==========================================================
+   LOTUS AI — MAIN UI
+   Version : 3.0 Beta
+   Theme   : Cyberpunk / Neon / Chrome
+   ========================================================== */
+
+
+/* ==========================================================
+   RESET
+   ========================================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background: #08080C;
+    color: #F5F5F7;
+
+    font-family:
+        "DM Sans",
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+
+    -webkit-font-smoothing: antialiased;
+}
+
+
+/* ==========================================================
+   ROOT APP
+   ========================================================== */
+
+#app {
+    position: relative;
+
+    width: 100%;
+    height: 100dvh;
+
+    min-height: 100dvh;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 50% 35%,
+            rgba(168, 85, 247, 0.07),
+            transparent 38%
+        ),
+        radial-gradient(
+            circle at 10% 90%,
+            rgba(244, 114, 182, 0.045),
+            transparent 35%
+        ),
+        #08080C;
+}
+
+
+/* ==========================================================
+   MAIN
+   ========================================================== */
+
+#main {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    overflow: hidden;
+}
+
+
+/* ==========================================================
+   SIDEBAR
+   ========================================================== */
 
 #sidebar {
-    position: fixed;
-    top: 0;
-    left: -280px;
-
-    width: 280px;
-    height: 100vh;
-
-    background: var(--panel);
-    border-right: 1px solid var(--pink);
-
-    padding: 20px;
-    transition: 0.3s ease;
-    z-index: 999;
-}
-#sidebar-menu {
-    margin-top: 20px;
+    display: none;
 }
 
 
-#sidebar-menu button {
+/* ==========================================================
+   HEADER
+   ========================================================== */
+
+#header {
+    position: relative;
+    z-index: 20;
+
+    flex: 0 0 auto;
+
     width: 100%;
-    padding: 14px;
 
-    margin-bottom: 10px;
+    min-height: 70px;
 
-    background: transparent;
-    color: var(--text);
+    padding:
+        calc(10px + env(safe-area-inset-top))
+        14px
+        10px
+        14px;
 
-    border: 1px solid transparent;
-    border-radius: 12px;
-
-    text-align: left;
-    font-size: 16px;
-
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-
-#sidebar-menu button:hover {
-    background: rgba(255, 43, 214, 0.12);
-    border-color: var(--pink);
-    color: var(--pink);
-}
-#new-chat-button {
-    width: 100%;
-    padding: 14px;
-
-    background: var(--pink);
-    color: black;
-
-    border: none;
-    border-radius: 12px;
-
-    font-weight: bold;
-    cursor: pointer;
-}#sidebar-header {
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: space-between;
 
-    margin-bottom: 25px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(10, 10, 15, 0.96),
+            rgba(8, 8, 12, 0.88)
+        );
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
 }
 
-#sidebar-logo {
-    width: 45px;
-    height: 45px;
-    border-radius: 12px;
+
+/* ==========================================================
+   HEADER LEFT
+   ========================================================== */
+
+#header-left {
+    display: flex;
+    align-items: center;
+
+    min-width: 0;
+
+    gap: 10px;
 }
 
-#sidebar-header h2 {
-    color: var(--text);
-    font-family: "Cormorant Garamond", serif;
+
+/* ==========================================================
+   MENU BUTTON
+   ========================================================== */
+
+#menu-button {
+    width: 42px;
+    height: 42px;
+
+    flex: 0 0 42px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.08),
+            rgba(255, 255, 255, 0.025)
+        );
+
+    color: #F5F5F7;
+
+    font-size: 19px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
+
+#menu-button:active {
+    transform: scale(0.92);
+
+    border-color: rgba(168, 85, 247, 0.6);
+
+    box-shadow:
+        0 0 18px rgba(168, 85, 247, 0.22);
+}
+
+
+/* ==========================================================
+   HEADER BRAND
+   ========================================================== */
+
+#header-brand {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    min-width: 0;
+}
+
+#header-brand img {
+    width: 36px;
+    height: 36px;
+
+    object-fit: contain;
+
+    filter:
+        drop-shadow(
+            0 0 10px rgba(168, 85, 247, 0.45)
+        );
+}
+
+#header-brand h1 {
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 20px;
+    font-weight: 700;
+
+    line-height: 1;
+
+    letter-spacing: 1.5px;
+
+    white-space: nowrap;
+}
+
+#header-brand span {
+    display: block;
+
+    margin-top: 4px;
+
+    color: rgba(245, 245, 247, 0.48);
+
+    font-size: 9px;
+
+    letter-spacing: 1.2px;
+
+    white-space: nowrap;
+}
+
+
+/* ==========================================================
+   HEADER RIGHT
+   ========================================================== */
+
+#header-right {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    flex: 0 0 auto;
+}
+
+
+/* ==========================================================
+   CONNECTION STATUS
+   ========================================================== */
+
+#connection-status {
+    display: flex;
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 7px 9px;
+
+    border-radius: 20px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    border: 1px solid rgba(255, 255, 255, 0.05);
+
+    font-size: 9px;
+
+    color: rgba(245, 245, 247, 0.58);
+}
+
+#status-dot {
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: #A855F7;
+
+    box-shadow:
+        0 0 8px rgba(168, 85, 247, 0.75);
+}
+
+
+/* ==========================================================
+   HEADER SETTINGS
+   ========================================================== */
+
+#header-settings-button {
+    width: 38px;
+    height: 38px;
+
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 13px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    color: #F5F5F7;
+
+    font-size: 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+}
+
+
+/* ==========================================================
+   CHAT CONTAINER
+   ========================================================== */
+
+#chat-container {
+    position: relative;
+
+    flex: 1 1 auto;
+
+    width: 100%;
+
+    min-height: 0;
+
+    overflow: hidden;
+}
+
+
+/* ==========================================================
+   CHAT
+   ========================================================== */
+
+#chat {
+    width: 100%;
+    height: 100%;
+
+    min-height: 0;
+
+    padding:
+        20px
+        16px
+        30px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    scroll-behavior: smooth;
+
+    scrollbar-width: none;
+}
+
+#chat::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* ==========================================================
+   WELCOME SCREEN
+   ========================================================== */
+
+#welcome-screen {
+    width: 100%;
+    min-height: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    padding:
+        20px
+        0
+        30px;
+}
+
+
+/* ==========================================================
+   WELCOME LOGO
+   ========================================================== */
+
+#welcome-logo {
+    width: 92px;
+    height: 92px;
+
+    object-fit: contain;
+
+    margin-bottom: 16px;
+
+    filter:
+        drop-shadow(
+            0 0 18px rgba(168, 85, 247, 0.35)
+        )
+        drop-shadow(
+            0 0 32px rgba(244, 114, 182, 0.16)
+        );
+
+    animation: lotusFloat 4s ease-in-out infinite;
+}
+
+
+/* ==========================================================
+   WELCOME TITLE
+   ========================================================== */
+
+#welcome-screen h1 {
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 38px;
+
+    font-weight: 700;
+
+    letter-spacing: 5px;
+
+    line-height: 1;
+
+    background:
+        linear-gradient(
+            100deg,
+            #F5F5F7 0%,
+            #D8B4FE 38%,
+            #F472B6 72%,
+            #F5F5F7 100%
+        );
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    color: transparent;
+
+    margin-bottom: 10px;
+}
+
+
+/* ==========================================================
+   WELCOME TEXT
+   ========================================================== */
+
+#welcome-screen p {
+    color: rgba(245, 245, 247, 0.72);
+
+    font-size: 15px;
+
+    margin-bottom: 5px;
+}
+
+.welcome-subtitle {
+    color: rgba(168, 85, 247, 0.72);
+
+    font-size: 10px;
+
+    letter-spacing: 2px;
+
+    text-transform: uppercase;
+}
+
+
+/* ==========================================================
+   QUICK ACTIONS
+   ========================================================== */
+
+#quick-actions {
+    width: 100%;
+    max-width: 360px;
+
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 10px;
+
+    margin-top: 28px;
+}
+
+
+/* ==========================================================
+   QUICK ACTION BUTTON
+   ========================================================== */
+
+#quick-actions button {
+    position: relative;
+
+    min-height: 76px;
+
+    padding: 13px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.075),
+            rgba(255, 255, 255, 0.025)
+        );
+
+    color: rgba(245, 245, 247, 0.88);
+
+    font-family: inherit;
+
+    font-size: 11px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    cursor: pointer;
+
+    overflow: hidden;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+#quick-actions button::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(168, 85, 247, 0.08),
+            transparent 45%,
+            rgba(244, 114, 182, 0.07)
+        );
+
+    pointer-events: none;
+}
+
+#quick-actions button:active {
+    transform: scale(0.96);
+
+    border-color:
+        rgba(168, 85, 247, 0.48);
+
+    box-shadow:
+        0 0 20px rgba(168, 85, 247, 0.14);
+}
+
+.quick-action-icon {
+    font-size: 22px;
+}
+
+
+/* ==========================================================
+   COMPOSER
+   ========================================================== */
+
+#composer {
+    position: relative;
+    z-index: 20;
+
+    flex: 0 0 auto;
+
+    width: 100%;
+
+    min-height: 72px;
+
+    padding:
+        9px
+        10px
+        calc(10px + env(safe-area-inset-bottom));
+
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(8, 8, 12, 0.84),
+            rgba(10, 10, 15, 0.98)
+        );
+
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+
+/* ==========================================================
+   COMPOSER BUTTONS
+   ========================================================== */
+
+#composer button {
+    width: 42px;
+    height: 42px;
+
+    flex: 0 0 42px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 14px;
+
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    color: rgba(245, 245, 247, 0.82);
+
+    font-size: 17px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+#composer button:active {
+    transform: scale(0.9);
+}
+
+
+/* ==========================================================
+   MESSAGE INPUT
+   ========================================================== */
+
+#message-input {
+    flex: 1 1 auto;
+
+    width: 0;
+    min-width: 0;
+
+    min-height: 42px;
+    max-height: 120px;
+
+    padding:
+        11px
+        13px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 15px;
+
+    outline: none;
+
+    resize: none;
+
+    overflow-y: auto;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.065),
+            rgba(255, 255, 255, 0.025)
+        );
+
+    color: #F5F5F7;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    line-height: 20px;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+#message-input::placeholder {
+    color: rgba(245, 245, 247, 0.34);
+}
+
+#message-input:focus {
+    border-color:
+        rgba(168, 85, 247, 0.5);
+
+    box-shadow:
+        0 0 18px rgba(168, 85, 247, 0.08);
+}
+
+
+/* ==========================================================
+   SEND BUTTON — CHROME NEON
+   ========================================================== */
+
+#send-button {
+    position: relative;
+
+    border: none !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            #A855F7 0%,
+            #C4B5FD 32%,
+            #E5E7EB 50%,
+            #F472B6 72%,
+            #A855F7 100%
+        ) !important;
+
+    color: #08080C !important;
+
+    font-weight: 900;
+
+    box-shadow:
+        0 0 12px rgba(168, 85, 247, 0.24),
+        0 0 18px rgba(244, 114, 182, 0.14);
+
+    overflow: hidden;
+}
+
+#send-button::after {
+    content: "";
+
+    position: absolute;
+
+    width: 90px;
+    height: 90px;
+
+    top: -30px;
+    left: -30px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.5),
+            transparent 60%
+        );
+
+    opacity: 0.28;
+
+    pointer-events: none;
+}
+
+#send-button:active {
+    transform: scale(0.88);
+
+    box-shadow:
+        0 0 22px rgba(168, 85, 247, 0.42),
+        0 0 28px rgba(244, 114, 182, 0.28);
+}
+
+
+/* ==========================================================
+   SCROLL BUTTON
+   ========================================================== */
+
+#scroll-bottom {
+    position: absolute;
+
+    right: 16px;
+    bottom: 92px;
+
+    width: 38px;
+    height: 38px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.1);
+
+    background:
+        rgba(12, 12, 18, 0.92);
+
+    color: #F5F5F7;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow:
+        0 5px 20px rgba(0, 0, 0, 0.4);
+
+    z-index: 30;
+}
+
+
+/* ==========================================================
+   MESSAGE SYSTEM
+   ========================================================== */
+
+.message {
+    width: 100%;
+
+    margin-bottom: 12px;
+
+    display: flex;
+}
+
+.user-message {
+    justify-content: flex-end;
+}
+
+.ai-message {
+    justify-content: flex-start;
+}
+
+.message-content {
+    max-width: 85%;
+
+    padding:
+        11px
+        14px;
+
+    border-radius: 16px;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+
+    word-wrap: break-word;
+}
+
+.user-message .message-content {
+    background:
+        linear-gradient(
+            135deg,
+            rgba(168, 85, 247, 0.8),
+            rgba(244, 114, 182, 0.65)
+        );
+
+    color: white;
+
+    border-bottom-right-radius: 5px;
+}
+
+.ai-message .message-content {
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.06);
+
+    color: rgba(245, 245, 247, 0.9);
+
+    border-bottom-left-radius: 5px;
+}
+
+
+/* ==========================================================
+   TYPING
+   ========================================================== */
+
+.typing-message .message-content {
+    color: rgba(168, 85, 247, 0.8);
+
+    font-size: 12px;
+}
+
+
+/* ==========================================================
+   HIDDEN
+   ========================================================== */
+
+.hidden {
+    display: none !important;
+}
+
+
+/* ==========================================================
+   SPLASH
+   ========================================================== */
+
+#splash-screen {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(168, 85, 247, 0.1),
+            transparent 35%
+        ),
+        #08080C;
+}
+
+.splash-container {
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+
+    text-align: center;
+}
+
+#splash-logo {
+    width: 90px;
+    height: 90px;
+
+    object-fit: contain;
+
+    margin-bottom: 18px;
+
+    filter:
+        drop-shadow(
+            0 0 20px rgba(168, 85, 247, 0.45)
+        );
+}
+
+#splash-title {
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 34px;
+
+    letter-spacing: 4px;
+}
+
+#splash-text {
+    margin-top: 8px;
+
+    color: rgba(245, 245, 247, 0.5);
+
+    font-size: 11px;
+
+    letter-spacing: 2px;
+}
+
+#splash-loader {
+    width: 150px;
+    height: 3px;
+
+    margin-top: 22px;
+
+    overflow: hidden;
+
+    border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, 0.08);
+}
+
+#loader-bar {
+    width: 45%;
+    height: 100%;
+
+    border-radius: inherit;
+
+    background:
+        linear-gradient(
+            90deg,
+            #A855F7,
+            #F472B6
+        );
+
+    animation:
+        loaderMove 1.4s ease-in-out infinite;
+}
+
+
+/* ==========================================================
+   ANIMATIONS
+   ========================================================== */
+
+@keyframes lotusFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+
+}
+
+@keyframes loaderMove {
+
+    0% {
+        transform: translateX(-150%);
+    }
+
+    100% {
+        transform: translateX(340%);
+    }
+
+}
+
+
+/* ==========================================================
+   SMALL PHONES
+   ========================================================== */
+
+@media (max-width: 360px) {
+
+    #header {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    #connection-status {
+        display: none;
+    }
+
+    #welcome-logo {
+        width: 76px;
+        height: 76px;
+    }
+
+    #welcome-screen h1 {
+        font-size: 32px;
+        letter-spacing: 4px;
+    }
+
+    #quick-actions {
+        gap: 8px;
+    }
+
+    #quick-actions button {
+        min-height: 68px;
+    }
+
+}
+
+
+/* ==========================================================
+   TALL PHONES
+   ========================================================== */
+
+@media (min-height: 800px) {
+
+    #welcome-screen {
+        padding-top: 35px;
+    }
+
+    #welcome-logo {
+        width: 105px;
+        height: 105px;
+    }
+
+}
+
+
+/* ==========================================================
+   REDUCE MOTION
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+    }
+
+    }

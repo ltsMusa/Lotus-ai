@@ -11,7 +11,7 @@
 
     <meta
         name="theme-color"
-        content="#0A0A0F">
+        content="#08080C">
 
     <meta
         name="description"
@@ -39,13 +39,19 @@
 
     <title>Lotus AI</title>
 
-    <!-- Manifest -->
+
+    <!-- ================================================= -->
+    <!-- MANIFEST -->
+    <!-- ================================================= -->
 
     <link
         rel="manifest"
         href="manifest.json">
 
-    <!-- Icons -->
+
+    <!-- ================================================= -->
+    <!-- ICON -->
+    <!-- ================================================= -->
 
     <link
         rel="icon"
@@ -55,7 +61,10 @@
         rel="apple-touch-icon"
         href="assets/icons/icon.png">
 
-    <!-- Fonts -->
+
+    <!-- ================================================= -->
+    <!-- FONTS -->
+    <!-- ================================================= -->
 
     <link
         rel="preconnect"
@@ -70,10 +79,15 @@
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;700&display=swap"
         rel="stylesheet">
 
+
+    <!-- ================================================= -->
     <!-- CSS -->
+    <!-- ================================================= -->
+
     <link
         rel="stylesheet"
         href="css/fonts.css">
+
     <link
         rel="stylesheet"
         href="css/main.css">
@@ -100,7 +114,9 @@
 
 </head>
 
+
 <body>
+
 
 <!-- ===================================================== -->
 <!-- SPLASH SCREEN -->
@@ -116,15 +132,11 @@
             id="splash-logo">
 
         <h1 id="splash-title">
-
             Lotus AI
-
         </h1>
 
         <p id="splash-text">
-
-            Initializing...
-
+            Düşün. Üret. Geliş.
         </p>
 
         <div id="splash-loader">
@@ -136,71 +148,23 @@
     </div>
 
 </div>
-<!-- ===================================================== -->
-<!-- FIRST SETUP -->
-<!-- ===================================================== -->
 
-<div
-    id="setup-modal"
-    class="hidden">
 
-    <div class="setup-card">
-
-        <h2>
-
-            Hoş Geldin
-
-        </h2>
-
-        <p>
-
-            Başlamak için bir AI sağlayıcısı seç.
-
-        </p>
-
-        <select id="provider-select">
-
-            <option value="groq">Groq</option>
-
-            <option value="gemini">Gemini</option>
-
-            <option value="openai">OpenAI</option>
-
-            <option value="deepseek">DeepSeek</option>
-
-            <option value="openrouter">OpenRouter</option>
-
-            <option value="ollama">Ollama (Yerel)</option>
-
-            <option value="custom">Özel API</option>
-
-        </select>
-
-        <input
-            type="password"
-            id="api-key"
-            placeholder="API Key">
-
-        <button id="save-api">
-
-            Devam Et
-
-        </button>
-
-    </div>
-
-</div>
 <!-- ===================================================== -->
 <!-- APPLICATION -->
 <!-- ===================================================== -->
 
 <div id="app">
 
-    <!-- ================================================ -->
+
+    <!-- ================================================= -->
     <!-- SIDEBAR -->
-    <!-- ================================================ -->
+    <!-- ================================================= -->
 
     <aside id="sidebar">
+
+
+        <!-- SIDEBAR HEADER -->
 
         <div id="sidebar-header">
 
@@ -209,261 +173,416 @@
                 alt="Lotus AI"
                 id="sidebar-logo">
 
-            <h2>
+            <div>
 
-                Lotus AI
+                <h2>
+                    Lotus AI
+                </h2>
 
-            </h2>
+                <span>
+                    Düşün. Üret. Geliş.
+                </span>
+
+            </div>
 
         </div>
+
+
+        <!-- NEW CHAT -->
 
         <button id="new-chat-button">
 
-            + Yeni Sohbet
+            <span>＋</span>
+
+            <span>
+                Yeni Sohbet
+            </span>
 
         </button>
 
+
+        <!-- SEARCH -->
+
         <div id="sidebar-search">
 
-    <input
-        type="text"
-        id="search-chat"
-        placeholder="Sohbet ara...">
+            <input
+                type="text"
+                id="search-chat"
+                placeholder="Sohbet ara..."
+                autocomplete="off">
 
         </div>
-        
+
+
+        <!-- CHAT LIST -->
+
         <div id="chat-list">
 
             <!-- Sohbetler JavaScript ile oluşturulacak -->
 
         </div>
 
-<div id="sidebar-menu">
 
-    <button>
-        💬 Sohbetler
-    </button>
+        <!-- SIDEBAR MENU -->
 
-    <button>
-        🧠 Hafıza
-    </button>
+        <nav id="sidebar-menu">
 
-    <button>
-        🎨 Görünüm
-    </button>
+            <button>
+                💬
+                <span>Sohbetler</span>
+            </button>
 
-    <button>
-        🖼 Görseller
-    </button>
+            <button id="memory-button">
+                🧠
+                <span>Hafıza</span>
+            </button>
 
-    <button>
-        🌐 Web Araçları
-    </button>
+            <button id="theme-button">
+                🎨
+                <span>Görünüm</span>
+            </button>
 
-    <button>
-        ⚙ Ayarlar
-    </button>
+            <button>
+                🖼
+                <span>Görseller</span>
+            </button>
 
-    <button>
-        ℹ Hakkında
-    </button>
+            <button>
+                🌐
+                <span>Web Araçları</span>
+            </button>
 
-</div>
+            <button id="settings-button">
+                ⚙
+                <span>Ayarlar</span>
+            </button>
+
+            <button>
+                ℹ
+                <span>Hakkında</span>
+            </button>
+
+        </nav>
+
+
+        <!-- SIDEBAR FOOTER -->
 
         <div id="sidebar-footer">
 
-            <button id="settings-button">
+            <span>
+                Lotus AI
+            </span>
 
-                Ayarlar
-
-            </button>
+            <span>
+                v3 Beta
+            </span>
 
         </div>
 
     </aside>
 
-    <!-- ================================================ -->
+
+    <!-- ================================================= -->
     <!-- MAIN -->
-    <!-- ================================================ -->
+    <!-- ================================================= -->
 
     <main id="main">
 
+
+        <!-- ================================================= -->
         <!-- HEADER -->
+        <!-- ================================================= -->
 
         <header id="header">
 
+
             <div id="header-left">
 
-                <h1>
 
-                    Lotus AI
+                <!-- MENU -->
 
-                </h1>
-
-                <span id="current-model">
-
-                    Model Seçilmedi
-
-                </span>
-
-             <div id="connection-status">
-
-    <span id="status-dot"></span>
-
-    <span id="status-text">
-
-        Hazır
-
-    </span>
-    
-  </div>
- 
-</div>
-
-            <div id="header-right">
-
-                <button id="memory-button">
-
-                    🧠
-
-                </button>
-
-                <button id="theme-button">
-
-                    🎨
-
-                </button>
-
-                <button id="menu-button">
+                <button
+                    id="menu-button"
+                    aria-label="Menüyü aç">
 
                     ☰
 
                 </button>
 
+
+                <!-- LOGO -->
+
+                <div id="header-brand">
+
+                    <img
+                        src="assets/icons/icon.png"
+                        alt="Lotus AI">
+
+                    <div>
+
+                        <h1>
+                            LOTUS AI
+                        </h1>
+
+                        <span>
+                            Düşün. Üret. Geliş.
+                        </span>
+
+                    </div>
+
+                </div>
+
+
             </div>
+
+
+            <!-- HEADER RIGHT -->
+
+            <div id="header-right">
+
+
+                <div id="connection-status">
+
+                    <span id="status-dot"></span>
+
+                    <span id="status-text">
+                        Hazır
+                    </span>
+
+                </div>
+
+
+                <button
+                    id="header-settings-button"
+                    aria-label="Ayarlar">
+
+                    ⚙
+
+                </button>
+
+
+            </div>
+
 
         </header>
 
+
+        <!-- ================================================= -->
         <!-- CHAT -->
+        <!-- ================================================= -->
 
         <section id="chat-container">
 
+
             <div id="chat">
 
-                <!-- Mesajlar buraya gelecek -->
-      <div id="welcome-screen">
 
-    <img
-        src="assets/icons/icon.png"
-        alt="Lotus AI"
-        id="welcome-logo">
+                <!-- ========================================= -->
+                <!-- WELCOME -->
+                <!-- ========================================= -->
 
-    <h1>
-        LOTUS AI
-    </h1>
-
-    <p>
-        Bugün sana nasıl yardımcı olabilirim?
-    </p>
+                <div id="welcome-screen">
 
 
-    <div id="quick-actions">
+                    <img
+                        src="assets/icons/icon.png"
+                        alt="Lotus AI"
+                        id="welcome-logo">
 
-        <button>
-            💻 Kod Yaz
-        </button>
 
-        <button>
-            🎨 Görsel Oluştur
-        </button>
+                    <h1>
+                        LOTUS AI
+                    </h1>
 
-        <button>
-            🌐 Web Analiz
-        </button>
 
-        <button>
-            📄 Dosya Analiz
-        </button>
+                    <p>
+                        Bugün ne üretelim?
+                    </p>
 
-    </div>
+
+                    <span class="welcome-subtitle">
+                        Düşün. Üret. Geliş.
+                    </span>
+
+
+                    <!-- QUICK ACTIONS -->
+
+                    <div id="quick-actions">
+
+
+                        <button>
+
+                            <span class="quick-action-icon">
+                                💻
+                            </span>
+
+                            <span>
+                                Kod Yaz
+                            </span>
+
+                        </button>
+
+
+                        <button>
+
+                            <span class="quick-action-icon">
+                                🎨
+                            </span>
+
+                            <span>
+                                Görsel Oluştur
+                            </span>
+
+                        </button>
+
+
+                        <button>
+
+                            <span class="quick-action-icon">
+                                🌐
+                            </span>
+
+                            <span>
+                                Web Analiz
+                            </span>
+
+                        </button>
+
+
+                        <button>
+
+                            <span class="quick-action-icon">
+                                📄
+                            </span>
+
+                            <span>
+                                Dosya Analiz
+                            </span>
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
 
         </section>
 
+
+        <!-- ================================================= -->
         <!-- COMPOSER -->
+        <!-- ================================================= -->
 
         <footer id="composer">
 
-            <button id="attach-button">
+
+            <!-- ATTACH -->
+
+            <button
+                id="attach-button"
+                aria-label="Dosya ekle">
 
                 📎
 
             </button>
 
+
+            <!-- INPUT -->
+
             <textarea
-
                 id="message-input"
+                placeholder="Bugün ne üretelim?"
+                rows="1"
+                autocomplete="off"></textarea>
 
-                placeholder="Lotus AI'a mesaj gönder..."
 
-                rows="1">
+            <!-- VOICE -->
 
-            </textarea>
-
-            <button id="voice-button">
+            <button
+                id="voice-button"
+                aria-label="Sesli mesaj">
 
                 🎤
 
             </button>
-            
-            <button id="stop-button">
+
+
+            <!-- STOP -->
+
+            <button
+                id="stop-button"
+                class="hidden"
+                aria-label="Durdur">
 
                 ■
 
             </button>
-            
-            <button id="send-button">
+
+
+            <!-- SEND -->
+
+            <button
+                id="send-button"
+                aria-label="Mesaj gönder">
 
                 ➤
 
             </button>
 
+
         </footer>
 
-<!-- ===================================================== -->
-<!-- SCROLL TO BOTTOM -->
-<!-- ===================================================== -->
 
-<button
-    id="scroll-bottom"
-    class="hidden"
-    aria-label="En alta git">
+        <!-- ================================================= -->
+        <!-- SCROLL TO BOTTOM -->
+        <!-- ================================================= -->
 
-    ↓
+        <button
+            id="scroll-bottom"
+            class="hidden"
+            aria-label="En alta git">
 
-</button>
+            ↓
+
+        </button>
+
 
     </main>
 
+
 </div>
+
+
 <!-- ===================================================== -->
 <!-- SETTINGS MODAL -->
+<!-- Şimdilik gizli. İleride UI ile bağlanacak. -->
 <!-- ===================================================== -->
 
-<div id="settings-modal" class="modal hidden">
+<div
+    id="settings-modal"
+    class="modal hidden">
+
 
     <div class="modal-content">
 
+
         <div class="modal-header">
 
-            <h2>Ayarlar</h2>
+            <h2>
+                Ayarlar
+            </h2>
 
             <button class="close-modal">
-
                 ✕
-
             </button>
 
         </div>
+
 
         <div id="settings-content">
 
@@ -471,132 +590,155 @@
 
         </div>
 
+
     </div>
 
 </div>
+
 
 <!-- ===================================================== -->
 <!-- MEMORY MODAL -->
 <!-- ===================================================== -->
 
-<div id="memory-modal" class="modal hidden">
+<div
+    id="memory-modal"
+    class="modal hidden">
+
 
     <div class="modal-content">
 
+
         <div class="modal-header">
 
-            <h2>Hafıza</h2>
+            <h2>
+                Hafıza
+            </h2>
 
             <button class="close-modal">
-
                 ✕
-
             </button>
 
         </div>
+
 
         <div id="memory-list">
 
         </div>
 
+
     </div>
 
 </div>
+
 
 <!-- ===================================================== -->
 <!-- ABOUT MODAL -->
 <!-- ===================================================== -->
 
-<div id="about-modal" class="modal hidden">
+<div
+    id="about-modal"
+    class="modal hidden">
+
 
     <div class="modal-content">
+
 
         <img
             src="assets/icons/icon.png"
             alt="Lotus AI"
             class="about-logo">
 
+
         <h2>
-
             Lotus AI
-
         </h2>
 
-        <p>
-
-            Version 3.0 Alpha
-
-        </p>
 
         <p>
-
-            Modern AI Assistant
-
+            Version 3.0 Beta
         </p>
+
+
+        <p>
+            Düşün. Üret. Geliş.
+        </p>
+
 
     </div>
 
 </div>
 
+
 <!-- ===================================================== -->
 <!-- IMAGE VIEWER -->
 <!-- ===================================================== -->
 
-<div id="image-viewer" class="hidden">
+<div
+    id="image-viewer"
+    class="hidden">
+
 
     <img
         id="preview-image"
         alt="Preview">
 
+
 </div>
+
 
 <!-- ===================================================== -->
 <!-- CONTEXT MENU -->
 <!-- ===================================================== -->
 
-<div id="context-menu" class="hidden">
+<div
+    id="context-menu"
+    class="hidden">
+
 
     <button id="rename-chat">
-
         Yeniden Adlandır
-
     </button>
+
 
     <button id="pin-chat">
-
         Sabitle
-
     </button>
+
 
     <button id="delete-chat">
-
         Sil
-
     </button>
 
+
 </div>
+
 
 <!-- ===================================================== -->
 <!-- LOADING -->
 <!-- ===================================================== -->
 
-<div id="loading-overlay" class="hidden">
+<div
+    id="loading-overlay"
+    class="hidden">
+
 
     <div class="loader"></div>
 
+
     <p>
-
         Lotus düşünüyor...
-
     </p>
 
+
 </div>
+
 
 <!-- ===================================================== -->
 <!-- TOAST -->
 <!-- ===================================================== -->
 
 <div id="toast-container"></div>
+
 
 <!-- ===================================================== -->
 <!-- FILE INPUT -->
@@ -607,6 +749,8 @@
     id="file-input"
     hidden
     multiple>
+
+
 <!-- ===================================================== -->
 <!-- MOBILE MENU -->
 <!-- ===================================================== -->
@@ -615,47 +759,95 @@
     id="mobile-menu"
     class="hidden">
 
+
     <button id="mobile-new-chat">
-
-        + Yeni Sohbet
-
+        ＋ Yeni Sohbet
     </button>
+
 
     <button id="mobile-memory">
-
         🧠 Hafıza
-
     </button>
+
 
     <button id="mobile-settings">
-
         ⚙ Ayarlar
-
     </button>
+
 
     <button id="mobile-about">
-
         ℹ Hakkında
-
     </button>
 
+
 </div>
-    <!-- ===================================================== -->
+
+
+<!-- ===================================================== -->
 <!-- JAVASCRIPT -->
 <!-- ===================================================== -->
 
-<script type="module" src="js/config.js"></script>
-<script type="module" src="js/storage.js"></script>
-<script type="module" src="js/themes.js"></script>
-<script type="module" src="js/markdown.js"></script>
-<script type="module" src="js/memory.js"></script>
-<script type="module" src="js/speech.js"></script>
-<script type="module" src="js/api.js"></script>
-<script type="module" src="js/commands.js"></script>
-<script type="module" src="js/chat.js"></script>
-<script type="module" src="js/ui.js"></script>
-<script type="module" src="js/utils.js"></script>
-<script type="module" src="js/app.js"></script>
+<script
+    type="module"
+    src="js/config.js">
+</script>
+
+<script
+    type="module"
+    src="js/storage.js">
+</script>
+
+<script
+    type="module"
+    src="js/themes.js">
+</script>
+
+<script
+    type="module"
+    src="js/markdown.js">
+</script>
+
+<script
+    type="module"
+    src="js/memory.js">
+</script>
+
+<script
+    type="module"
+    src="js/speech.js">
+</script>
+
+<script
+    type="module"
+    src="js/api.js">
+</script>
+
+<script
+    type="module"
+    src="js/commands.js">
+</script>
+
+<script
+    type="module"
+    src="js/chat.js">
+</script>
+
+<script
+    type="module"
+    src="js/ui.js">
+</script>
+
+<script
+    type="module"
+    src="js/utils.js">
+</script>
+
+<script
+    type="module"
+    src="js/app.js">
+</script>
+
 
 </body>
+
 </html>

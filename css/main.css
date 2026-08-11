@@ -1266,3 +1266,54 @@ body {
         scroll-behavior: auto !important;
     }
 }
+/* ==========================================================
+   MOBILE COMPOSER OVERFLOW FIX
+   ========================================================== */
+
+#composer {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+#composer button {
+    flex: 0 0 42px;
+    width: 42px;
+    max-width: 42px;
+}
+
+#message-input {
+    flex: 1 1 0%;
+    width: 0;
+    min-width: 0;
+    max-width: 100%;
+}
+
+/* Gönder butonunun ekran dışına taşmasını kesin olarak engelle */
+#send-button {
+    flex-shrink: 0;
+}
+
+/* Çok dar ekranlar */
+@media (max-width: 400px) {
+
+    #composer {
+        padding-left: 8px;
+        padding-right: 8px;
+        gap: 5px;
+    }
+
+    #composer button {
+        width: 40px;
+        height: 40px;
+        flex-basis: 40px;
+    }
+
+    #message-input {
+        min-height: 40px;
+        font-size: 13px;
+        padding-left: 11px;
+        padding-right: 11px;
+    }
+
+}

@@ -33,3 +33,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1800);
 
 });
+console.log("🔥 APP.JS ÇALIŞTI");
+
+const splash = document.getElementById("splash-screen");
+
+if (splash) {
+    setTimeout(() => {
+        splash.classList.add("hidden");
+        console.log("🌸 SPLASH KAPATILDI");
+    }, 1500);
+}

@@ -2,7 +2,16 @@
 // LOTUS AI — UI
 // ==========================================================
 
-const settingsModal = document.getElementById("settings-modal");
+const settingsModal =
+    document.getElementById("settings-modal");
+
+const authModal =
+    document.getElementById("auth-modal");
+
+
+// ==========================================================
+// SETTINGS BUTTONS
+// ==========================================================
 
 const settingsButtons = [
     document.getElementById("settings-button"),
@@ -10,11 +19,14 @@ const settingsButtons = [
     document.getElementById("mobile-settings")
 ];
 
+
 function openSettings() {
+
     if (!settingsModal) return;
 
     settingsModal.classList.remove("hidden");
 }
+
 
 function closeSettings() {
 
@@ -28,18 +40,62 @@ function closeSettings() {
         settingsModal.classList.remove("closing");
 
     }, 300);
-
 }
 
+
 // Settings butonları
+
 settingsButtons.forEach(button => {
+
     if (!button) return;
 
-    button.addEventListener("click", openSettings);
+    button.addEventListener(
+        "click",
+        openSettings
+    );
+
 });
 
 
-// Modal kapatma butonu
-document.querySelectorAll(".close-modal").forEach(button => {
-    button.addEventListener("click", closeSettings);
-});
+// ==========================================================
+// SETTINGS MODAL CLOSE
+// ==========================================================
+
+document
+    .querySelectorAll(".close-modal")
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            closeSettings
+        );
+
+    });
+
+
+// ==========================================================
+// ACCOUNT
+// ==========================================================
+
+const accountButton =
+    document.querySelector(
+        '.settings-item[data-setting="account"]'
+    );
+
+
+if (accountButton) {
+
+    accountButton.addEventListener(
+        "click",
+        () => {
+
+            if (!authModal) return;
+
+            authModal.classList.remove(
+                "hidden"
+            );
+
+        }
+    );
+
+}

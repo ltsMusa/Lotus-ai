@@ -1,232 +1,449 @@
-#welcome-screen {
+/* ==========================================================
+   LOTUS AI — CHAT SYSTEM
+   Version : 4.0 Release
+   Theme   : Premium Dark / Soft Neon
+   ========================================================== */
+
+
+/* ==========================================================
+   MESSAGE BASE
+   ========================================================== */
+
+.message {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
 
-    height: 100%;
-    text-align: center;
+    width: 100%;
+    min-width: 0;
+
+    margin-bottom: 14px;
+
+    animation:
+        messageAppear 0.22s ease-out;
+}
+
+.user-message {
+    justify-content: flex-end;
+}
+
+.ai-message {
+    justify-content: flex-start;
 }
 
 
-#welcome-logo {
-    width: 120px;
-    height: 120px;
+/* ==========================================================
+   MESSAGE CONTENT
+   ========================================================== */
 
-    border-radius: 30px;
-    margin-bottom: 20px;
+.message-content {
+    max-width: 85%;
+
+    padding:
+        12px 15px;
+
+    border-radius: 17px;
+
+    font-family:
+        "DM Sans",
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+
+    font-size: 14px;
+    line-height: 1.55;
+
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 
-#welcome-screen h1 {
-    font-family: "Cormorant Garamond", serif;
-    font-size: 48px;
+/* ==========================================================
+   USER MESSAGE
+   ========================================================== */
+
+.user-message .message-content {
+    color: #FFFFFF;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(168, 85, 247, 0.72),
+            rgba(244, 114, 182, 0.48)
+        );
+
+    border:
+        1px solid rgba(216, 180, 254, 0.18);
+
+    border-bottom-right-radius: 5px;
+
+    box-shadow:
+        0 5px 18px rgba(0, 0, 0, 0.18),
+        0 0 18px rgba(168, 85, 247, 0.07);
 }
 
 
-#quick-actions {
-    display: flex;
-    gap: 15px;
-    margin-top: 30px;
-    flex-wrap: wrap;
-    justify-content: center;
+/* ==========================================================
+   AI MESSAGE
+   ========================================================== */
+
+.ai-message .message-content {
+    color:
+        rgba(245, 245, 247, 0.92);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.055),
+            rgba(255, 255, 255, 0.025)
+        );
+
+    border:
+        1px solid rgba(255, 255, 255, 0.075);
+
+    border-bottom-left-radius: 5px;
+
+    box-shadow:
+        0 5px 20px rgba(0, 0, 0, 0.16);
 }
 
 
-#quick-actions button {
-    padding: 15px 20px;
+/* ==========================================================
+   MESSAGE TEXT
+   ========================================================== */
 
-    background: var(--panel);
-    color: var(--text);
-
-    border: 1px solid var(--pink);
-    border-radius: 15px;
-
-    cursor: pointer;
+.message-content p {
+    margin: 0 0 8px;
 }
-#quick-actions button {
-    position: relative;
-    overflow: hidden;
 
-    min-width: 150px;
-
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(10px);
-
-    color: var(--text);
-
-    border: 1px solid rgba(255,43,214,0.5);
-    border-radius: 18px;
-
-    padding: 16px 20px;
-
-    transition: 0.3s ease;
+.message-content p:last-child {
+    margin-bottom: 0;
 }
 
 
-#quick-actions button:hover {
-    transform: translateY(-5px);
+/* ==========================================================
+   LINKS
+   ========================================================== */
 
-    border-color: var(--green);
+.message-content a {
+    color: #D8B4FE;
 
-    box-shadow: 0 0 20px rgba(57,255,136,0.3);
+    text-decoration: none;
+
+    border-bottom:
+        1px solid rgba(216, 180, 254, 0.3);
+
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease;
 }
-#composer {
-    display: flex;
-    align-items: center;
-    gap: 10px;
 
-    padding: 12px;
+.message-content a:hover {
+    color: #F472B6;
 
-    background: var(--panel);
-    backdrop-filter: blur(15px);
-
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 20px;
-
-    margin: 15px;
+    border-color:
+        rgba(244, 114, 182, 0.5);
 }
-#message-input {
-    flex: 1;
 
-    min-height: 45px;
-    max-height: 150px;
 
-    resize: none;
+/* ==========================================================
+   INLINE CODE
+   ========================================================== */
+
+.message-content code {
+    padding:
+        2px 6px;
+
+    border-radius: 6px;
+
+    background:
+        rgba(0, 0, 0, 0.28);
+
+    color: #E9D5FF;
+
+    font-family:
+        "JetBrains Mono",
+        "Fira Code",
+        monospace;
+
+    font-size: 0.9em;
+}
+
+
+/* ==========================================================
+   CODE BLOCK
+   ========================================================== */
+
+.message-content pre {
+    margin:
+        10px 0 2px;
+
+    padding:
+        13px 14px;
+
+    max-width: 100%;
+
+    overflow-x: auto;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+
+    border-radius: 12px;
+
+    background:
+        rgba(0, 0, 0, 0.38);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.message-content pre code {
+    padding: 0;
 
     background: transparent;
 
-    border: none;
-    outline: none;
+    color:
+        rgba(245, 245, 247, 0.9);
 
-    color: var(--text);
+    font-size: 12px;
 
-    font-family: var(--main-font);
+    line-height: 1.6;
+}
+
+
+/* ==========================================================
+   LISTS
+   ========================================================== */
+
+.message-content ul,
+.message-content ol {
+    margin:
+        7px 0 7px 20px;
+
+    padding: 0;
+}
+
+.message-content li {
+    margin-bottom: 4px;
+}
+
+
+/* ==========================================================
+   BLOCKQUOTE
+   ========================================================== */
+
+.message-content blockquote {
+    margin:
+        9px 0;
+
+    padding:
+        7px 11px;
+
+    border-left:
+        3px solid rgba(168, 85, 247, 0.65);
+
+    color:
+        rgba(245, 245, 247, 0.65);
+
+    background:
+        rgba(168, 85, 247, 0.035);
+
+    border-radius:
+        0 8px 8px 0;
+}
+
+
+/* ==========================================================
+   HEADINGS
+   ========================================================== */
+
+.message-content h1,
+.message-content h2,
+.message-content h3,
+.message-content h4 {
+    margin:
+        10px 0 6px;
+
+    color: #F5F5F7;
+
+    font-family:
+        "Cormorant Garamond",
+        serif;
+}
+
+.message-content h1 {
+    font-size: 22px;
+}
+
+.message-content h2 {
+    font-size: 20px;
+}
+
+.message-content h3 {
+    font-size: 18px;
+}
+
+.message-content h4 {
     font-size: 16px;
 }
-#composer button {
-    width: 45px;
-    height: 45px;
 
-    border-radius: 50%;
 
-    border: none;
+/* ==========================================================
+   HORIZONTAL RULE
+   ========================================================== */
 
-    background: rgba(255,255,255,0.08);
+.message-content hr {
+    margin:
+        12px 0;
 
-    color: var(--text);
+    border: 0;
 
-    cursor: pointer;
-
-    transition: 0.3s;
+    border-top:
+        1px solid rgba(255, 255, 255, 0.08);
 }
 
 
-#composer button:hover {
-    background: var(--pink);
-    color: black;
-}
-#send-button {
-    background: var(--pink);
-    color: black;
-}
-.message {
-    display: flex;
-    margin: 15px 20px;
+/* ==========================================================
+   TYPING MESSAGE
+   ========================================================== */
+
+.typing-message {
+    opacity: 0.9;
 }
 
+.typing-message .message-content {
+    padding:
+        10px 14px;
 
-.user-message {
-    justify-content: flex-end;
-}
+    color:
+        rgba(216, 180, 254, 0.75);
 
+    font-size: 12px;
 
-.ai-message {
-    justify-content: flex-start;
-}
+    background:
+        rgba(255, 255, 255, 0.035);
 
-
-.message-content {
-    max-width: 75%;
-
-    padding: 14px 18px;
-
-    border-radius: 18px;
-
-    font-size: 16px;
-    line-height: 1.5;
-}
-.user-message .message-content {
-    background: var(--pink);
-    color: black;
-
-    border-bottom-right-radius: 5px;
-}
-.ai-message .message-content {
-    background: var(--panel);
-    color: var(--text);
-
-    border: 1px solid rgba(255,255,255,0.1);
-
-    border-bottom-left-radius: 5px;
-}
-#chat {
-    display: flex;
-    flex-direction: column;
-
-    overflow-y: auto;
-
-    height: 100%;
-    padding-bottom: 20px;
+    border:
+        1px solid rgba(255, 255, 255, 0.055);
 }
 
 
-.message {
-    display: flex;
-    width: 100%;
+/* ==========================================================
+   SELECTION
+   ========================================================== */
 
-    margin: 10px 0;
+.message-content ::selection {
+    background:
+        rgba(168, 85, 247, 0.35);
+
+    color: #FFFFFF;
 }
 
 
-.user-message {
-    justify-content: flex-end;
+/* ==========================================================
+   SCROLLBAR — CODE BLOCKS
+   ========================================================== */
+
+.message-content pre::-webkit-scrollbar {
+    height: 5px;
+}
+
+.message-content pre::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.message-content pre::-webkit-scrollbar-thumb {
+    background:
+        rgba(255, 255, 255, 0.12);
+
+    border-radius: 10px;
 }
 
 
-.ai-message {
-    justify-content: flex-start;
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 500px) {
+
+    .message {
+        margin-bottom: 12px;
+    }
+
+    .message-content {
+        max-width: 88%;
+
+        padding:
+            11px 13px;
+
+        font-size: 14px;
+
+        border-radius: 16px;
+    }
+
+    .message-content pre {
+        padding:
+            11px 12px;
+    }
+
 }
 
 
-.message-content {
-    max-width: 75%;
+/* ==========================================================
+   VERY SMALL PHONES
+   ========================================================== */
 
-    padding: 14px 18px;
+@media (max-width: 360px) {
 
-    border-radius: 18px;
+    .message-content {
+        max-width: 91%;
 
-    font-size: 16px;
-    line-height: 1.5;
+        padding:
+            10px 12px;
 
-    word-wrap: break-word;
+        font-size: 13px;
+    }
+
+    .message-content pre code {
+        font-size: 11px;
+    }
+
 }
-.user-message .message-content {
-    background: var(--pink);
 
-    color: #000;
 
-    border-bottom-right-radius: 5px;
+/* ==========================================================
+   MESSAGE ANIMATION
+   ========================================================== */
+
+@keyframes messageAppear {
+
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
 }
-.ai-message .message-content {
-    background: var(--panel);
 
-    color: var(--text);
 
-    border: 1px solid rgba(255,255,255,0.1);
+/* ==========================================================
+   REDUCE MOTION
+   ========================================================== */
 
-    border-bottom-left-radius: 5px;
-}
-.message-content {
-    backdrop-filter: blur(10px);
+@media (prefers-reduced-motion: reduce) {
+
+    .message {
+        animation: none;
+    }
+
 }

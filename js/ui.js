@@ -99,3 +99,30 @@ if (accountButton) {
     );
 
 }
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        const accountButton =
+            document.querySelector(
+                '.settings-item[data-setting="account"]'
+            );
+
+        accountButton?.addEventListener(
+            "click",
+            () => {
+
+                const authModal =
+                    document.getElementById(
+                        "auth-modal"
+                    );
+
+                authModal?.classList.remove(
+                    "hidden"
+                );
+
+            }
+        );
+
+    }
+);

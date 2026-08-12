@@ -484,3 +484,53 @@
         forwards;
 
 }
+
+/* ==========================================================
+   AUTH MODAL
+   ========================================================== */
+
+#auth-modal {
+    position: fixed;
+    inset: 0;
+
+    z-index: 2000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0, 0, 0, 0.65);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+
+#auth-modal.hidden {
+    display: none !important;
+}
+
+
+#auth-modal .modal-content {
+    width: 100%;
+    max-width: 420px;
+
+    padding: 24px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(25, 23, 32, 0.98),
+            rgba(10, 10, 15, 0.99)
+        );
+
+    border:
+        1px solid rgba(255, 255, 255, 0.09);
+
+    border-radius: 24px;
+
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.6);
+}

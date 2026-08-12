@@ -534,3 +534,25 @@
     box-shadow:
         0 25px 80px rgba(0, 0, 0, 0.6);
 }
+#auth-modal .modal-header {
+    position: relative;
+}
+
+#auth-modal #auth-close {
+    position: absolute;
+
+    top: 0;
+    right: 0;
+
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 50%;
+
+    cursor: pointer;
+}

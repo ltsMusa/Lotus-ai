@@ -332,3 +332,76 @@
         padding:
             18px
             18
+/* ==========================================================
+   SETTINGS OPEN ANIMATION
+   ========================================================== */
+
+@keyframes settingsBackdropIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+
+@keyframes settingsSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* Arka plan */
+
+#settings-modal:not(.hidden) {
+    animation:
+        settingsBackdropIn 0.25s ease-out;
+}
+
+
+/* Ayarlar paneli */
+
+#settings-modal:not(.hidden) .modal-content {
+    animation:
+        settingsSlideUp 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+/* ==========================================================
+   DESKTOP
+   ========================================================== */
+
+@media (min-width: 501px) {
+
+    #settings-modal:not(.hidden) .modal-content {
+        animation:
+            settingsSlideUpDesktop
+            0.35s
+            cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+}
+
+
+@keyframes settingsSlideUpDesktop {
+
+    from {
+        opacity: 0;
+        transform: translateY(45px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+}

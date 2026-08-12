@@ -41,11 +41,5 @@ settingsButtons.forEach(button => {
 
 // Modal kapatma butonu
 document.querySelectorAll(".close-modal").forEach(button => {
-    button.addEventListener("click", () => {
-
-        if (settingsModal) {
-            settingsModal.classList.add("hidden");
-        }
-
-    });
+    button.addEventListener("click", closeSettings);
 });

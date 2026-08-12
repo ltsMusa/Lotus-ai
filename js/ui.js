@@ -17,11 +17,19 @@ function openSettings() {
 }
 
 function closeSettings() {
+
     if (!settingsModal) return;
 
-    settingsModal.classList.add("hidden");
-}
+    settingsModal.classList.add("closing");
 
+    setTimeout(() => {
+
+        settingsModal.classList.add("hidden");
+        settingsModal.classList.remove("closing");
+
+    }, 300);
+
+}
 
 // Settings butonları
 settingsButtons.forEach(button => {

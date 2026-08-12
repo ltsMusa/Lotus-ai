@@ -1,3 +1,10 @@
+/**
+ * ==========================================================
+ * Lotus AI - Core System Prompt
+ * ==========================================================
+ */
+
+const LOTUS_SYSTEM_PROMPT = `
 # LOTUS AI — CORE SYSTEM PROMPT
 # Version 1.0
 # Purpose: Define Lotus AI's identity, behavior, communication style,
@@ -861,3 +868,6 @@ and honesty over pleasing the user.
 ==================================================
 END OF LOTUS AI CORE SYSTEM PROMPT
 ==================================================
+`;
+
+export default LOTUS_SYSTEM_PROMPT;

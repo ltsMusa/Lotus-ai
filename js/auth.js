@@ -623,25 +623,6 @@ document.addEventListener(
     }
 );
 
-// --------------------------------------------------
-// ACCOUNT SETTINGS
-// --------------------------------------------------
-
-const accountButton =
-    document.querySelector(
-        '.settings-item[data-setting="account"]'
-    );
-
-accountButton?.addEventListener(
-    "click",
-    () => {
-
-        authModal?.classList.remove(
-            "hidden"
-        );
-    }
-);
-
 // ==========================================================
 // START
 // ==========================================================

@@ -1239,22 +1239,21 @@ body {
     background:
         linear-gradient(
             145deg,
-            rgba(42, 38, 52, 0.94),
-            rgba(27, 25, 34, 0.96)
+            rgba(38, 38, 48, 0.96),
+            rgba(24, 24, 32, 0.96)
         );
+
+    border:
+        1px solid rgba(255, 255, 255, 0.10);
 
     color:
         rgba(245, 245, 247, 0.94);
 
-    border:
-        1px solid rgba(255, 255, 255, 0.08);
-
     border-bottom-right-radius: 6px;
 
     box-shadow:
-        0 4px 18px rgba(0, 0, 0, 0.18);
+        0 6px 20px rgba(0, 0, 0, 0.20);
 }
-
 .ai-message .message-content {
     background:
         rgba(255, 255, 255, 0.045);

@@ -613,173 +613,6 @@ body {
     font-size: 22px;
 }
 
-
-/* ==========================================================
-   COMPOSER
-   ========================================================== */
-
-#composer {
-    position: relative;
-    z-index: 20;
-
-    flex: 0 0 auto;
-
-    width: 100%;
-    max-width: 100%;
-
-    min-width: 0;
-    min-height: 72px;
-
-    padding:
-        8px
-        8px
-        calc(8px + env(safe-area-inset-bottom));
-        calc(10px + env(safe-area-inset-bottom))
-        max(10px, env(safe-area-inset-left));
-
-    display: flex;
-    align-items: center;
-
-    gap: 7px;
-
-    border-top:
-        1px solid rgba(255, 255, 255, 0.06);
-
-    background:
-        linear-gradient(
-            180deg,
-            rgba(8, 8, 12, 0.84),
-            rgba(10, 10, 15, 0.98)
-        );
-
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-
-    /* Sağdan taşmayı kesin olarak engeller */
-    overflow: hidden;
-}
-
-
-/* ==========================================================
-   COMPOSER BUTTONS
-   ========================================================== */
-
-#composer button {
-    width: 40px;
-    height: 40px;
-
-    flex: 0 0 40px;
-
-    border:
-        1px solid rgba(255, 255, 255, 0.08);
-
-    border-radius: 14px;
-
-    background:
-        rgba(255, 255, 255, 0.045);
-
-    color:
-        rgba(245, 245, 247, 0.82);
-
-    font-size: 17px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    cursor: pointer;
-
-    transition:
-        transform 0.15s ease,
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-#stop-button {
-    display: none;
-}
-
-#composer button:active {
-    transform: scale(0.9);
-}
-
-
-/* ==========================================================
-   MESSAGE INPUT
-   ========================================================== */
-
-#message-input {
-    flex: 1 1 0;
-
-    width: 0;
-    min-width: 0;
-    max-width: 100%;
-
-    min-height: 40px;
-    max-height: 120px;
-
-    padding:
-        10px
-        12px;
-
-    border:
-        1px solid rgba(255, 255, 255, 0.08);
-
-    border-radius: 15px;
-
-    outline: none;
-
-    resize: none;
-
-    overflow-y: auto;
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(255, 255, 255, 0.065),
-            rgba(255, 255, 255, 0.025)
-        );
-
-    color: #F5F5F7;
-
-    font-family: inherit;
-
-    font-size: 14px;
-
-    line-height: 20px;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-#message-input::placeholder {
-    color:
-        rgba(245, 245, 247, 0.34);
-}
-
-#message-input:focus {
-    border-color:
-        rgba(168, 85, 247, 0.5);
-
-    box-shadow:
-        0 0 18px rgba(168, 85, 247, 0.08);
-}
-
-
-/* ==========================================================
-   SEND BUTTON — CHROME NEON
-   ========================================================== */
-
-#send-button {
-    position: relative;
-
-    border: none !important;
-
-    background:
-        linear-gradient(
-            135deg,
-            #A855F7 0%,
 /* ==========================================================
    LOTUS AI — FLOATING MESSAGE COMPOSER
    ========================================================== */
@@ -794,6 +627,7 @@ body {
     min-height: 70px;
 
     margin: 0 auto;
+    margin-bottom: calc(10px + env(safe-area-inset-bottom));
 
     padding: 9px;
 
@@ -803,7 +637,6 @@ body {
     gap: 9px;
 
     border: 1px solid rgba(255, 255, 255, 0.10);
-
     border-radius: 28px;
 
     background:
@@ -819,9 +652,6 @@ body {
 
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-
-    margin-bottom:
-        calc(10px + env(safe-area-inset-bottom));
 }
 
 
@@ -836,7 +666,6 @@ body {
     flex: 0 0 48px;
 
     border: 1px solid rgba(255, 255, 255, 0.07);
-
     border-radius: 50%;
 
     background:
@@ -862,9 +691,6 @@ body {
         border-color 0.2s ease;
 }
 
-
-/* Basınca */
-
 #composer button:active {
     transform: scale(0.90);
 }
@@ -875,23 +701,20 @@ body {
    ========================================================== */
 
 #message-input {
-    flex: 1 1 auto;
+    flex: 1 1 0;
 
-    width: auto;
+    width: 0;
     min-width: 0;
 
     height: 48px;
     min-height: 48px;
     max-height: 120px;
 
-    padding:
-        13px
-        8px;
+    padding: 13px 8px;
 
     border: none;
 
     outline: none;
-
     resize: none;
 
     overflow-y: auto;
@@ -906,63 +729,21 @@ body {
         sans-serif;
 
     font-size: 15px;
-
     line-height: 22px;
 }
 
-
 #message-input::placeholder {
-    color:
-        rgba(245, 245, 247, 0.30);
+    color: rgba(245, 245, 247, 0.30);
 }
-
 
 #message-input:focus {
     border: none;
-
     box-shadow: none;
 }
 
 
 /* ==========================================================
-   ATTACH BUTTON
-   ========================================================== */
-
-#attach-button {
-    background:
-        radial-gradient(
-            circle at 35% 30%,
-            rgba(255, 255, 255, 0.11),
-            rgba(255, 255, 255, 0.035)
-        ) !important;
-}
-
-
-/* ==========================================================
-   VOICE BUTTON
-   ========================================================== */
-
-#voice-button {
-    background:
-        radial-gradient(
-            circle at 35% 30%,
-            rgba(255, 255, 255, 0.11),
-            rgba(255, 255, 255, 0.035)
-        ) !important;
-}
-
-
-/* ==========================================================
-   STOP BUTTON
-   ========================================================== */
-
-#stop-button {
-    display: none;
-}
-
-
-/* ==========================================================
-   SEND BUTTON — CHROME / NEON
+   SEND BUTTON
    ========================================================== */
 
 #send-button {
@@ -974,7 +755,6 @@ body {
     flex: 0 0 52px !important;
 
     border: none !important;
-
     border-radius: 50% !important;
 
     background:
@@ -990,7 +770,6 @@ body {
     color: #08080C !important;
 
     font-size: 21px !important;
-
     font-weight: 900;
 
     box-shadow:
@@ -1000,14 +779,10 @@ body {
     overflow: hidden;
 }
 
-
-/* Chrome ışık yansıması */
-
 #send-button::before {
     content: "";
 
     position: absolute;
-
     inset: 2px;
 
     border-radius: inherit;
@@ -1023,9 +798,6 @@ body {
 
     pointer-events: none;
 }
-
-
-/* Neon patlama */
 
 #send-button::after {
     content: "";
@@ -1051,7 +823,6 @@ body {
     pointer-events: none;
 }
 
-
 #send-button:active {
     transform: scale(0.88);
 
@@ -1062,7 +833,16 @@ body {
 
 
 /* ==========================================================
-   COMPOSER — MOBILE
+   STOP BUTTON
+   ========================================================== */
+
+#stop-button {
+    display: none;
+}
+
+
+/* ==========================================================
+   MOBILE COMPOSER
    ========================================================== */
 
 @media (max-width: 500px) {
@@ -1101,9 +881,7 @@ body {
 
         font-size: 14px;
 
-        padding:
-            11px
-            4px;
+        padding: 11px 4px;
     }
 }
 
@@ -1138,8 +916,10 @@ body {
         flex-basis: 44px !important;
     }
 
-       }
-
+    #message-input {
+        font-size: 13px;
+    }
+}
 
 /* ==========================================================
    SCROLL BUTTON

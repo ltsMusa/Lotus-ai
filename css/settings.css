@@ -430,3 +430,57 @@
     }
 
 }
+/* ==========================================================
+   SETTINGS CLOSE ANIMATION
+   ========================================================== */
+
+@keyframes settingsSlideDown {
+
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+
+}
+
+
+@keyframes settingsBackdropOut {
+
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+
+}
+
+
+/* Kapanış */
+
+#settings-modal.closing {
+
+    animation:
+        settingsBackdropOut
+        0.25s
+        ease-in
+        forwards;
+
+}
+
+
+#settings-modal.closing .modal-content {
+
+    animation:
+        settingsSlideDown
+        0.3s
+        cubic-bezier(0.55, 0, 0.78, 0.22)
+        forwards;
+
+}

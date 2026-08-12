@@ -636,11 +636,6 @@ accountButton?.addEventListener(
     "click",
     () => {
 
-        const authModal =
-            document.getElementById(
-                "auth-modal"
-            );
-
         authModal?.classList.remove(
             "hidden"
         );

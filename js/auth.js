@@ -20,7 +20,36 @@ const supabase = window.supabase.createClient(
 const Auth = {
 
     user: null,
+    
+ updateAccountUI() {
 
+    const accountButton =
+        document.querySelector(
+            '.settings-item[data-setting="account"]'
+        );
+
+    if (!accountButton) return;
+
+    const label =
+        accountButton.querySelector(".settings-label");
+
+    if (!label) return;
+
+    if (this.user) {
+
+        label.innerHTML = `
+            <strong>Hesabım</strong>
+            <small>${this.user.email}</small>
+        `;
+
+    } else {
+
+        label.innerHTML = `
+            <strong>Hesap</strong>
+            <small>Giriş yap ve hesabını yönet</small>
+        `;
+    }
+},
 
     // ------------------------------------------------------
     // INIT

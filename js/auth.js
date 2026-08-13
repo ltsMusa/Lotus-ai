@@ -874,7 +874,9 @@ accountButton?.addEventListener(
 
         const user =
             await Auth.getCurrentUser();
-
+        
+console.log("Auth.user:", Auth.user);
+console.log("Current user:", user);
 
         // Giriş yapılmamışsa
         // login ekranını aç.

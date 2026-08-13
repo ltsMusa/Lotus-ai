@@ -851,17 +851,6 @@ document.addEventListener(
         // --------------------------------------------------
         // ACCOUNT BUTTON
         // --------------------------------------------------
-
-       alert("AUTH.JS HESAP BÖLÜMÜNE ULAŞTI");
-
-        accountButton?.addEventListener(
-    "click",
-    () => {
-
-        alert("HESAP BUTONUNA TIKLANDI");
-
-    }
-);
         
         document.addEventListener(
             "click",

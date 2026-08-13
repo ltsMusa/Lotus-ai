@@ -2,11 +2,6 @@
 // LOTUS AI — UI
 // ==========================================================
 
-
-// ==========================================================
-// ELEMENTS
-// ==========================================================
-
 const settingsModal =
     document.getElementById("settings-modal");
 
@@ -22,31 +17,26 @@ const settingsButtons = [
 ];
 
 
-// ==========================================================
-// OPEN SETTINGS
-// ==========================================================
-
 function openSettings() {
 
     if (!settingsModal) return;
 
     settingsModal.classList.remove("hidden");
-
-    settingsModal.hidden = false;
 }
 
-
-// ==========================================================
-// CLOSE SETTINGS
-// ==========================================================
 
 function closeSettings() {
 
     if (!settingsModal) return;
 
-    settingsModal.classList.add("hidden");
+    settingsModal.classList.add("closing");
 
-    settingsModal.hidden = true;
+    setTimeout(() => {
+
+        settingsModal.classList.add("hidden");
+        settingsModal.classList.remove("closing");
+
+    }, 300);
 }
 
 
@@ -60,103 +50,23 @@ settingsButtons.forEach(button => {
 
     button.addEventListener(
         "click",
-        event => {
-
-            event.preventDefault();
-
-            openSettings();
-        }
+        openSettings
     );
 
 });
 
 
 // ==========================================================
-// CLOSE MODAL BUTTONS
+// SETTINGS CLOSE
 // ==========================================================
 
 document
-    .querySelectorAll("#settings-modal .close-modal")
+    .querySelectorAll(".close-modal")
     .forEach(button => {
 
         button.addEventListener(
             "click",
-            event => {
-
-                event.preventDefault();
-
-                closeSettings();
-            }
+            closeSettings
         );
 
     });
-
-
-// ==========================================================
-// ESC KEY
-// ==========================================================
-
-document.addEventListener(
-    "keydown",
-    event => {
-
-        if (event.key !== "Escape") return;
-
-        closeSettings();
-
-        const accountModal =
-            document.getElementById("account-modal");
-
-        if (accountModal) {
-
-            accountModal.classList.add("hidden");
-        }
-
-        const authModal =
-            document.getElementById("auth-modal");
-
-        if (authModal) {
-
-            authModal.classList.add("hidden");
-        }
-
-    }
-);
-
-
-// ==========================================================
-// MODAL BACKDROP CLOSE
-// ==========================================================
-
-[settingsModal].forEach(modal => {
-
-    if (!modal) return;
-
-    modal.addEventListener(
-        "click",
-        event => {
-
-            if (event.target !== modal) return;
-
-            closeSettings();
-        }
-    );
-
-});
-
-
-// ==========================================================
-// NOTE
-// ==========================================================
-//
-// ACCOUNT BUTONU BURADA YOK.
-//
-// Account işlemlerini auth.js yönetiyor.
-//
-// Böylece:
-//
-// ui.js      → Settings UI
-// auth.js    → Login / Register / Account / Logout
-//
-// İki dosya aynı butona event bağlamıyor.
-// ==========================================================

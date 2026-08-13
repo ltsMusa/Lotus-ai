@@ -792,42 +792,144 @@ document.addEventListener(
             }
         );
 
+// --------------------------------------------------
+// ACCOUNT
+// --------------------------------------------------
 
-        // --------------------------------------------------
-        // ACCOUNT
-        // --------------------------------------------------
+const accountButton =
+    document.querySelector(
+        '.settings-item[data-setting="account"]'
+    );
 
-        const accountButton =
-            document.querySelector(
-                '.settings-item[data-setting="account"]'
+const accountModal =
+    document.getElementById(
+        "account-modal"
+    );
+
+const accountClose =
+    document.getElementById(
+        "account-close"
+    );
+
+const accountLogout =
+    document.getElementById(
+        "account-logout"
+    );
+
+const accountEmail =
+    document.getElementById(
+        "account-email"
+    );
+
+const accountEmailDetail =
+    document.getElementById(
+        "account-email-detail"
+    );
+
+
+// Hesap butonu
+
+accountButton?.addEventListener(
+    "click",
+    (event) => {
+
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+
+
+        // Giriş yapılmamışsa
+        // normal login ekranını aç.
+
+        if (!Auth.user) {
+
+            Auth.openAuthModal();
+
+            return;
+        }
+
+
+        // Giriş yapılmışsa
+        // hesap menüsünü aç.
+
+        if (accountEmail) {
+
+            accountEmail.textContent =
+                Auth.user.email;
+        }
+
+
+        if (accountEmailDetail) {
+
+            accountEmailDetail.textContent =
+                Auth.user.email;
+        }
+
+
+        accountModal?.classList.remove(
+            "hidden"
+        );
+    },
+    true
+);
+
+
+// Hesap menüsünü kapat
+
+accountClose?.addEventListener(
+    "click",
+    () => {
+
+        accountModal?.classList.add(
+            "hidden"
+        );
+    }
+);
+
+
+// Çıkış yap
+
+accountLogout?.addEventListener(
+    "click",
+    async () => {
+
+        accountLogout.disabled = true;
+
+        accountLogout.textContent =
+            "Çıkış yapılıyor...";
+
+
+        const result =
+            await Auth.logout();
+
+
+        accountLogout.disabled = false;
+
+        accountLogout.textContent =
+            "🚪 Çıkış Yap";
+
+
+        if (!result.success) {
+
+            alert(
+                "Çıkış yapılamadı:\n" +
+                result.error
             );
 
-
-        accountButton?.addEventListener(
-            "click",
-            () => {
-
-                // Zaten giriş yapılmışsa
-                // login ekranını açma.
-
-                if (Auth.user) {
-
-                    console.log(
-                        "Hesap zaten açık:",
-                        Auth.user.email
-                    );
-
-                    return;
-                }
+            return;
+        }
 
 
-                // Giriş yapılmamışsa
-                // login ekranını aç.
-
-                Auth.openAuthModal();
-            }
+        accountModal?.classList.add(
+            "hidden"
         );
 
+
+        console.log(
+            "Lotus hesabından çıkış yapıldı."
+        );
+    }
+);
 
         // --------------------------------------------------
         // INITIAL UI

@@ -436,7 +436,39 @@ const Auth = {
 
         return data.user;
     },
+    
+// ------------------------------------------------------
+// GET CURRENT USER
+// ------------------------------------------------------
 
+async getCurrentUser() {
+
+    const {
+        data,
+        error
+    } = await supabase.auth.getUser();
+
+
+    if (error) {
+
+        console.error(
+            "Güncel kullanıcı alınamadı:",
+            error
+        );
+
+        return null;
+    }
+
+
+    this.user =
+        data.user ?? null;
+
+
+    this.updateAccountUI();
+
+
+    return this.user;
+},
 
     // ------------------------------------------------------
     // GET SESSION
@@ -830,18 +862,25 @@ const accountEmailDetail =
 // Hesap butonu
 
 accountButton?.addEventListener(
+accountButton?.addEventListener(
     "click",
-    (event) => {
+    async (event) => {
 
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
 
 
-        // Giriş yapılmamışsa
-        // normal login ekranını aç.
+        // Supabase'den güncel kullanıcıyı kontrol et
 
-        if (!Auth.user) {
+        const user =
+            await Auth.getCurrentUser();
+
+
+        // Giriş yapılmamışsa
+        // login ekranını aç.
+
+        if (!user) {
 
             Auth.openAuthModal();
 
@@ -855,14 +894,14 @@ accountButton?.addEventListener(
         if (accountEmail) {
 
             accountEmail.textContent =
-                Auth.user.email;
+                user.email;
         }
 
 
         if (accountEmailDetail) {
 
             accountEmailDetail.textContent =
-                Auth.user.email;
+                user.email;
         }
 
 
@@ -872,7 +911,6 @@ accountButton?.addEventListener(
     },
     true
 );
-
 
 // Hesap menüsünü kapat
 

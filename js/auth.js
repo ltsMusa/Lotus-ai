@@ -482,38 +482,49 @@ const Auth = {
     },
 
 
-    // ------------------------------------------------------
-    // GET CURRENT USER
-    // ------------------------------------------------------
+// ------------------------------------------------------
+// GET CURRENT USER
+// ------------------------------------------------------
 
-    async getCurrentUser() {
+async getCurrentUser() {
 
-        const {
-            data,
-            error
-        } = await supabase.auth.getUser();
-
-
-        if (error) {
-
-            console.error(
-                "Güncel kullanıcı alınamadı:",
-                error
-            );
-
-            return null;
-        }
-
-
-        this.user =
-            data.user ?? null;
-
-
-        this.updateAccountUI();
-
-
+    // Önce mevcut kullanıcıyı kontrol et
+    if (this.user) {
         return this.user;
-    },
+    }
+
+
+    // Kullanıcı yoksa Supabase session'ını kontrol et
+    const {
+        data,
+        error
+    } = await supabase.auth.getSession();
+
+
+    if (error) {
+
+        console.error(
+            "Session alınamadı:",
+            error
+        );
+
+        return null;
+    }
+
+
+    const user =
+        data.session?.user ?? null;
+
+
+    this.user =
+        user;
+
+
+    this.updateAccountUI();
+
+
+    return user;
+},
 
 
     // ------------------------------------------------------

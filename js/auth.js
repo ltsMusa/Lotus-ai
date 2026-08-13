@@ -2,15 +2,17 @@
 // LOTUS AI — AUTHENTICATION
 // ==========================================================
 
-const SUPABASE_URL = "https://ecveafyfgelsyamoheyn.supabase.co";
+const SUPABASE_URL =
+    "https://ecveafyfgelsyamoheyn.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_qd7Eqg9Cz_9_fxqSlSFXxg_DLtUFVDb";
 
-const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-);
+const supabase =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+    );
 
 
 // ==========================================================
@@ -20,36 +22,46 @@ const supabase = window.supabase.createClient(
 const Auth = {
 
     user: null,
-    
- updateAccountUI() {
 
-    const accountButton =
-        document.querySelector(
-            '.settings-item[data-setting="account"]'
-        );
 
-    if (!accountButton) return;
+    // ------------------------------------------------------
+    // UPDATE ACCOUNT UI
+    // ------------------------------------------------------
 
-    const label =
-        accountButton.querySelector(".settings-label");
+    updateAccountUI() {
 
-    if (!label) return;
+        const accountButton =
+            document.querySelector(
+                '.settings-item[data-setting="account"]'
+            );
 
-    if (this.user) {
+        if (!accountButton) return;
 
-        label.innerHTML = `
-            <strong>Hesabım</strong>
-            <small>${this.user.email}</small>
-        `;
 
-    } else {
+        const label =
+            accountButton.querySelector(
+                ".settings-label"
+            );
 
-        label.innerHTML = `
-            <strong>Hesap</strong>
-            <small>Giriş yap ve hesabını yönet</small>
-        `;
-    }
-},
+        if (!label) return;
+
+
+        if (this.user) {
+
+            label.innerHTML = `
+                <strong>Hesabım</strong>
+                <small>${this.user.email}</small>
+            `;
+
+        } else {
+
+            label.innerHTML = `
+                <strong>Hesap</strong>
+                <small>Giriş yap ve hesabını yönet</small>
+            `;
+        }
+    },
+
 
     // ------------------------------------------------------
     // INIT
@@ -57,12 +69,16 @@ const Auth = {
 
     async init() {
 
-        console.log("Lotus Auth başlatıldı.");
+        console.log(
+            "Lotus Auth başlatıldı."
+        );
+
 
         const {
             data,
             error
-        } = await supabase.auth.getSession();
+        } =
+            await supabase.auth.getSession();
 
 
         if (error) {
@@ -76,10 +92,13 @@ const Auth = {
         }
 
 
-        this.user = data.session?.user ?? null;
+        this.user =
+            data.session?.user ?? null;
+
 
         this.updateAccountUI();
-        
+
+
         if (this.user) {
 
             console.log(
@@ -95,13 +114,18 @@ const Auth = {
         }
 
 
-        // Auth değişikliklerini dinle
+        // --------------------------------------------------
+        // AUTH STATE CHANGE
+        // --------------------------------------------------
 
         supabase.auth.onAuthStateChange(
             (event, session) => {
 
                 this.user =
                     session?.user ?? null;
+
+
+                this.updateAccountUI();
 
 
                 console.log(
@@ -117,26 +141,34 @@ const Auth = {
                         this.user.email
                     );
 
-                }
+                } else {
 
+                    console.log(
+                        "Kullanıcı çıkış yaptı."
+                    );
+                }
             }
         );
     },
 
 
-    // ------------------------------------------------------
+    // ======================================================
     // REGISTER
-    // ------------------------------------------------------
+    // ======================================================
 
-    async register(email, password) {
+    async register(
+        email,
+        password
+    ) {
 
         const {
             data,
             error
-        } = await supabase.auth.signUp({
-            email,
-            password
-        });
+        } =
+            await supabase.auth.signUp({
+                email,
+                password
+            });
 
 
         if (error) {
@@ -153,7 +185,11 @@ const Auth = {
         }
 
 
-        this.user = data.user;
+        this.user =
+            data.user;
+
+
+        this.updateAccountUI();
 
 
         return {
@@ -164,19 +200,23 @@ const Auth = {
     },
 
 
-    // ------------------------------------------------------
+    // ======================================================
     // LOGIN
-    // ------------------------------------------------------
+    // ======================================================
 
-    async login(email, password) {
+    async login(
+        email,
+        password
+    ) {
 
         const {
             data,
             error
-        } = await supabase.auth.signInWithPassword({
-            email,
-            password
-        });
+        } =
+            await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
 
 
         if (error) {
@@ -193,10 +233,13 @@ const Auth = {
         }
 
 
-        this.user = data.user;
+        this.user =
+            data.user;
+
 
         this.updateAccountUI();
-        
+
+
         return {
             success: true,
             user: data.user,
@@ -205,24 +248,26 @@ const Auth = {
     },
 
 
-    // ------------------------------------------------------
+    // ======================================================
     // GOOGLE LOGIN
-    // ------------------------------------------------------
+    // ======================================================
 
     async loginWithGoogle() {
 
         const {
             data,
             error
-        } = await supabase.auth.signInWithOAuth({
+        } =
+            await supabase.auth.signInWithOAuth({
 
-            provider: "google",
+                provider: "google",
 
-            options: {
-                redirectTo:
-    "https://lotus-ai-w16u-l3ai6rngb-lts-musa-s-projects.vercel.app/"
-            }
-        });
+                options: {
+
+                    redirectTo:
+                        "https://lotus-ai-w16u-l3ai6rngb-lts-musa-s-projects.vercel.app/"
+                }
+            });
 
 
         if (error) {
@@ -246,15 +291,16 @@ const Auth = {
     },
 
 
-    // ------------------------------------------------------
+    // ======================================================
     // LOGOUT
-    // ------------------------------------------------------
+    // ======================================================
 
     async logout() {
 
         const {
             error
-        } = await supabase.auth.signOut();
+        } =
+            await supabase.auth.signOut();
 
 
         if (error) {
@@ -273,7 +319,9 @@ const Auth = {
 
         this.user = null;
 
+
         this.updateAccountUI();
+
 
         return {
             success: true
@@ -281,16 +329,17 @@ const Auth = {
     },
 
 
-    // ------------------------------------------------------
+    // ======================================================
     // GET USER
-    // ------------------------------------------------------
+    // ======================================================
 
     async getUser() {
 
         const {
             data,
             error
-        } = await supabase.auth.getUser();
+        } =
+            await supabase.auth.getUser();
 
 
         if (error) {
@@ -304,22 +353,28 @@ const Auth = {
         }
 
 
-        this.user = data.user;
+        this.user =
+            data.user;
+
+
+        this.updateAccountUI();
+
 
         return data.user;
     },
 
 
-    // ------------------------------------------------------
+    // ======================================================
     // GET SESSION
-    // ------------------------------------------------------
+    // ======================================================
 
     async getSession() {
 
         const {
             data,
             error
-        } = await supabase.auth.getSession();
+        } =
+            await supabase.auth.getSession();
 
 
         if (error) {
@@ -343,349 +398,385 @@ const Auth = {
 // UI
 // ==========================================================
 
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
+function initAuthUI() {
 
-        const authModal =
-            document.getElementById(
-                "auth-modal"
-            );
-
-
-        const loginPanel =
-            document.getElementById(
-                "login-panel"
-            );
-
-
-        const registerPanel =
-            document.getElementById(
-                "register-panel"
-            );
-
-
-        const loginButton =
-            document.getElementById(
-                "login-button"
-            );
-
-
-        const registerButton =
-            document.getElementById(
-                "register-button"
-            );
-
-
-        const googleButton =
-            document.getElementById(
-                "google-login-button"
-            );
-
-
-        const showRegister =
-            document.getElementById(
-                "show-register"
-            );
-
-
-        const showLogin =
-            document.getElementById(
-                "show-login"
-            );
-
-
-        const authClose =
-            document.getElementById(
-                "auth-close"
-            );
-
-
-        // --------------------------------------------------
-        // LOGIN
-        // --------------------------------------------------
-
-        loginButton?.addEventListener(
-            "click",
-            async () => {
-
-                const email =
-                    document.getElementById(
-                        "login-email"
-                    ).value.trim();
-
-
-                const password =
-                    document.getElementById(
-                        "login-password"
-                    ).value;
-
-
-                if (!email || !password) {
-
-                    alert(
-                        "E-posta ve şifre gerekli."
-                    );
-
-                    return;
-                }
-
-
-                loginButton.disabled = true;
-
-                loginButton.textContent =
-                    "Giriş yapılıyor...";
-
-
-                const result =
-                    await Auth.login(
-                        email,
-                        password
-                    );
-
-
-                loginButton.disabled = false;
-
-                loginButton.textContent =
-                    "Giriş Yap";
-
-
-                if (!result.success) {
-
-                    alert(
-                        "Giriş başarısız:\n" +
-                        result.error
-                    );
-
-                    return;
-                }
-
-
-                authModal?.classList.add(
-                    "hidden"
-                );
-
-
-                console.log(
-                    "Lotus'a giriş yapıldı."
-                );
-            }
+    const authModal =
+        document.getElementById(
+            "auth-modal"
         );
 
 
-        // --------------------------------------------------
-        // REGISTER
-        // --------------------------------------------------
-
-        registerButton?.addEventListener(
-            "click",
-            async () => {
-
-                const email =
-                    document.getElementById(
-                        "register-email"
-                    ).value.trim();
-
-
-                const password =
-                    document.getElementById(
-                        "register-password"
-                    ).value;
-
-
-                if (!email || !password) {
-
-                    alert(
-                        "E-posta ve şifre gerekli."
-                    );
-
-                    return;
-                }
-
-
-                if (password.length < 6) {
-
-                    alert(
-                        "Şifre en az 6 karakter olmalı."
-                    );
-
-                    return;
-                }
-
-
-                registerButton.disabled = true;
-
-                registerButton.textContent =
-                    "Hesap oluşturuluyor...";
-
-
-                const result =
-                    await Auth.register(
-                        email,
-                        password
-                    );
-
-
-                registerButton.disabled = false;
-
-                registerButton.textContent =
-                    "Hesap Oluştur";
-
-
-                if (!result.success) {
-
-                    alert(
-                        "Kayıt başarısız:\n" +
-                        result.error
-                    );
-
-                    return;
-                }
-
-
-                if (!result.session) {
-
-                    alert(
-                        "Hesabın oluşturuldu! " +
-                        "E-posta adresini doğrulaman gerekebilir."
-                    );
-
-                } else {
-
-                    authModal?.classList.add(
-                        "hidden"
-                    );
-                }
-
-
-                console.log(
-                    "Lotus hesabı oluşturuldu."
-                );
-            }
+    const loginPanel =
+        document.getElementById(
+            "login-panel"
         );
 
 
-        // --------------------------------------------------
-        // GOOGLE
-        // --------------------------------------------------
-
-        googleButton?.addEventListener(
-            "click",
-            async () => {
-
-                googleButton.disabled = true;
-
-                googleButton.textContent =
-                    "Google açılıyor...";
-
-
-                const result =
-                    await Auth.loginWithGoogle();
-
-
-                if (!result.success) {
-
-                    googleButton.disabled = false;
-
-                    googleButton.textContent =
-                        "Google ile devam et";
-
-
-                    alert(
-                        "Google girişi başarısız:\n" +
-                        result.error
-                    );
-                }
-            }
+    const registerPanel =
+        document.getElementById(
+            "register-panel"
         );
 
 
-        // --------------------------------------------------
-        // SHOW REGISTER
-        // --------------------------------------------------
-
-        showRegister?.addEventListener(
-            "click",
-            () => {
-
-                loginPanel?.classList.add(
-                    "hidden"
-                );
-
-                registerPanel?.classList.remove(
-                    "hidden"
-                );
-            }
+    const loginButton =
+        document.getElementById(
+            "login-button"
         );
 
 
-        // --------------------------------------------------
-        // SHOW LOGIN
-        // --------------------------------------------------
-
-        showLogin?.addEventListener(
-            "click",
-            () => {
-
-                registerPanel?.classList.add(
-                    "hidden"
-                );
-
-                loginPanel?.classList.remove(
-                    "hidden"
-                );
-            }
+    const registerButton =
+        document.getElementById(
+            "register-button"
         );
 
 
-        // --------------------------------------------------
-        // CLOSE
-        // --------------------------------------------------
-
-        authClose?.addEventListener(
-            "click",
-            () => {
-
-                authModal?.classList.add(
-                    "hidden"
-                );
-            }
+    const googleButton =
+        document.getElementById(
+            "google-login-button"
         );
-        
-// --------------------------------------------------
-// ACCOUNT
-// --------------------------------------------------
 
-const accountButton =
-    document.querySelector(
-        '.settings-item[data-setting="account"]'
-    );
 
-accountButton?.addEventListener(
-    "click",
-    () => {
+    const showRegister =
+        document.getElementById(
+            "show-register"
+        );
 
-        if (Auth.user) {
+
+    const showLogin =
+        document.getElementById(
+            "show-login"
+        );
+
+
+    const authClose =
+        document.getElementById(
+            "auth-close"
+        );
+
+
+    // ======================================================
+    // LOGIN
+    // ======================================================
+
+    loginButton?.addEventListener(
+        "click",
+        async () => {
+
+            const email =
+                document.getElementById(
+                    "login-email"
+                )?.value.trim();
+
+
+            const password =
+                document.getElementById(
+                    "login-password"
+                )?.value;
+
+
+            if (!email || !password) {
+
+                alert(
+                    "E-posta ve şifre gerekli."
+                );
+
+                return;
+            }
+
+
+            loginButton.disabled = true;
+
+            loginButton.textContent =
+                "Giriş yapılıyor...";
+
+
+            const result =
+                await Auth.login(
+                    email,
+                    password
+                );
+
+
+            loginButton.disabled = false;
+
+            loginButton.textContent =
+                "Giriş Yap";
+
+
+            if (!result.success) {
+
+                alert(
+                    "Giriş başarısız:\n" +
+                    result.error
+                );
+
+                return;
+            }
+
+
+            authModal?.classList.add(
+                "hidden"
+            );
+
 
             console.log(
-                "Hesap zaten açık:",
-                Auth.user.email
+                "Lotus'a giriş yapıldı."
+            );
+        }
+    );
+
+
+    // ======================================================
+    // REGISTER
+    // ======================================================
+
+    registerButton?.addEventListener(
+        "click",
+        async () => {
+
+            const email =
+                document.getElementById(
+                    "register-email"
+                )?.value.trim();
+
+
+            const password =
+                document.getElementById(
+                    "register-password"
+                )?.value;
+
+
+            if (!email || !password) {
+
+                alert(
+                    "E-posta ve şifre gerekli."
+                );
+
+                return;
+            }
+
+
+            if (password.length < 6) {
+
+                alert(
+                    "Şifre en az 6 karakter olmalı."
+                );
+
+                return;
+            }
+
+
+            registerButton.disabled = true;
+
+            registerButton.textContent =
+                "Hesap oluşturuluyor...";
+
+
+            const result =
+                await Auth.register(
+                    email,
+                    password
+                );
+
+
+            registerButton.disabled = false;
+
+            registerButton.textContent =
+                "Hesap Oluştur";
+
+
+            if (!result.success) {
+
+                alert(
+                    "Kayıt başarısız:\n" +
+                    result.error
+                );
+
+                return;
+            }
+
+
+            if (!result.session) {
+
+                alert(
+                    "Hesabın oluşturuldu! " +
+                    "E-posta adresini doğrulaman gerekebilir."
+                );
+
+            } else {
+
+                authModal?.classList.add(
+                    "hidden"
+                );
+            }
+
+
+            console.log(
+                "Lotus hesabı oluşturuldu."
+            );
+        }
+    );
+
+
+    // ======================================================
+    // GOOGLE
+    // ======================================================
+
+    googleButton?.addEventListener(
+        "click",
+        async () => {
+
+            googleButton.disabled = true;
+
+            googleButton.textContent =
+                "Google açılıyor...";
+
+
+            const result =
+                await Auth.loginWithGoogle();
+
+
+            if (!result.success) {
+
+                googleButton.disabled = false;
+
+                googleButton.textContent =
+                    "Google ile devam et";
+
+
+                alert(
+                    "Google girişi başarısız:\n" +
+                    result.error
+                );
+            }
+        }
+    );
+
+
+    // ======================================================
+    // SHOW REGISTER
+    // ======================================================
+
+    showRegister?.addEventListener(
+        "click",
+        () => {
+
+            loginPanel?.classList.add(
+                "hidden"
             );
 
-            return;
+
+            registerPanel?.classList.remove(
+                "hidden"
+            );
         }
+    );
 
-        authModal?.classList.remove(
-            "hidden"
+
+    // ======================================================
+    // SHOW LOGIN
+    // ======================================================
+
+    showLogin?.addEventListener(
+        "click",
+        () => {
+
+            registerPanel?.classList.add(
+                "hidden"
+            );
+
+
+            loginPanel?.classList.remove(
+                "hidden"
+            );
+        }
+    );
+
+
+    // ======================================================
+    // CLOSE
+    // ======================================================
+
+    authClose?.addEventListener(
+        "click",
+        () => {
+
+            authModal?.classList.add(
+                "hidden"
+            );
+        }
+    );
+
+
+    // ======================================================
+    // ACCOUNT
+    // ======================================================
+
+    const accountButton =
+        document.querySelector(
+            '.settings-item[data-setting="account"]'
         );
-    }
-);
 
-    }
-);
+
+    accountButton?.addEventListener(
+        "click",
+        (event) => {
+
+            // Giriş yapılmışsa başka bir
+            // listener'ın login ekranını açmasını engelle.
+
+            if (Auth.user) {
+
+                event.preventDefault();
+
+                event.stopImmediatePropagation();
+
+
+                console.log(
+                    "Hesap zaten açık:",
+                    Auth.user.email
+                );
+
+
+                return;
+            }
+
+
+            authModal?.classList.remove(
+                "hidden"
+            );
+        },
+        true
+    );
+
+
+    // İlk UI güncellemesi
+
+    Auth.updateAccountUI();
+}
+
 
 // ==========================================================
 // START
 // ==========================================================
 
-Auth.init();
+if (
+    document.readyState === "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        async () => {
+
+            initAuthUI();
+
+            await Auth.init();
+        }
+    );
+
+} else {
+
+    initAuthUI();
+
+    Auth.init();
+}

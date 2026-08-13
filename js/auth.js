@@ -862,7 +862,6 @@ const accountEmailDetail =
 // Hesap butonu
 
 accountButton?.addEventListener(
-accountButton?.addEventListener(
     "click",
     async (event) => {
 

@@ -859,7 +859,9 @@ const accountEmailDetail =
     );
 
 
-// Hesap butonu
+// --------------------------------------------------
+// HESAP BUTONU
+// --------------------------------------------------
 
 accountButton?.addEventListener(
     "click",
@@ -870,20 +872,14 @@ accountButton?.addEventListener(
         event.stopImmediatePropagation();
 
 
-        // Supabase'den güncel kullanıcıyı kontrol et
+        // Supabase'den güncel kullanıcıyı al
 
         const user =
             await Auth.getCurrentUser();
-        
-        if (!user) {
-    alert("DEBUG: Kullanıcı bulunamadı.\nAuth.user: " + Auth.user);
-        }
-        
-console.log("Auth.user:", Auth.user);
-console.log("Current user:", user);
+
 
         // Giriş yapılmamışsa
-        // login ekranını aç.
+        // giriş ekranını aç
 
         if (!user) {
 
@@ -893,8 +889,8 @@ console.log("Current user:", user);
         }
 
 
-        // Giriş yapılmışsa
-        // hesap menüsünü aç.
+        // Kullanıcı giriş yapmışsa
+        // Account Modal'ı hazırla
 
         if (accountEmail) {
 
@@ -910,6 +906,13 @@ console.log("Current user:", user);
         }
 
 
+        // TEST
+
+        alert("ACCOUNT MODAL AÇILIYOR");
+
+
+        // Account Modal'ı aç
+
         accountModal?.classList.remove(
             "hidden"
         );
@@ -917,7 +920,10 @@ console.log("Current user:", user);
     true
 );
 
-// Hesap menüsünü kapat
+
+// --------------------------------------------------
+// HESAP MENÜSÜNÜ KAPAT
+// --------------------------------------------------
 
 accountClose?.addEventListener(
     "click",
@@ -930,7 +936,9 @@ accountClose?.addEventListener(
 );
 
 
-// Çıkış yap
+// --------------------------------------------------
+// ÇIKIŞ YAP
+// --------------------------------------------------
 
 accountLogout?.addEventListener(
     "click",

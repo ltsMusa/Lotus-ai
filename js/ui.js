@@ -2,11 +2,13 @@
 // LOTUS AI — UI
 // ==========================================================
 
+
+// ==========================================================
+// ELEMENTS
+// ==========================================================
+
 const settingsModal =
     document.getElementById("settings-modal");
-
-const authModal =
-    document.getElementById("auth-modal");
 
 
 // ==========================================================
@@ -20,30 +22,37 @@ const settingsButtons = [
 ];
 
 
+// ==========================================================
+// OPEN SETTINGS
+// ==========================================================
+
 function openSettings() {
 
     if (!settingsModal) return;
 
     settingsModal.classList.remove("hidden");
+
+    settingsModal.hidden = false;
 }
 
+
+// ==========================================================
+// CLOSE SETTINGS
+// ==========================================================
 
 function closeSettings() {
 
     if (!settingsModal) return;
 
-    settingsModal.classList.add("closing");
+    settingsModal.classList.add("hidden");
 
-    setTimeout(() => {
-
-        settingsModal.classList.add("hidden");
-        settingsModal.classList.remove("closing");
-
-    }, 300);
+    settingsModal.hidden = true;
 }
 
 
-// Settings butonları
+// ==========================================================
+// SETTINGS BUTTON EVENTS
+// ==========================================================
 
 settingsButtons.forEach(button => {
 
@@ -51,79 +60,103 @@ settingsButtons.forEach(button => {
 
     button.addEventListener(
         "click",
-        openSettings
+        event => {
+
+            event.preventDefault();
+
+            openSettings();
+        }
     );
 
 });
 
 
 // ==========================================================
-// SETTINGS MODAL CLOSE
+// CLOSE MODAL BUTTONS
 // ==========================================================
 
 document
-    .querySelectorAll(".close-modal")
+    .querySelectorAll("#settings-modal .close-modal")
     .forEach(button => {
 
         button.addEventListener(
             "click",
-            closeSettings
+            event => {
+
+                event.preventDefault();
+
+                closeSettings();
+            }
         );
 
     });
 
 
 // ==========================================================
-// ACCOUNT
+// ESC KEY
 // ==========================================================
 
-const accountButton =
-    document.querySelector(
-        '.settings-item[data-setting="account"]'
-    );
-
-
-if (accountButton) {
-
-    accountButton.addEventListener(
-        "click",
-        () => {
-
-            if (!authModal) return;
-
-            authModal.classList.remove(
-                "hidden"
-            );
-
-        }
-    );
-
-}
-
 document.addEventListener(
-    "DOMContentLoaded",
-    () => {
+    "keydown",
+    event => {
 
-        const accountButton =
-            document.querySelector(
-                '.settings-item[data-setting="account"]'
-            );
+        if (event.key !== "Escape") return;
 
-        accountButton?.addEventListener(
-            "click",
-            () => {
+        closeSettings();
 
-                const authModal =
-                    document.getElementById(
-                        "auth-modal"
-                    );
+        const accountModal =
+            document.getElementById("account-modal");
 
-                authModal?.classList.remove(
-                    "hidden"
-                );
+        if (accountModal) {
 
-            }
-        );
+            accountModal.classList.add("hidden");
+        }
+
+        const authModal =
+            document.getElementById("auth-modal");
+
+        if (authModal) {
+
+            authModal.classList.add("hidden");
+        }
 
     }
 );
+
+
+// ==========================================================
+// MODAL BACKDROP CLOSE
+// ==========================================================
+
+[settingsModal].forEach(modal => {
+
+    if (!modal) return;
+
+    modal.addEventListener(
+        "click",
+        event => {
+
+            if (event.target !== modal) return;
+
+            closeSettings();
+        }
+    );
+
+});
+
+
+// ==========================================================
+// NOTE
+// ==========================================================
+//
+// ACCOUNT BUTONU BURADA YOK.
+//
+// Account işlemlerini auth.js yönetiyor.
+//
+// Böylece:
+//
+// ui.js      → Settings UI
+// auth.js    → Login / Register / Account / Logout
+//
+// İki dosya aynı butona event bağlamıyor.
+// ==========================================================

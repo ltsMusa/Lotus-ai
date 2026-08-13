@@ -852,6 +852,8 @@ document.addEventListener(
         // ACCOUNT BUTTON
         // --------------------------------------------------
 
+       alert("AUTH.JS HESAP BÖLÜMÜNE ULAŞTI");
+        
         document.addEventListener(
             "click",
             async (event) => {

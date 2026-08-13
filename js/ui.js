@@ -2,6 +2,11 @@
 // LOTUS AI — UI
 // ==========================================================
 
+
+// ==========================================================
+// SETTINGS MODAL
+// ==========================================================
+
 const settingsModal =
     document.getElementById("settings-modal");
 
@@ -17,13 +22,22 @@ const settingsButtons = [
 ];
 
 
+// ==========================================================
+// OPEN SETTINGS
+// ==========================================================
+
 function openSettings() {
 
     if (!settingsModal) return;
 
     settingsModal.classList.remove("hidden");
+    settingsModal.hidden = false;
 }
 
+
+// ==========================================================
+// CLOSE SETTINGS
+// ==========================================================
 
 function closeSettings() {
 
@@ -57,7 +71,7 @@ settingsButtons.forEach(button => {
 
 
 // ==========================================================
-// SETTINGS CLOSE
+// SETTINGS MODAL CLOSE BUTTONS
 // ==========================================================
 
 document
@@ -70,3 +84,18 @@ document
         );
 
     });
+
+
+// ==========================================================
+// NOTE
+// ==========================================================
+//
+// ACCOUNT SİSTEMİ BURADA YOK.
+//
+// Hesap butonu, giriş ekranı,
+// Account Modal ve çıkış işlemleri
+// tamamen auth.js tarafından yönetilir.
+//
+// ui.js yalnızca Settings UI'sini yönetir.
+//
+// ==========================================================

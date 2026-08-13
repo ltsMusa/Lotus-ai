@@ -875,6 +875,10 @@ accountButton?.addEventListener(
         const user =
             await Auth.getCurrentUser();
         
+        if (!user) {
+    alert("DEBUG: Kullanıcı bulunamadı.\nAuth.user: " + Auth.user);
+        }
+        
 console.log("Auth.user:", Auth.user);
 console.log("Current user:", user);
 

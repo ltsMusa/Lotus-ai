@@ -78,7 +78,8 @@ const Auth = {
 
         this.user = data.session?.user ?? null;
 
-
+        this.updateAccountUI();
+        
         if (this.user) {
 
             console.log(
@@ -194,7 +195,8 @@ const Auth = {
 
         this.user = data.user;
 
-
+        this.updateAccountUI();
+        
         return {
             success: true,
             user: data.user,
@@ -271,6 +273,7 @@ const Auth = {
 
         this.user = null;
 
+        this.updateAccountUI();
 
         return {
             success: true

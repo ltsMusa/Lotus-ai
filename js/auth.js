@@ -656,6 +656,41 @@ document.addEventListener(
 );
 
 // ==========================================================
+// ACCOUNT SETTINGS
+// ==========================================================
+
+const accountButton =
+    document.querySelector(
+        '.settings-item[data-setting="account"]'
+    );
+
+accountButton?.addEventListener(
+    "click",
+    () => {
+
+        if (Auth.user) {
+
+            console.log(
+                "Zaten giriş yapılmış:",
+                Auth.user.email
+            );
+
+            return;
+        }
+
+
+        const authModal =
+            document.getElementById(
+                "auth-modal"
+            );
+
+        authModal?.classList.remove(
+            "hidden"
+        );
+    }
+);
+
+// ==========================================================
 // START
 // ==========================================================
 

@@ -860,48 +860,64 @@ document.addEventListener(
 
 
         // --------------------------------------------------
-        // ACCOUNT BUTTON
-        // --------------------------------------------------
-        
-        document.addEventListener(
-            "click",
-            async (event) => {
+// ACCOUNT BUTTON
+// --------------------------------------------------
 
-                const accountButton =
-                    event.target.closest(
-                        '.settings-item[data-setting="account"]'
-                    );
+const accountButton =
+    document.querySelector(
+        '.settings-item[data-setting="account"]'
+    );
 
 
-                if (!accountButton) return;
+accountButton?.addEventListener(
+    "click",
+    async (event) => {
+
+        event.preventDefault();
+        event.stopPropagation();
 
 
-                event.preventDefault();
-                event.stopPropagation();
+        // Kullanıcı zaten Auth.user içinde varsa
+        // tekrar Supabase sorgusu yapma.
+
+        let user = Auth.user;
 
 
-                const user =
-                    await Auth.getCurrentUser();
+        // Yoksa session'dan al.
+
+        if (!user) {
+
+            const session =
+                await Auth.getSession();
+
+            user =
+                session?.user ?? null;
+
+            Auth.user =
+                user;
+        }
 
 
-                // Giriş yapılmamış
+        // ------------------------------------------------
+        // GİRİŞ YAPILMAMIŞ
+        // ------------------------------------------------
 
-                if (!user) {
+        if (!user) {
 
-                    Auth.openAuthModal();
+            Auth.openAuthModal();
 
-                    return;
-                }
+            return;
+        }
 
 
-                // Giriş yapılmış
+        // ------------------------------------------------
+        // GİRİŞ YAPILMIŞ
+        // ------------------------------------------------
 
-                Auth.openAccountModal();
+        Auth.openAccountModal();
 
-            },
-            true
-        );
-
+    }
+);
 
         // --------------------------------------------------
         // ACCOUNT CLOSE

@@ -220,7 +220,7 @@ const Auth = {
 
             options: {
                 redirectTo:
-                    window.location.origin
+    "https://lotus-ai-w16u-l3ai6rngb-lts-musa-s-projects.vercel.app/"
             }
         });
 

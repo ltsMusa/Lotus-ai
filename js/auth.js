@@ -64,6 +64,54 @@ const Auth = {
 
 
     // ------------------------------------------------------
+    // OPEN AUTH MODAL
+    // ------------------------------------------------------
+
+    openAuthModal() {
+
+        const authModal =
+            document.getElementById(
+                "auth-modal"
+            );
+
+        if (!authModal) return;
+
+
+        authModal.classList.remove(
+            "hidden"
+        );
+
+        authModal.hidden = false;
+
+        authModal.style.display = "";
+    },
+
+
+    // ------------------------------------------------------
+    // CLOSE AUTH MODAL
+    // ------------------------------------------------------
+
+    closeAuthModal() {
+
+        const authModal =
+            document.getElementById(
+                "auth-modal"
+            );
+
+        if (!authModal) return;
+
+
+        authModal.classList.add(
+            "hidden"
+        );
+
+        authModal.hidden = true;
+
+        authModal.style.display = "none";
+    },
+
+
+    // ------------------------------------------------------
     // INIT
     // ------------------------------------------------------
 
@@ -77,8 +125,7 @@ const Auth = {
         const {
             data,
             error
-        } =
-            await supabase.auth.getSession();
+        } = await supabase.auth.getSession();
 
 
         if (error) {
@@ -99,12 +146,21 @@ const Auth = {
         this.updateAccountUI();
 
 
+        // --------------------------------------------------
+        // EXISTING SESSION
+        // --------------------------------------------------
+
         if (this.user) {
 
             console.log(
                 "Aktif kullanıcı:",
                 this.user.email
             );
+
+            // Kullanıcı zaten giriş yapmışsa
+            // login ekranını kapat.
+
+            this.closeAuthModal();
 
         } else {
 
@@ -115,7 +171,7 @@ const Auth = {
 
 
         // --------------------------------------------------
-        // AUTH STATE CHANGE
+        // AUTH STATE CHANGES
         // --------------------------------------------------
 
         supabase.auth.onAuthStateChange(
@@ -125,36 +181,53 @@ const Auth = {
                     session?.user ?? null;
 
 
-                this.updateAccountUI();
-
-
                 console.log(
                     "Auth durumu:",
                     event
                 );
 
 
-                if (this.user) {
+                this.updateAccountUI();
+
+
+                // Kullanıcı giriş yaptıysa
+                // login ekranını kapat.
+
+                if (
+                    event === "SIGNED_IN" &&
+                    this.user
+                ) {
 
                     console.log(
-                        "Kullanıcı:",
+                        "Giriş başarılı:",
                         this.user.email
                     );
 
-                } else {
+                    this.closeAuthModal();
+                }
+
+
+                // Kullanıcı çıkış yaptıysa
+                // hesap arayüzünü güncelle.
+
+                if (
+                    event === "SIGNED_OUT"
+                ) {
 
                     console.log(
-                        "Kullanıcı çıkış yaptı."
+                        "Oturum kapatıldı."
                     );
+
+                    this.updateAccountUI();
                 }
             }
         );
     },
 
 
-    // ======================================================
+    // ------------------------------------------------------
     // REGISTER
-    // ======================================================
+    // ------------------------------------------------------
 
     async register(
         email,
@@ -164,11 +237,10 @@ const Auth = {
         const {
             data,
             error
-        } =
-            await supabase.auth.signUp({
-                email,
-                password
-            });
+        } = await supabase.auth.signUp({
+            email,
+            password
+        });
 
 
         if (error) {
@@ -200,9 +272,9 @@ const Auth = {
     },
 
 
-    // ======================================================
+    // ------------------------------------------------------
     // LOGIN
-    // ======================================================
+    // ------------------------------------------------------
 
     async login(
         email,
@@ -212,11 +284,10 @@ const Auth = {
         const {
             data,
             error
-        } =
-            await supabase.auth.signInWithPassword({
-                email,
-                password
-            });
+        } = await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
 
 
         if (error) {
@@ -240,6 +311,12 @@ const Auth = {
         this.updateAccountUI();
 
 
+        // Login başarılı.
+        // Modalı burada da kapatıyoruz.
+
+        this.closeAuthModal();
+
+
         return {
             success: true,
             user: data.user,
@@ -248,26 +325,25 @@ const Auth = {
     },
 
 
-    // ======================================================
+    // ------------------------------------------------------
     // GOOGLE LOGIN
-    // ======================================================
+    // ------------------------------------------------------
 
     async loginWithGoogle() {
 
         const {
             data,
             error
-        } =
-            await supabase.auth.signInWithOAuth({
+        } = await supabase.auth.signInWithOAuth({
 
-                provider: "google",
+            provider: "google",
 
-                options: {
+            options: {
 
-                    redirectTo:
-                        "https://lotus-ai-w16u-l3ai6rngb-lts-musa-s-projects.vercel.app/"
-                }
-            });
+                redirectTo:
+                    "https://lotus-ai-w16u-l3ai6rngb-lts-musa-s-projects.vercel.app/"
+            }
+        });
 
 
         if (error) {
@@ -291,16 +367,15 @@ const Auth = {
     },
 
 
-    // ======================================================
+    // ------------------------------------------------------
     // LOGOUT
-    // ======================================================
+    // ------------------------------------------------------
 
     async logout() {
 
         const {
             error
-        } =
-            await supabase.auth.signOut();
+        } = await supabase.auth.signOut();
 
 
         if (error) {
@@ -329,17 +404,16 @@ const Auth = {
     },
 
 
-    // ======================================================
+    // ------------------------------------------------------
     // GET USER
-    // ======================================================
+    // ------------------------------------------------------
 
     async getUser() {
 
         const {
             data,
             error
-        } =
-            await supabase.auth.getUser();
+        } = await supabase.auth.getUser();
 
 
         if (error) {
@@ -364,17 +438,16 @@ const Auth = {
     },
 
 
-    // ======================================================
+    // ------------------------------------------------------
     // GET SESSION
-    // ======================================================
+    // ------------------------------------------------------
 
     async getSession() {
 
         const {
             data,
             error
-        } =
-            await supabase.auth.getSession();
+        } = await supabase.auth.getSession();
 
 
         if (error) {
@@ -398,385 +471,383 @@ const Auth = {
 // UI
 // ==========================================================
 
-function initAuthUI() {
-
-    const authModal =
-        document.getElementById(
-            "auth-modal"
-        );
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
 
-    const loginPanel =
-        document.getElementById(
-            "login-panel"
-        );
+        // --------------------------------------------------
+        // ELEMENTS
+        // --------------------------------------------------
 
-
-    const registerPanel =
-        document.getElementById(
-            "register-panel"
-        );
-
-
-    const loginButton =
-        document.getElementById(
-            "login-button"
-        );
-
-
-    const registerButton =
-        document.getElementById(
-            "register-button"
-        );
-
-
-    const googleButton =
-        document.getElementById(
-            "google-login-button"
-        );
-
-
-    const showRegister =
-        document.getElementById(
-            "show-register"
-        );
-
-
-    const showLogin =
-        document.getElementById(
-            "show-login"
-        );
-
-
-    const authClose =
-        document.getElementById(
-            "auth-close"
-        );
-
-
-    // ======================================================
-    // LOGIN
-    // ======================================================
-
-    loginButton?.addEventListener(
-        "click",
-        async () => {
-
-            const email =
-                document.getElementById(
-                    "login-email"
-                )?.value.trim();
-
-
-            const password =
-                document.getElementById(
-                    "login-password"
-                )?.value;
-
-
-            if (!email || !password) {
-
-                alert(
-                    "E-posta ve şifre gerekli."
-                );
-
-                return;
-            }
-
-
-            loginButton.disabled = true;
-
-            loginButton.textContent =
-                "Giriş yapılıyor...";
-
-
-            const result =
-                await Auth.login(
-                    email,
-                    password
-                );
-
-
-            loginButton.disabled = false;
-
-            loginButton.textContent =
-                "Giriş Yap";
-
-
-            if (!result.success) {
-
-                alert(
-                    "Giriş başarısız:\n" +
-                    result.error
-                );
-
-                return;
-            }
-
-
-            authModal?.classList.add(
-                "hidden"
+        const authModal =
+            document.getElementById(
+                "auth-modal"
             );
 
 
-            console.log(
-                "Lotus'a giriş yapıldı."
-            );
-        }
-    );
-
-
-    // ======================================================
-    // REGISTER
-    // ======================================================
-
-    registerButton?.addEventListener(
-        "click",
-        async () => {
-
-            const email =
-                document.getElementById(
-                    "register-email"
-                )?.value.trim();
-
-
-            const password =
-                document.getElementById(
-                    "register-password"
-                )?.value;
-
-
-            if (!email || !password) {
-
-                alert(
-                    "E-posta ve şifre gerekli."
-                );
-
-                return;
-            }
-
-
-            if (password.length < 6) {
-
-                alert(
-                    "Şifre en az 6 karakter olmalı."
-                );
-
-                return;
-            }
-
-
-            registerButton.disabled = true;
-
-            registerButton.textContent =
-                "Hesap oluşturuluyor...";
-
-
-            const result =
-                await Auth.register(
-                    email,
-                    password
-                );
-
-
-            registerButton.disabled = false;
-
-            registerButton.textContent =
-                "Hesap Oluştur";
-
-
-            if (!result.success) {
-
-                alert(
-                    "Kayıt başarısız:\n" +
-                    result.error
-                );
-
-                return;
-            }
-
-
-            if (!result.session) {
-
-                alert(
-                    "Hesabın oluşturuldu! " +
-                    "E-posta adresini doğrulaman gerekebilir."
-                );
-
-            } else {
-
-                authModal?.classList.add(
-                    "hidden"
-                );
-            }
-
-
-            console.log(
-                "Lotus hesabı oluşturuldu."
-            );
-        }
-    );
-
-
-    // ======================================================
-    // GOOGLE
-    // ======================================================
-
-    googleButton?.addEventListener(
-        "click",
-        async () => {
-
-            googleButton.disabled = true;
-
-            googleButton.textContent =
-                "Google açılıyor...";
-
-
-            const result =
-                await Auth.loginWithGoogle();
-
-
-            if (!result.success) {
-
-                googleButton.disabled = false;
-
-                googleButton.textContent =
-                    "Google ile devam et";
-
-
-                alert(
-                    "Google girişi başarısız:\n" +
-                    result.error
-                );
-            }
-        }
-    );
-
-
-    // ======================================================
-    // SHOW REGISTER
-    // ======================================================
-
-    showRegister?.addEventListener(
-        "click",
-        () => {
-
-            loginPanel?.classList.add(
-                "hidden"
+        const loginPanel =
+            document.getElementById(
+                "login-panel"
             );
 
 
-            registerPanel?.classList.remove(
-                "hidden"
-            );
-        }
-    );
-
-
-    // ======================================================
-    // SHOW LOGIN
-    // ======================================================
-
-    showLogin?.addEventListener(
-        "click",
-        () => {
-
-            registerPanel?.classList.add(
-                "hidden"
+        const registerPanel =
+            document.getElementById(
+                "register-panel"
             );
 
 
-            loginPanel?.classList.remove(
-                "hidden"
+        const loginButton =
+            document.getElementById(
+                "login-button"
             );
-        }
-    );
 
 
-    // ======================================================
-    // CLOSE
-    // ======================================================
-
-    authClose?.addEventListener(
-        "click",
-        () => {
-
-            authModal?.classList.add(
-                "hidden"
+        const registerButton =
+            document.getElementById(
+                "register-button"
             );
-        }
-    );
 
 
-    // ======================================================
-    // ACCOUNT
-    // ======================================================
-
-    const accountButton =
-        document.querySelector(
-            '.settings-item[data-setting="account"]'
-        );
+        const googleButton =
+            document.getElementById(
+                "google-login-button"
+            );
 
 
-    accountButton?.addEventListener(
-        "click",
-        (event) => {
+        const showRegister =
+            document.getElementById(
+                "show-register"
+            );
 
-            // Giriş yapılmışsa başka bir
-            // listener'ın login ekranını açmasını engelle.
 
-            if (Auth.user) {
+        const showLogin =
+            document.getElementById(
+                "show-login"
+            );
 
-                event.preventDefault();
 
-                event.stopImmediatePropagation();
+        const authClose =
+            document.getElementById(
+                "auth-close"
+            );
+
+
+        // --------------------------------------------------
+        // LOGIN
+        // --------------------------------------------------
+
+        loginButton?.addEventListener(
+            "click",
+            async () => {
+
+                const email =
+                    document.getElementById(
+                        "login-email"
+                    )?.value.trim();
+
+
+                const password =
+                    document.getElementById(
+                        "login-password"
+                    )?.value;
+
+
+                if (
+                    !email ||
+                    !password
+                ) {
+
+                    alert(
+                        "E-posta ve şifre gerekli."
+                    );
+
+                    return;
+                }
+
+
+                loginButton.disabled = true;
+
+                loginButton.textContent =
+                    "Giriş yapılıyor...";
+
+
+                const result =
+                    await Auth.login(
+                        email,
+                        password
+                    );
+
+
+                loginButton.disabled = false;
+
+                loginButton.textContent =
+                    "Giriş Yap";
+
+
+                if (!result.success) {
+
+                    alert(
+                        "Giriş başarısız:\n" +
+                        result.error
+                    );
+
+                    return;
+                }
+
+
+                // Başarılı giriş.
+                // Modal kesin olarak kapanır.
+
+                Auth.closeAuthModal();
 
 
                 console.log(
-                    "Hesap zaten açık:",
-                    Auth.user.email
+                    "Lotus'a giriş yapıldı."
+                );
+            }
+        );
+
+
+        // --------------------------------------------------
+        // REGISTER
+        // --------------------------------------------------
+
+        registerButton?.addEventListener(
+            "click",
+            async () => {
+
+                const email =
+                    document.getElementById(
+                        "register-email"
+                    )?.value.trim();
+
+
+                const password =
+                    document.getElementById(
+                        "register-password"
+                    )?.value;
+
+
+                if (
+                    !email ||
+                    !password
+                ) {
+
+                    alert(
+                        "E-posta ve şifre gerekli."
+                    );
+
+                    return;
+                }
+
+
+                if (
+                    password.length < 6
+                ) {
+
+                    alert(
+                        "Şifre en az 6 karakter olmalı."
+                    );
+
+                    return;
+                }
+
+
+                registerButton.disabled = true;
+
+                registerButton.textContent =
+                    "Hesap oluşturuluyor...";
+
+
+                const result =
+                    await Auth.register(
+                        email,
+                        password
+                    );
+
+
+                registerButton.disabled = false;
+
+                registerButton.textContent =
+                    "Hesap Oluştur";
+
+
+                if (!result.success) {
+
+                    alert(
+                        "Kayıt başarısız:\n" +
+                        result.error
+                    );
+
+                    return;
+                }
+
+
+                if (!result.session) {
+
+                    alert(
+                        "Hesabın oluşturuldu! " +
+                        "E-posta adresini doğrulaman gerekebilir."
+                    );
+
+                } else {
+
+                    Auth.closeAuthModal();
+                }
+
+
+                console.log(
+                    "Lotus hesabı oluşturuldu."
+                );
+            }
+        );
+
+
+        // --------------------------------------------------
+        // GOOGLE
+        // --------------------------------------------------
+
+        googleButton?.addEventListener(
+            "click",
+            async () => {
+
+                googleButton.disabled = true;
+
+                googleButton.textContent =
+                    "Google açılıyor...";
+
+
+                const result =
+                    await Auth.loginWithGoogle();
+
+
+                if (!result.success) {
+
+                    googleButton.disabled = false;
+
+                    googleButton.textContent =
+                        "Google ile devam et";
+
+
+                    alert(
+                        "Google girişi başarısız:\n" +
+                        result.error
+                    );
+                }
+            }
+        );
+
+
+        // --------------------------------------------------
+        // SHOW REGISTER
+        // --------------------------------------------------
+
+        showRegister?.addEventListener(
+            "click",
+            () => {
+
+                loginPanel?.classList.add(
+                    "hidden"
                 );
 
 
-                return;
+                registerPanel?.classList.remove(
+                    "hidden"
+                );
             }
+        );
 
 
-            authModal?.classList.remove(
-                "hidden"
+        // --------------------------------------------------
+        // SHOW LOGIN
+        // --------------------------------------------------
+
+        showLogin?.addEventListener(
+            "click",
+            () => {
+
+                registerPanel?.classList.add(
+                    "hidden"
+                );
+
+
+                loginPanel?.classList.remove(
+                    "hidden"
+                );
+            }
+        );
+
+
+        // --------------------------------------------------
+        // CLOSE
+        // --------------------------------------------------
+
+        authClose?.addEventListener(
+            "click",
+            () => {
+
+                Auth.closeAuthModal();
+            }
+        );
+
+
+        // --------------------------------------------------
+        // ACCOUNT
+        // --------------------------------------------------
+
+        const accountButton =
+            document.querySelector(
+                '.settings-item[data-setting="account"]'
             );
-        },
-        true
-    );
 
 
-    // İlk UI güncellemesi
+        accountButton?.addEventListener(
+            "click",
+            () => {
 
-    Auth.updateAccountUI();
-}
+                // Zaten giriş yapılmışsa
+                // login ekranını açma.
+
+                if (Auth.user) {
+
+                    console.log(
+                        "Hesap zaten açık:",
+                        Auth.user.email
+                    );
+
+                    return;
+                }
+
+
+                // Giriş yapılmamışsa
+                // login ekranını aç.
+
+                Auth.openAuthModal();
+            }
+        );
+
+
+        // --------------------------------------------------
+        // INITIAL UI
+        // --------------------------------------------------
+
+        Auth.updateAccountUI();
+
+    }
+);
 
 
 // ==========================================================
 // START
 // ==========================================================
 
-if (
-    document.readyState === "loading"
-) {
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        async () => {
+        Auth.init();
 
-            initAuthUI();
-
-            await Auth.init();
-        }
-    );
-
-} else {
-
-    initAuthUI();
-
-    Auth.init();
-}
+    }
+);

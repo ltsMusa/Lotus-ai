@@ -37,7 +37,6 @@ const Auth = {
 
         if (!accountButton) return;
 
-
         const label =
             accountButton.querySelector(
                 ".settings-label"
@@ -64,50 +63,103 @@ const Auth = {
 
 
     // ------------------------------------------------------
-    // OPEN AUTH MODAL
+    // OPEN LOGIN MODAL
     // ------------------------------------------------------
 
     openAuthModal() {
 
-        const authModal =
+        const modal =
             document.getElementById(
                 "auth-modal"
             );
 
-        if (!authModal) return;
+        if (!modal) return;
 
-
-        authModal.classList.remove(
-            "hidden"
-        );
-
-        authModal.hidden = false;
-
-        authModal.style.display = "";
+        modal.classList.remove("hidden");
+        modal.hidden = false;
+        modal.style.display = "";
     },
 
 
     // ------------------------------------------------------
-    // CLOSE AUTH MODAL
+    // CLOSE LOGIN MODAL
     // ------------------------------------------------------
 
     closeAuthModal() {
 
-        const authModal =
+        const modal =
             document.getElementById(
                 "auth-modal"
             );
 
-        if (!authModal) return;
+        if (!modal) return;
+
+        modal.classList.add("hidden");
+        modal.hidden = true;
+        modal.style.display = "none";
+    },
 
 
-        authModal.classList.add(
-            "hidden"
-        );
+    // ------------------------------------------------------
+    // GET CURRENT USER
+    // ------------------------------------------------------
 
-        authModal.hidden = true;
+    async getCurrentUser() {
 
-        authModal.style.display = "none";
+        const {
+            data,
+            error
+        } = await supabase.auth.getUser();
+
+
+        if (error) {
+
+            console.error(
+                "Kullanıcı alınamadı:",
+                error
+            );
+
+            this.user = null;
+
+            this.updateAccountUI();
+
+            return null;
+        }
+
+
+        this.user =
+            data.user ?? null;
+
+        this.updateAccountUI();
+
+        return this.user;
+    },
+
+
+    // ------------------------------------------------------
+    // GET SESSION
+    // ------------------------------------------------------
+
+    async getSession() {
+
+        const {
+            data,
+            error
+        } = await supabase.auth.getSession();
+
+
+        if (error) {
+
+            console.error(
+                "Session alınamadı:",
+                error
+            );
+
+            return null;
+        }
+
+
+        return data.session;
     },
 
 
@@ -146,19 +198,12 @@ const Auth = {
         this.updateAccountUI();
 
 
-        // --------------------------------------------------
-        // EXISTING SESSION
-        // --------------------------------------------------
-
         if (this.user) {
 
             console.log(
                 "Aktif kullanıcı:",
                 this.user.email
             );
-
-            // Kullanıcı zaten giriş yapmışsa
-            // login ekranını kapat.
 
             this.closeAuthModal();
 
@@ -171,7 +216,7 @@ const Auth = {
 
 
         // --------------------------------------------------
-        // AUTH STATE CHANGES
+        // AUTH STATE
         // --------------------------------------------------
 
         supabase.auth.onAuthStateChange(
@@ -190,33 +235,21 @@ const Auth = {
                 this.updateAccountUI();
 
 
-                // Kullanıcı giriş yaptıysa
-                // login ekranını kapat.
-
                 if (
                     event === "SIGNED_IN" &&
                     this.user
                 ) {
 
-                    console.log(
-                        "Giriş başarılı:",
-                        this.user.email
-                    );
-
                     this.closeAuthModal();
+
                 }
 
-
-                // Kullanıcı çıkış yaptıysa
-                // hesap arayüzünü güncelle.
 
                 if (
                     event === "SIGNED_OUT"
                 ) {
 
-                    console.log(
-                        "Oturum kapatıldı."
-                    );
+                    this.closeAuthModal();
 
                     this.updateAccountUI();
                 }
@@ -258,7 +291,7 @@ const Auth = {
 
 
         this.user =
-            data.user;
+            data.user ?? null;
 
 
         this.updateAccountUI();
@@ -309,10 +342,6 @@ const Auth = {
 
 
         this.updateAccountUI();
-
-
-        // Login başarılı.
-        // Modalı burada da kapatıyoruz.
 
         this.closeAuthModal();
 
@@ -394,106 +423,12 @@ const Auth = {
 
         this.user = null;
 
-
         this.updateAccountUI();
 
 
         return {
             success: true
         };
-    },
-
-
-    // ------------------------------------------------------
-    // GET USER
-    // ------------------------------------------------------
-
-    async getUser() {
-
-        const {
-            data,
-            error
-        } = await supabase.auth.getUser();
-
-
-        if (error) {
-
-            console.error(
-                "Kullanıcı alınamadı:",
-                error
-            );
-
-            return null;
-        }
-
-
-        this.user =
-            data.user;
-
-
-        this.updateAccountUI();
-
-
-        return data.user;
-    },
-    
-// ------------------------------------------------------
-// GET CURRENT USER
-// ------------------------------------------------------
-
-async getCurrentUser() {
-
-    const {
-        data,
-        error
-    } = await supabase.auth.getUser();
-
-
-    if (error) {
-
-        console.error(
-            "Güncel kullanıcı alınamadı:",
-            error
-        );
-
-        return null;
-    }
-
-
-    this.user =
-        data.user ?? null;
-
-
-    this.updateAccountUI();
-
-
-    return this.user;
-},
-
-    // ------------------------------------------------------
-    // GET SESSION
-    // ------------------------------------------------------
-
-    async getSession() {
-
-        const {
-            data,
-            error
-        } = await supabase.auth.getSession();
-
-
-        if (error) {
-
-            console.error(
-                "Session alınamadı:",
-                error
-            );
-
-            return null;
-        }
-
-
-        return data.session;
     }
 
 };
@@ -509,56 +444,43 @@ document.addEventListener(
 
 
         // --------------------------------------------------
-        // ELEMENTS
+        // AUTH ELEMENTS
         // --------------------------------------------------
-
-        const authModal =
-            document.getElementById(
-                "auth-modal"
-            );
-
 
         const loginPanel =
             document.getElementById(
                 "login-panel"
             );
 
-
         const registerPanel =
             document.getElementById(
                 "register-panel"
             );
-
 
         const loginButton =
             document.getElementById(
                 "login-button"
             );
 
-
         const registerButton =
             document.getElementById(
                 "register-button"
             );
-
 
         const googleButton =
             document.getElementById(
                 "google-login-button"
             );
 
-
         const showRegister =
             document.getElementById(
                 "show-register"
             );
 
-
         const showLogin =
             document.getElementById(
                 "show-login"
             );
-
 
         const authClose =
             document.getElementById(
@@ -579,17 +501,13 @@ document.addEventListener(
                         "login-email"
                     )?.value.trim();
 
-
                 const password =
                     document.getElementById(
                         "login-password"
                     )?.value;
 
 
-                if (
-                    !email ||
-                    !password
-                ) {
+                if (!email || !password) {
 
                     alert(
                         "E-posta ve şifre gerekli."
@@ -629,12 +547,6 @@ document.addEventListener(
                 }
 
 
-                // Başarılı giriş.
-                // Modal kesin olarak kapanır.
-
-                Auth.closeAuthModal();
-
-
                 console.log(
                     "Lotus'a giriş yapıldı."
                 );
@@ -655,17 +567,13 @@ document.addEventListener(
                         "register-email"
                     )?.value.trim();
 
-
                 const password =
                     document.getElementById(
                         "register-password"
                     )?.value;
 
 
-                if (
-                    !email ||
-                    !password
-                ) {
+                if (!email || !password) {
 
                     alert(
                         "E-posta ve şifre gerekli."
@@ -675,9 +583,7 @@ document.addEventListener(
                 }
 
 
-                if (
-                    password.length < 6
-                ) {
+                if (password.length < 6) {
 
                     alert(
                         "Şifre en az 6 karakter olmalı."
@@ -728,11 +634,6 @@ document.addEventListener(
 
                     Auth.closeAuthModal();
                 }
-
-
-                console.log(
-                    "Lotus hesabı oluşturuldu."
-                );
             }
         );
 
@@ -784,7 +685,6 @@ document.addEventListener(
                     "hidden"
                 );
 
-
                 registerPanel?.classList.remove(
                     "hidden"
                 );
@@ -804,7 +704,6 @@ document.addEventListener(
                     "hidden"
                 );
 
-
                 loginPanel?.classList.remove(
                     "hidden"
                 );
@@ -813,7 +712,7 @@ document.addEventListener(
 
 
         // --------------------------------------------------
-        // CLOSE
+        // CLOSE LOGIN
         // --------------------------------------------------
 
         authClose?.addEventListener(
@@ -824,163 +723,147 @@ document.addEventListener(
             }
         );
 
-// --------------------------------------------------
-// ACCOUNT
-// --------------------------------------------------
 
-const accountButton =
-    document.querySelector(
-        '.settings-item[data-setting="account"]'
-    );
+        // ==================================================
+        // ACCOUNT
+        // ==================================================
 
-const accountModal =
-    document.getElementById(
-        "account-modal"
-    );
-
-const accountClose =
-    document.getElementById(
-        "account-close"
-    );
-
-const accountLogout =
-    document.getElementById(
-        "account-logout"
-    );
-
-const accountEmail =
-    document.getElementById(
-        "account-email"
-    );
-
-const accountEmailDetail =
-    document.getElementById(
-        "account-email-detail"
-    );
-
-
-// --------------------------------------------------
-// HESAP BUTONU
-// --------------------------------------------------
-
-accountButton?.addEventListener(
-    "click",
-    async (event) => {
-
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-
-
-        // Supabase'den güncel kullanıcıyı al
-
-        const user =
-            await Auth.getCurrentUser();
-
-
-        // Giriş yapılmamışsa
-        // giriş ekranını aç
-
-        if (!user) {
-
-            Auth.openAuthModal();
-
-            return;
-        }
-
-
-        // Kullanıcı giriş yapmışsa
-        // Account Modal'ı hazırla
-
-        if (accountEmail) {
-
-            accountEmail.textContent =
-                user.email;
-        }
-
-
-        if (accountEmailDetail) {
-
-            accountEmailDetail.textContent =
-                user.email;
-        }
-
-
-        // TEST
-
-        alert("ACCOUNT MODAL AÇILIYOR");
-
-
-        // Account Modal'ı aç
-
-        accountModal?.classList.remove(
-            "hidden"
-        );
-    },
-    true
-);
-
-
-// --------------------------------------------------
-// HESAP MENÜSÜNÜ KAPAT
-// --------------------------------------------------
-
-accountClose?.addEventListener(
-    "click",
-    () => {
-
-        accountModal?.classList.add(
-            "hidden"
-        );
-    }
-);
-
-
-// --------------------------------------------------
-// ÇIKIŞ YAP
-// --------------------------------------------------
-
-accountLogout?.addEventListener(
-    "click",
-    async () => {
-
-        accountLogout.disabled = true;
-
-        accountLogout.textContent =
-            "Çıkış yapılıyor...";
-
-
-        const result =
-            await Auth.logout();
-
-
-        accountLogout.disabled = false;
-
-        accountLogout.textContent =
-            "🚪 Çıkış Yap";
-
-
-        if (!result.success) {
-
-            alert(
-                "Çıkış yapılamadı:\n" +
-                result.error
+        const accountButton =
+            document.querySelector(
+                '.settings-item[data-setting="account"]'
             );
 
-            return;
-        }
+        const accountModal =
+            document.getElementById(
+                "account-modal"
+            );
+
+        const accountClose =
+            document.getElementById(
+                "account-close"
+            );
+
+        const accountLogout =
+            document.getElementById(
+                "account-logout"
+            );
+
+        const accountEmail =
+            document.getElementById(
+                "account-email"
+            );
+
+        const accountEmailDetail =
+            document.getElementById(
+                "account-email-detail"
+            );
 
 
-        accountModal?.classList.add(
-            "hidden"
+        // --------------------------------------------------
+        // ACCOUNT BUTTON
+        // --------------------------------------------------
+
+        accountButton?.addEventListener(
+            "click",
+            async (event) => {
+
+                event.preventDefault();
+                event.stopPropagation();
+
+
+                const user =
+                    await Auth.getCurrentUser();
+
+
+                // Giriş yapılmamış
+
+                if (!user) {
+
+                    Auth.openAuthModal();
+
+                    return;
+                }
+
+
+                // Giriş yapılmış
+
+                if (accountEmail) {
+
+                    accountEmail.textContent =
+                        user.email;
+                }
+
+
+                if (accountEmailDetail) {
+
+                    accountEmailDetail.textContent =
+                        user.email;
+                }
+
+
+                accountModal?.classList.remove(
+                    "hidden"
+                );
+            }
         );
 
 
-        console.log(
-            "Lotus hesabından çıkış yapıldı."
+        // --------------------------------------------------
+        // ACCOUNT CLOSE
+        // --------------------------------------------------
+
+        accountClose?.addEventListener(
+            "click",
+            () => {
+
+                accountModal?.classList.add(
+                    "hidden"
+                );
+            }
         );
-    }
-);
+
+
+        // --------------------------------------------------
+        // LOGOUT
+        // --------------------------------------------------
+
+        accountLogout?.addEventListener(
+            "click",
+            async () => {
+
+                accountLogout.disabled = true;
+
+                accountLogout.textContent =
+                    "Çıkış yapılıyor...";
+
+
+                const result =
+                    await Auth.logout();
+
+
+                accountLogout.disabled = false;
+
+                accountLogout.textContent =
+                    "🚪 Çıkış Yap";
+
+
+                if (!result.success) {
+
+                    alert(
+                        "Çıkış yapılamadı:\n" +
+                        result.error
+                    );
+
+                    return;
+                }
+
+
+                accountModal?.classList.add(
+                    "hidden"
+                );
+            }
+        );
+
 
         // --------------------------------------------------
         // INITIAL UI
@@ -993,7 +876,7 @@ accountLogout?.addEventListener(
 
 
 // ==========================================================
-// START
+// START AUTH
 // ==========================================================
 
 document.addEventListener(

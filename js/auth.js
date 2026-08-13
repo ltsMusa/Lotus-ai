@@ -651,13 +651,10 @@ document.addEventListener(
                 );
             }
         );
-
-    }
-);
-
-// ==========================================================
-// ACCOUNT SETTINGS
-// ==========================================================
+        
+// --------------------------------------------------
+// ACCOUNT
+// --------------------------------------------------
 
 const accountButton =
     document.querySelector(
@@ -671,22 +668,19 @@ accountButton?.addEventListener(
         if (Auth.user) {
 
             console.log(
-                "Zaten giriş yapılmış:",
+                "Hesap zaten açık:",
                 Auth.user.email
             );
 
             return;
         }
 
-
-        const authModal =
-            document.getElementById(
-                "auth-modal"
-            );
-
         authModal?.classList.remove(
             "hidden"
         );
+    }
+);
+
     }
 );
 

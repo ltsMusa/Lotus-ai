@@ -31,6 +31,7 @@ function openSettings() {
     if (!settingsModal) return;
 
     settingsModal.classList.remove("hidden");
+    settingsModal.classList.remove("closing");
 }
 
 
@@ -63,200 +64,60 @@ settingsButtons.forEach(button => {
 
     button.addEventListener(
         "click",
-        openSettings
+        event => {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            openSettings();
+
+        }
     );
 
 });
 
 
 // ==========================================================
-// SETTINGS CLOSE BUTTONS
+// SETTINGS MODAL CLOSE BUTTONS
 // ==========================================================
 
 document
-    .querySelectorAll(".close-modal")
+    .querySelectorAll("#settings-modal .close-modal")
     .forEach(button => {
 
         button.addEventListener(
             "click",
-            closeSettings
+            event => {
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                closeSettings();
+
+            }
         );
 
     });
 
 
 // ==========================================================
-// BACKDROP CLOSE
+// IMPORTANT
 // ==========================================================
-
-if (settingsModal) {
-
-    settingsModal.addEventListener(
-        "click",
-        event => {
-
-            if (
-                event.target === settingsModal
-            ) {
-
-                closeSettings();
-
-            }
-
-        }
-    );
-
-}
-
-
-// ==========================================================
-// ESCAPE KEY
-// ==========================================================
-
-document.addEventListener(
-    "keydown",
-    event => {
-
-        if (event.key !== "Escape") return;
-
-
-        // Settings açıksa kapat
-
-        if (
-            settingsModal &&
-            !settingsModal.classList.contains("hidden")
-        ) {
-
-            closeSettings();
-
-        }
-
-
-        // Account modal açıksa kapat
-
-        const accountModal =
-            document.getElementById(
-                "account-modal"
-            );
-
-        if (
-            accountModal &&
-            !accountModal.classList.contains("hidden")
-        ) {
-
-            accountModal.classList.add(
-                "hidden"
-            );
-
-        }
-
-
-        // Auth modal açıksa kapat
-
-        const authModal =
-            document.getElementById(
-                "auth-modal"
-            );
-
-        if (
-            authModal &&
-            !authModal.classList.contains("hidden")
-        ) {
-
-            authModal.classList.add(
-                "hidden"
-            );
-
-        }
-
-    }
-);
-
-
-// ==========================================================
-// ACCOUNT
 //
-// ÖNEMLİ:
-// Account butonunun click olayını burada TANIMLAMIYORUZ.
+// ACCOUNT BUTONU BURADA YOK.
 //
-// auth.js bu işi yönetiyor.
+// Account işlemlerinin tamamı auth.js tarafından yönetiliyor.
 //
-// Böylece:
-// Hesap → giriş yoksa Auth Modal
-// Hesap → giriş varsa Account Modal
+// ui.js:
+// ❌ auth-modal açmaz
+// ❌ account-modal açmaz
+// ❌ login ekranı açmaz
+// ❌ logout yapmaz
 //
-// ui.js artık auth.js ile çakışmayacak.
+// auth.js:
+// ✅ Hesap butonunu yönetir
+// ✅ Giriş yapılmamışsa auth-modal açar
+// ✅ Giriş yapılmışsa account-modal açar
+// ✅ Logout işlemini yönetir
+//
 // ==========================================================
-
-
-// ==========================================================
-// ACCOUNT MODAL BACKDROP
-// ==========================================================
-
-const accountModal =
-    document.getElementById(
-        "account-modal"
-    );
-
-
-if (accountModal) {
-
-    accountModal.addEventListener(
-        "click",
-        event => {
-
-            if (
-                event.target === accountModal
-            ) {
-
-                accountModal.classList.add(
-                    "hidden"
-                );
-
-            }
-
-        }
-    );
-
-}
-
-
-// ==========================================================
-// AUTH MODAL BACKDROP
-// ==========================================================
-
-const authModal =
-    document.getElementById(
-        "auth-modal"
-    );
-
-
-if (authModal) {
-
-    authModal.addEventListener(
-        "click",
-        event => {
-
-            if (
-                event.target === authModal
-            ) {
-
-                authModal.classList.add(
-                    "hidden"
-                );
-
-            }
-
-        }
-    );
-
-}
-
-
-// ==========================================================
-// END
-// ==========================================================
-
-console.log(
-    "Lotus UI başlatıldı."
-);

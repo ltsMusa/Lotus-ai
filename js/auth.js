@@ -29,7 +29,6 @@ const Auth = {
     // ------------------------------------------------------
 
     updateAccountUI() {
-updateAccountUI() {
 
     const accountButton =
         document.querySelector(
@@ -45,18 +44,11 @@ updateAccountUI() {
 
     if (!label) return;
 
-
-    const email =
-        this.user?.email ?? null;
-
-
-    // SETTINGS → ACCOUNT BUTTON
-
-    if (email) {
+    if (this.user) {
 
         label.innerHTML = `
             <strong>Hesabım</strong>
-            <small>${email}</small>
+            <small>${this.user.email}</small>
         `;
 
     } else {
@@ -66,35 +58,7 @@ updateAccountUI() {
             <small>Giriş yap ve hesabını yönet</small>
         `;
     }
-
-
-    // ACCOUNT MODAL
-
-    const accountEmail =
-        document.getElementById(
-            "account-email"
-        );
-
-    const accountEmailDetail =
-        document.getElementById(
-            "account-email-detail"
-        );
-
-
-    if (accountEmail) {
-
-        accountEmail.textContent =
-            email ?? "Kullanıcı";
-    }
-
-
-    if (accountEmailDetail) {
-
-        accountEmailDetail.textContent =
-            email ?? "-";
-    }
 },
-
     // ------------------------------------------------------
     // OPEN AUTH MODAL
     // ------------------------------------------------------

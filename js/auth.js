@@ -41,47 +41,6 @@ const Auth = {
 
 
     // ------------------------------------------------------
-    // UPDATE ACCOUNT UI
-    // ------------------------------------------------------
-
-    updateAccountUI() {
-
-        const accountButton =
-            document.querySelector(
-                '.settings-item[data-setting="account"]'
-            );
-
-        if (!accountButton) return;
-
-
-        const label =
-            accountButton.querySelector(
-                ".settings-label"
-            );
-
-        if (!label) return;
-
-
-        if (this.user) {
-
-            label.innerHTML = `
-                <strong>Hesabım</strong>
-                <small>${this.escapeHtml(
-                    this.user.email ?? ""
-                )}</small>
-            `;
-
-        } else {
-
-            label.innerHTML = `
-                <strong>Hesap</strong>
-                <small>Giriş yap ve hesabını yönet</small>
-            `;
-        }
-    },
-
-
-    // ------------------------------------------------------
     // ESCAPE USER TEXT
     // ------------------------------------------------------
 
@@ -107,13 +66,117 @@ const Auth = {
             user ?? null;
 
         this.updateAccountUI();
-
         this.updateAccountModalUI();
+        this.updateGoogleAccountModalUI();
     },
 
 
     // ------------------------------------------------------
-    // UPDATE ACCOUNT MODAL UI
+    // CHECK GOOGLE USER
+    // ------------------------------------------------------
+
+    isGoogleUser(user = this.user) {
+
+        if (!user) {
+            return false;
+        }
+
+
+        // Supabase OAuth provider
+
+        if (
+            user.app_metadata?.provider === "google"
+        ) {
+
+            return true;
+        }
+
+
+        // Ek güvenlik kontrolü:
+        // identities içinde Google var mı?
+
+        if (
+            Array.isArray(user.identities) &&
+            user.identities.some(
+                identity =>
+                    identity.provider === "google"
+            )
+        ) {
+
+            return true;
+        }
+
+
+        return false;
+    },
+
+
+    // ------------------------------------------------------
+    // UPDATE ACCOUNT UI
+    // ------------------------------------------------------
+
+    updateAccountUI() {
+
+        const accountButton =
+            document.querySelector(
+                '.settings-item[data-setting="account"]'
+            );
+
+        if (!accountButton) {
+            return;
+        }
+
+
+        const label =
+            accountButton.querySelector(
+                ".settings-label"
+            );
+
+        if (!label) {
+            return;
+        }
+
+
+        if (this.user) {
+
+            const email =
+                this.escapeHtml(
+                    this.user.email ?? ""
+                );
+
+
+            if (this.isGoogleUser()) {
+
+                label.innerHTML = `
+                    <strong>Google Hesabım</strong>
+                    <small>${email}</small>
+                `;
+
+            } else {
+
+                label.innerHTML = `
+                    <strong>Hesabım</strong>
+                    <small>${email}</small>
+                `;
+            }
+
+        } else {
+
+            label.innerHTML = `
+                <strong>Hesap</strong>
+                <small>Giriş yap ve hesabını yönet</small>
+            `;
+        }
+    },
+
+
+    // ======================================================
+    // NORMAL ACCOUNT MODAL
+    // ======================================================
+
+
+    // ------------------------------------------------------
+    // UPDATE NORMAL ACCOUNT MODAL
     // ------------------------------------------------------
 
     updateAccountModalUI() {
@@ -150,54 +213,7 @@ const Auth = {
 
 
     // ------------------------------------------------------
-    // OPEN AUTH MODAL
-    // ------------------------------------------------------
-
-    openAuthModal() {
-
-        const modal =
-            document.getElementById(
-                "auth-modal"
-            );
-
-        if (!modal) return;
-
-
-        this.closeAccountModal();
-
-
-        modal.classList.remove("hidden");
-
-        modal.hidden = false;
-
-        modal.style.display = "";
-    },
-
-
-    // ------------------------------------------------------
-    // CLOSE AUTH MODAL
-    // ------------------------------------------------------
-
-    closeAuthModal() {
-
-        const modal =
-            document.getElementById(
-                "auth-modal"
-            );
-
-        if (!modal) return;
-
-
-        modal.classList.add("hidden");
-
-        modal.hidden = true;
-
-        modal.style.display = "none";
-    },
-
-
-    // ------------------------------------------------------
-    // OPEN ACCOUNT MODAL
+    // OPEN NORMAL ACCOUNT MODAL
     // ------------------------------------------------------
 
     openAccountModal() {
@@ -219,7 +235,9 @@ const Auth = {
 
         this.updateAccountModalUI();
 
+
         this.closeAuthModal();
+        this.closeGoogleAccountModal();
 
 
         modal.classList.remove("hidden");
@@ -229,88 +247,9 @@ const Auth = {
         modal.style.display = "flex";
     },
 
-    // ------------------------------------------------------
-// OPEN GOOGLE ACCOUNT MODAL
-// ------------------------------------------------------
-
-openGoogleAccountModal() {
-
-    const modal =
-        document.getElementById(
-            "google-account-modal"
-        );
-
-    if (!modal) return;
-
-    const email =
-        this.user?.email ?? "Kullanıcı";
-
-
-    const accountEmail =
-        document.getElementById(
-            "google-account-email"
-        );
-
-    const accountEmailDetail =
-        document.getElementById(
-            "google-account-email-detail"
-        );
-
-
-    if (accountEmail) {
-
-        accountEmail.textContent =
-            email;
-    }
-
-
-    if (accountEmailDetail) {
-
-        accountEmailDetail.textContent =
-            email;
-    }
-
-
-    // Diğer hesap modalını kapat.
-
-    this.closeAccountModal();
-
-
-    // Login modalını da kapat.
-
-    this.closeAuthModal();
-
-
-    modal.classList.remove("hidden");
-
-    modal.hidden = false;
-
-    modal.style.display = "flex";
-
-
-    console.log(
-        "🔍 Google Account Modal açıldı:",
-        email
-    );
-
-    console.log(
-        "🔍 Google Account User:",
-        this.user
-    );
-
-    console.log(
-        "🔍 Provider:",
-        this.user?.app_metadata?.provider
-    );
-
-    console.log(
-        "🔍 Identities:",
-        this.user?.identities
-    );
-},
 
     // ------------------------------------------------------
-    // CLOSE ACCOUNT MODAL
+    // CLOSE NORMAL ACCOUNT MODAL
     // ------------------------------------------------------
 
     closeAccountModal() {
@@ -320,7 +259,9 @@ openGoogleAccountModal() {
                 "account-modal"
             );
 
-        if (!modal) return;
+        if (!modal) {
+            return;
+        }
 
 
         modal.classList.add("hidden");
@@ -330,26 +271,195 @@ openGoogleAccountModal() {
         modal.style.display = "none";
     },
 
-// ------------------------------------------------------
-// CLOSE GOOGLE ACCOUNT MODAL
-// ------------------------------------------------------
 
-closeGoogleAccountModal() {
+    // ======================================================
+    // GOOGLE ACCOUNT MODAL
+    // ======================================================
 
-    const modal =
-        document.getElementById(
-            "google-account-modal"
+
+    // ------------------------------------------------------
+    // UPDATE GOOGLE ACCOUNT MODAL
+    // ------------------------------------------------------
+
+    updateGoogleAccountModalUI() {
+
+        const email =
+            this.user?.email ?? "Kullanıcı";
+
+
+        const accountEmail =
+            document.getElementById(
+                "google-account-email"
+            );
+
+
+        const accountEmailDetail =
+            document.getElementById(
+                "google-account-email-detail"
+            );
+
+
+        if (accountEmail) {
+
+            accountEmail.textContent =
+                email;
+        }
+
+
+        if (accountEmailDetail) {
+
+            accountEmailDetail.textContent =
+                email;
+        }
+    },
+
+
+    // ------------------------------------------------------
+    // OPEN GOOGLE ACCOUNT MODAL
+    // ------------------------------------------------------
+
+    openGoogleAccountModal() {
+
+        const modal =
+            document.getElementById(
+                "google-account-modal"
+            );
+
+
+        if (
+            !modal ||
+            !this.user
+        ) {
+
+            console.warn(
+                "Google Account Modal açılamadı."
+            );
+
+            return;
+        }
+
+
+        this.updateGoogleAccountModalUI();
+
+
+        this.closeAuthModal();
+        this.closeAccountModal();
+
+
+        modal.classList.remove("hidden");
+
+        modal.hidden = false;
+
+        modal.style.display = "flex";
+
+
+        console.log(
+            "🔍 Google Account Modal açıldı"
         );
 
-    if (!modal) return;
+        console.log(
+            "🔍 Google User:",
+            this.user
+        );
 
-    modal.classList.add("hidden");
+        console.log(
+            "🔍 Provider:",
+            this.user?.app_metadata?.provider
+        );
 
-    modal.hidden = true;
+        console.log(
+            "🔍 Identities:",
+            this.user?.identities
+        );
+    },
 
-    modal.style.display = "none";
-},
-    
+
+    // ------------------------------------------------------
+    // CLOSE GOOGLE ACCOUNT MODAL
+    // ------------------------------------------------------
+
+    closeGoogleAccountModal() {
+
+        const modal =
+            document.getElementById(
+                "google-account-modal"
+            );
+
+        if (!modal) {
+            return;
+        }
+
+
+        modal.classList.add("hidden");
+
+        modal.hidden = true;
+
+        modal.style.display = "none";
+    },
+
+
+    // ======================================================
+    // AUTH MODAL
+    // ======================================================
+
+
+    // ------------------------------------------------------
+    // OPEN AUTH MODAL
+    // ------------------------------------------------------
+
+    openAuthModal() {
+
+        const modal =
+            document.getElementById(
+                "auth-modal"
+            );
+
+        if (!modal) {
+            return;
+        }
+
+
+        this.closeAccountModal();
+        this.closeGoogleAccountModal();
+
+
+        modal.classList.remove("hidden");
+
+        modal.hidden = false;
+
+        modal.style.display = "";
+    },
+
+
+    // ------------------------------------------------------
+    // CLOSE AUTH MODAL
+    // ------------------------------------------------------
+
+    closeAuthModal() {
+
+        const modal =
+            document.getElementById(
+                "auth-modal"
+            );
+
+        if (!modal) {
+            return;
+        }
+
+
+        modal.classList.add("hidden");
+
+        modal.hidden = true;
+
+        modal.style.display = "none";
+    },
+
+
+    // ======================================================
+    // SESSION
+    // ======================================================
+
+
     // ------------------------------------------------------
     // REFRESH SESSION
     // ------------------------------------------------------
@@ -397,7 +507,6 @@ closeGoogleAccountModal() {
     async init() {
 
         if (this.initialized) {
-
             return;
         }
 
@@ -405,13 +514,39 @@ closeGoogleAccountModal() {
         this.initialized = true;
 
 
+        console.log(
+            "🌸 Lotus Auth başlatıldı."
+        );
+
+
         await this.refreshSession();
+
+
+        if (this.user) {
+
+            console.log(
+                "🌸 Aktif kullanıcı:",
+                this.user.email
+            );
+
+
+            console.log(
+                "🌸 Provider:",
+                this.user.app_metadata?.provider
+            );
+
+        } else {
+
+            console.log(
+                "🌸 Aktif oturum yok."
+            );
+        }
     },
 
 
-    // ------------------------------------------------------
+    // ======================================================
     // REGISTER
-    // ------------------------------------------------------
+    // ======================================================
 
     async register(
         email,
@@ -437,18 +572,11 @@ closeGoogleAccountModal() {
 
 
             return {
-
                 success: false,
-
-                error:
-                    error.message
-
+                error: error.message
             };
         }
 
-
-        // Session yoksa kullanıcı henüz
-        // oturum açmış kabul edilmez.
 
         this.setUser(
             data.session?.user ?? null
@@ -469,9 +597,9 @@ closeGoogleAccountModal() {
     },
 
 
-    // ------------------------------------------------------
+    // ======================================================
     // LOGIN
-    // ------------------------------------------------------
+    // ======================================================
 
     async login(
         email,
@@ -497,12 +625,8 @@ closeGoogleAccountModal() {
 
 
             return {
-
                 success: false,
-
-                error:
-                    error.message
-
+                error: error.message
             };
         }
 
@@ -531,14 +655,19 @@ closeGoogleAccountModal() {
     },
 
 
-    // ------------------------------------------------------
+    // ======================================================
     // GOOGLE LOGIN
-    // ------------------------------------------------------
+    // ======================================================
 
     async loginWithGoogle() {
 
         const redirectTo =
             `${window.location.origin}${window.location.pathname}`;
+
+
+        console.log(
+            "🔍 Google OAuth başlatılıyor..."
+        );
 
 
         const {
@@ -552,9 +681,13 @@ closeGoogleAccountModal() {
 
                 options: {
 
-                    redirectTo
-                }
+                    redirectTo,
 
+                    queryParams: {
+                        access_type: "offline",
+                        prompt: "select_account"
+                    }
+                }
             });
 
 
@@ -567,12 +700,8 @@ closeGoogleAccountModal() {
 
 
             return {
-
                 success: false,
-
-                error:
-                    error.message
-
+                error: error.message
             };
         }
 
@@ -582,14 +711,13 @@ closeGoogleAccountModal() {
             success: true,
 
             data
-
         };
     },
 
 
-    // ------------------------------------------------------
+    // ======================================================
     // LOGOUT
-    // ------------------------------------------------------
+    // ======================================================
 
     async logout() {
 
@@ -608,32 +736,34 @@ closeGoogleAccountModal() {
 
 
             return {
-
                 success: false,
-
-                error:
-                    error.message
-
+                error: error.message
             };
         }
 
 
         this.setUser(null);
 
+
+        this.closeAuthModal();
         this.closeAccountModal();
+        this.closeGoogleAccountModal();
+
+
+        console.log(
+            "🚪 Oturum kapatıldı."
+        );
 
 
         return {
-
             success: true
-
         };
     },
 
 
-    // ------------------------------------------------------
+    // ======================================================
     // GET USER
-    // ------------------------------------------------------
+    // ======================================================
 
     async getUser() {
 
@@ -665,14 +795,13 @@ closeGoogleAccountModal() {
     },
 
 
-    // ------------------------------------------------------
+    // ======================================================
     // GET CURRENT USER
-    // ------------------------------------------------------
+    // ======================================================
 
     async getCurrentUser() {
 
         if (this.user) {
-
             return this.user;
         }
 
@@ -688,9 +817,9 @@ closeGoogleAccountModal() {
     },
 
 
-    // ------------------------------------------------------
+    // ======================================================
     // GET SESSION
-    // ------------------------------------------------------
+    // ======================================================
 
     async getSession() {
 
@@ -722,13 +851,6 @@ closeGoogleAccountModal() {
 // ==========================================================
 // AUTH STATE LISTENER
 // ==========================================================
-// ÖNEMLİ:
-// Bu listener DOMContentLoaded beklemeden kuruluyor.
-// Google OAuth redirect sonrası gelen SIGNED_IN /
-// INITIAL_SESSION olaylarını kaçırmamak için burada.
-// Supabase bunu özellikle OAuth sonrası auth olaylarını
-// takip etmek için öneriyor.
-// ==========================================================
 
 const {
     data: authStateSubscription
@@ -737,7 +859,7 @@ const {
         (event, session) => {
 
             console.log(
-                "Lotus Auth durumu:",
+                "🌸 Lotus Auth durumu:",
                 event
             );
 
@@ -748,10 +870,14 @@ const {
 
 
             if (
-                event === "SIGNED_IN"
+                event === "SIGNED_IN" ||
+                event === "INITIAL_SESSION"
             ) {
 
-                Auth.closeAuthModal();
+                if (session?.user) {
+
+                    Auth.closeAuthModal();
+                }
             }
 
 
@@ -762,8 +888,9 @@ const {
                 Auth.closeAuthModal();
 
                 Auth.closeAccountModal();
-            }
 
+                Auth.closeGoogleAccountModal();
+            }
         }
     );
 
@@ -834,6 +961,44 @@ document.addEventListener(
 
 
         // ==================================================
+        // ACCOUNT ELEMENTS
+        // ==================================================
+
+        const accountButton =
+            document.querySelector(
+                '.settings-item[data-setting="account"]'
+            );
+
+
+        const accountClose =
+            document.getElementById(
+                "account-close"
+            );
+
+
+        const accountLogout =
+            document.getElementById(
+                "account-logout"
+            );
+
+
+        // ==================================================
+        // GOOGLE ACCOUNT ELEMENTS
+        // ==================================================
+
+        const googleAccountClose =
+            document.getElementById(
+                "google-account-close"
+            );
+
+
+        const googleAccountLogout =
+            document.getElementById(
+                "google-account-logout"
+            );
+
+
+        // ==================================================
         // LOGIN
         // ==================================================
 
@@ -871,9 +1036,7 @@ document.addEventListener(
                 }
 
 
-                loginButton.disabled =
-                    true;
-
+                loginButton.disabled = true;
 
                 loginButton.textContent =
                     "Giriş yapılıyor...";
@@ -900,9 +1063,7 @@ document.addEventListener(
 
                 } finally {
 
-                    loginButton.disabled =
-                        false;
-
+                    loginButton.disabled = false;
 
                     loginButton.textContent =
                         "Giriş Yap";
@@ -1019,7 +1180,7 @@ document.addEventListener(
 
 
         // ==================================================
-        // GOOGLE
+        // GOOGLE LOGIN
         // ==================================================
 
         googleButton?.addEventListener(
@@ -1125,7 +1286,10 @@ document.addEventListener(
 
         authClose?.addEventListener(
             "click",
-            () => {
+            event => {
+
+                event.preventDefault();
+                event.stopPropagation();
 
                 Auth.closeAuthModal();
             }
@@ -1133,94 +1297,8 @@ document.addEventListener(
 
 
         // ==================================================
-        // ACCOUNT SYSTEM
-        // ==========================================================
-
-        const accountButton =
-            document.querySelector(
-                '.settings-item[data-setting="account"]'
-            );
-
-
-        const accountClose =
-    document.getElementById(
-        "account-close"
-    );
-
-const accountLogout =
-    document.getElementById(
-        "account-logout"
-    );
-
-        // --------------------------------------------------
-// GOOGLE ACCOUNT CLOSE
-// --------------------------------------------------
-
-googleAccountClose?.addEventListener(
-    "click",
-    () => {
-
-        Auth.closeGoogleAccountModal();
-    }
-);
-
-
-// --------------------------------------------------
-// GOOGLE ACCOUNT LOGOUT
-// --------------------------------------------------
-
-googleAccountLogout?.addEventListener(
-    "click",
-    async (event) => {
-
-        event.preventDefault();
-        event.stopPropagation();
-
-
-        googleAccountLogout.disabled = true;
-
-        googleAccountLogout.textContent =
-            "Çıkış yapılıyor...";
-
-
-        const result =
-            await Auth.logout();
-
-
-        googleAccountLogout.disabled = false;
-
-        googleAccountLogout.textContent =
-            "🚪 Çıkış Yap";
-
-
-        if (!result.success) {
-
-            alert(
-                "Çıkış yapılamadı:\n" +
-                result.error
-            );
-
-            return;
-        }
-
-
-        Auth.closeGoogleAccountModal();
-    }
-);
-
-const googleAccountClose =
-    document.getElementById(
-        "google-account-close"
-    );
-
-const googleAccountLogout =
-    document.getElementById(
-        "google-account-logout"
-    );
-
-        // --------------------------------------------------
         // ACCOUNT BUTTON
-        // --------------------------------------------------
+        // ==================================================
 
         accountButton?.addEventListener(
             "click",
@@ -1241,12 +1319,49 @@ const googleAccountLogout =
                 }
 
 
+                // ------------------------------------------
+                // GİRİŞ YOK
+                // ------------------------------------------
+
                 if (!user) {
+
+                    console.log(
+                        "🔐 Kullanıcı giriş yapmamış."
+                    );
+
 
                     Auth.openAuthModal();
 
                     return;
                 }
+
+
+                // ------------------------------------------
+                // GOOGLE HESABI
+                // ------------------------------------------
+
+                if (
+                    Auth.isGoogleUser(user)
+                ) {
+
+                    console.log(
+                        "🔍 Google hesabı tespit edildi."
+                    );
+
+
+                    Auth.openGoogleAccountModal();
+
+                    return;
+                }
+
+
+                // ------------------------------------------
+                // NORMAL HESAP
+                // ------------------------------------------
+
+                console.log(
+                    "👤 Normal hesap tespit edildi."
+                );
 
 
                 Auth.openAccountModal();
@@ -1255,9 +1370,9 @@ const googleAccountLogout =
         );
 
 
-        // --------------------------------------------------
-        // ACCOUNT CLOSE
-        // --------------------------------------------------
+        // ==================================================
+        // NORMAL ACCOUNT CLOSE
+        // ==================================================
 
         accountClose?.addEventListener(
             "click",
@@ -1272,9 +1387,9 @@ const googleAccountLogout =
         );
 
 
-        // --------------------------------------------------
-        // LOGOUT
-        // --------------------------------------------------
+        // ==================================================
+        // NORMAL ACCOUNT LOGOUT
+        // ==================================================
 
         accountLogout?.addEventListener(
             "click",
@@ -1322,7 +1437,78 @@ const googleAccountLogout =
 
 
         // ==================================================
-        // INITIAL UI
+        // GOOGLE ACCOUNT CLOSE
+        // ==================================================
+
+        googleAccountClose?.addEventListener(
+            "click",
+            event => {
+
+                event.preventDefault();
+                event.stopPropagation();
+
+
+                Auth.closeGoogleAccountModal();
+            }
+        );
+
+
+        // ==================================================
+        // GOOGLE ACCOUNT LOGOUT
+        // ==================================================
+
+        googleAccountLogout?.addEventListener(
+            "click",
+            async event => {
+
+                event.preventDefault();
+                event.stopPropagation();
+
+
+                googleAccountLogout.disabled =
+                    true;
+
+
+                googleAccountLogout.textContent =
+                    "Çıkış yapılıyor...";
+
+
+                try {
+
+                    const result =
+                        await Auth.logout();
+
+
+                    if (
+                        !result.success
+                    ) {
+
+                        alert(
+                            "Çıkış yapılamadı:\n" +
+                            result.error
+                        );
+
+                        return;
+                    }
+
+
+                    Auth.closeGoogleAccountModal();
+
+                } finally {
+
+                    googleAccountLogout.disabled =
+                        false;
+
+
+                    googleAccountLogout.textContent =
+                        "🚪 Çıkış Yap";
+                }
+            }
+        );
+
+
+        // ==================================================
+        // INITIAL AUTH
         // ==================================================
 
         await Auth.init();
@@ -1330,7 +1516,8 @@ const googleAccountLogout =
 
         Auth.updateAccountUI();
 
-
         Auth.updateAccountModalUI();
+
+        Auth.updateGoogleAccountModalUI();
     }
 );

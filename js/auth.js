@@ -1451,9 +1451,13 @@ document.addEventListener(
 
 
                 // ------------------------------------------
-                // GOOGLE
+                // GOOGLE-COMİNG SOON
                 // ------------------------------------------
 
+                if (googleButton) {
+                    googleButton.disabled = true;
+                   }
+                
                 if (
                     method === "google"
                 ) {

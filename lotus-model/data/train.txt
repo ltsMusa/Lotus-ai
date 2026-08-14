@@ -1,1 +1,42 @@
+Lotus bir yapay zeka projesidir.
+Lotus Türkçe konuşabilen küçük bir yapay zeka modelidir.
+Lotus kullanıcılarla doğal ve samimi bir şekilde konuşmayı öğrenir.
+Lotus'un amacı öğrenmek, cevap vermek ve kullanıcıya yardımcı olmaktır.
 
+Yapay zeka bilgisayarların insan dilini anlamasına ve üretmesine yardımcı olur.
+Bir dil modeli metinlerdeki örüntüleri öğrenerek sonraki kelimeleri tahmin eder.
+Lotus Mini küçük bir Transformer tabanlı dil modelidir.
+Transformer modeli metindeki kelimeler arasındaki ilişkileri öğrenebilir.
+
+Lotus teknolojiyi sever.
+Lotus kod yazmayı sever.
+Lotus yeni şeyler öğrenir.
+Lotus soruları cevaplamaya çalışır.
+Lotus hata yaptığında hatasını düzeltmeye çalışır.
+
+Merhaba!
+Ben Lotus.
+Ben küçük bir yapay zeka modeliyim.
+Henüz çok şey bilmiyorum ama öğreniyorum.
+Zamanla daha iyi cevaplar vermeyi öğreneceğim.
+
+Minecraft bir sandbox oyunudur.
+Minecraft'ta oyuncular bloklarla yapılar oluşturabilir.
+Oyuncular kaynak toplayabilir, araçlar üretebilir ve farklı dünyaları keşfedebilir.
+Minecraft'ta yaratıcılık ve keşif önemli bir yere sahiptir.
+
+Undertale bir rol yapma oyunudur.
+Undertale seçimlerin önemli olduğu bir oyundur.
+Oyuncunun davranışları hikayenin bazı bölümlerini değiştirebilir.
+Dostluk, merhamet ve kararlar oyunun önemli temalarıdır.
+
+Programlama problem çözmek için kullanılan güçlü bir araçtır.
+Python öğrenmesi kolay ve güçlü bir programlama dilidir.
+JavaScript web uygulamalarında sıkça kullanılır.
+HTML sayfanın yapısını oluşturur.
+CSS sayfanın görünümünü düzenler.
+
+Lotus AI zamanla daha gelişmiş bir sistem olacaktır.
+Lotus Mini bu sistemin ilk küçük yapay zeka modelidir.
+İlk hedef mükemmel olmak değil, gerçekten öğrenebilen bir model oluşturmaktır.
+Her deney Lotus Mini'nin gelişmesine yardımcı olur.

@@ -1473,3 +1473,264 @@
     }
 
 }
+
+/* ==========================================================
+   GOOGLE ACCOUNT MODAL
+   ========================================================== */
+
+#google-account-modal {
+    position: fixed;
+    inset: 0;
+
+    z-index: 2200;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(0, 0, 0, 0.68);
+
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+#google-account-modal.hidden {
+    display: none !important;
+}
+
+
+/* WINDOW */
+
+.google-account-modal-content {
+    position: relative;
+
+    width: 100%;
+    max-width: 430px;
+
+    padding: 28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(27, 24, 35, 0.98),
+            rgba(10, 10, 15, 0.99)
+        );
+
+    border:
+        1px solid rgba(168, 85, 247, 0.18);
+
+    border-radius: 26px;
+
+    box-shadow:
+        0 30px 90px rgba(0, 0, 0, 0.65),
+        0 0 45px rgba(168, 85, 247, 0.12);
+
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+
+    overflow: hidden;
+}
+
+
+/* CLOSE */
+
+#google-account-close {
+    position: absolute;
+
+    top: 18px;
+    right: 18px;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+
+    border-radius: 12px;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    color:
+        rgba(245, 245, 247, 0.70);
+
+    font-size: 21px;
+
+    cursor: pointer;
+}
+
+
+/* HEADER */
+
+.google-account-header {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    padding:
+        2px
+        45px
+        22px
+        2px;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.06);
+}
+
+
+/* ICON */
+
+.google-account-icon {
+    width: 56px;
+    height: 56px;
+
+    flex: 0 0 56px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+        1px solid rgba(168, 85, 247, 0.25);
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(168, 85, 247, 0.14),
+            rgba(244, 114, 182, 0.08)
+        );
+
+    font-size: 25px;
+
+    box-shadow:
+        0 0 22px rgba(168, 85, 247, 0.10);
+}
+
+
+/* TITLE */
+
+.google-account-title {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.google-account-title h2 {
+    margin: 0;
+
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 30px;
+
+    font-weight: 400;
+
+    color:
+        #F5F5F7;
+}
+
+.google-account-title p {
+    margin: 0;
+
+    max-width: 220px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    color:
+        rgba(245, 245, 247, 0.42);
+
+    font-size: 11px;
+}
+
+
+/* INFO */
+
+.google-account-info {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+
+    margin-top: 20px;
+}
+
+.google-account-info-item {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+
+    padding: 13px 14px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.055);
+
+    border-radius: 15px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.google-account-info-item span {
+    color:
+        rgba(245, 245, 247, 0.40);
+
+    font-size: 10px;
+}
+
+.google-account-info-item strong {
+    color:
+        rgba(245, 245, 247, 0.88);
+
+    font-size: 12px;
+
+    font-weight: 500;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 500px) {
+
+    #google-account-modal {
+        align-items: flex-end;
+
+        padding: 0;
+    }
+
+    .google-account-modal-content {
+        max-width: none;
+
+        border-radius:
+            26px
+            26px
+            0
+            0;
+
+        padding:
+            26px
+            20px
+            calc(26px + env(safe-area-inset-bottom));
+    }
+
+}

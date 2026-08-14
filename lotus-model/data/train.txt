@@ -1,42 +1,854 @@
-Lotus bir yapay zeka projesidir.
-Lotus Türkçe konuşabilen küçük bir yapay zeka modelidir.
-Lotus kullanıcılarla doğal ve samimi bir şekilde konuşmayı öğrenir.
-Lotus'un amacı öğrenmek, cevap vermek ve kullanıcıya yardımcı olmaktır.
+🌸 LOTUS MINI — TEMEL EĞİTİM KİTABI v0.2
 
-Yapay zeka bilgisayarların insan dilini anlamasına ve üretmesine yardımcı olur.
-Bir dil modeli metinlerdeki örüntüleri öğrenerek sonraki kelimeleri tahmin eder.
+Giriş
+
+Lotus Mini, küçük bir Transformer tabanlı dil modelidir. Bu kitabın amacı Lotus Mini'ye temel kavramları, günlük dili, bilimsel düşünmeyi, teknoloji ve programlama bilgilerini ve doğru cevap verme alışkanlıklarını öğretmektir.
+
+Lotus Mini'nin amacı her şeyi bilmek değildir. İlk hedef, verilen metinlerden dil örüntülerini öğrenmek, kavramlar arasında doğru ilişkiler kurmaya çalışmak ve bilmediği konularda gereksiz şekilde bilgi uydurmamaktır.
+
+Bir modelin bir bilgiyi görmesi ile o bilgiyi gerçekten doğru şekilde kullanması aynı şey değildir. Bu nedenle kitap boyunca aynı kavramlar farklı cümlelerde, sorularda, cevaplarda ve karşılaştırmalarda kullanılacaktır.
+
+---
+
+1. DİL VE İLETİŞİM
+
+Dil, insanların bilgi, düşünce ve duygularını paylaşmasını sağlayan bir iletişim sistemidir.
+
+Bir cümle genellikle bir düşünceyi, bilgiyi, soruyu veya isteği ifade eder.
+
+Örnek:
+
+"Bugün hava güzel."
+
+Bu bir bilgi bildiren cümledir.
+
+"Bugün hava nasıl?"
+
+Bu bir sorudur.
+
+"Kapıyı aç."
+
+Bu bir istektir veya emirdir.
+
+"Merhaba!"
+
+Bu bir selamlaşmadır.
+
+Selamlaşma
+
+İnsanlar konuşmaya başlarken farklı selamlaşma ifadeleri kullanabilir.
+
+Örnekler:
+
+"Merhaba."
+"Selam."
+"Günaydın."
+"İyi akşamlar."
+
+Bir kişi "Merhaba" dediğinde uygun bir cevap "Merhaba!" olabilir.
+
+Teşekkür Etmek
+
+Bir kişi yardım aldığında teşekkür edebilir.
+
+Örnek:
+
+Soru: Teşekkür ederim.
+Cevap: Rica ederim.
+
+Soru: Yardımın için teşekkürler.
+Cevap: Ne demek.
+
+Özür Dilemek
+
+Bir kişi hata yaptığında özür dileyebilir.
+
+Örnek:
+
+"Özür dilerim, hata yaptım."
+
+Uygun bir cevap:
+
+"Sorun değil."
+
+Bilmediğini Söylemek
+
+Bir yapay zekâ veya insan her şeyi bilmeyebilir.
+
+Bir bilgi bilinmiyorsa bunu açıkça belirtmek, yanlış bir bilgi uydurmaktan daha doğrudur.
+
+Örnek:
+
+Soru: Bu olayın sonucu nedir?
+Cevap: Bu konuda yeterli bilgiye sahip değilim.
+
+Bu davranış özellikle bir yapay zekâ için önemlidir.
+
+---
+
+2. TEMEL DÜNYA BİLGİSİ
+
+İnsanlar
+
+İnsanlar düşünebilen, iletişim kurabilen ve çevreleriyle etkileşime girebilen canlılardır.
+
+İnsanların farklı düşünceleri, ilgi alanları, becerileri ve deneyimleri olabilir.
+
+İnsanların birbirinden farklı olması normaldir.
+
+Hayvanlar
+
+Hayvanlar canlı organizmalardır.
+
+Kedi, köpek, kuş, balık ve fil farklı hayvanlardır.
+
+Hayvanlar farklı özelliklere sahiptir.
+
+Örneğin kuşların çoğu uçabilir, balıklar suda yaşar ve kediler memelidir.
+
+Her hayvan aynı özelliklere sahip değildir.
+
+Bitkiler
+
+Bitkiler canlı organizmalardır.
+
+Bitkiler büyüyebilir, çoğalabilir ve çevreleriyle etkileşim kurabilir.
+
+Ağaçlar, çiçekler, çimenler ve sebzeler bitkilere örnektir.
+
+Dünya
+
+Dünya bir gezegendir.
+
+Dünya, Güneş Sistemi'nin bir parçasıdır.
+
+Dünya'nın yüzeyinde kara ve su bulunur.
+
+İnsanlar Dünya üzerinde yaşar.
+
+Güneş
+
+Güneş bir yıldızdır.
+
+Güneş, Dünya'ya ışık ve ısı sağlar.
+
+Güneş bir gezegen değildir.
+
+Ay
+
+Ay, Dünya'nın doğal uydusudur.
+
+Ay kendi ışığını üretmez. Güneş'ten gelen ışığı yansıtır.
+
+Ay bir yıldız değildir.
+
+Zaman
+
+Zaman olayların sırasını ve süresini ifade etmek için kullanılır.
+
+Saniye, dakika, saat, gün, hafta, ay ve yıl zaman birimleriyle ilişkilidir.
+
+60 saniye 1 dakikadır.
+
+60 dakika 1 saattir.
+
+24 saat yaklaşık 1 gündür.
+
+Sayılar
+
+Sayılar miktarları ifade etmek için kullanılabilir.
+
+Örneğin:
+
+2 elma, 5 kitap ve 10 oyuncak farklı miktarları ifade eder.
+
+Temel matematik işlemleri toplama, çıkarma, çarpma ve bölmedir.
+
+---
+
+3. BİLİM VE DOĞA
+
+Bilim
+
+Bilim, doğayı ve evreni sistematik olarak anlamaya çalışan bir bilgi üretme yöntemidir.
+
+Bilimsel düşünmede gözlem, soru sorma, deney, ölçüm ve kanıt önemlidir.
+
+Bir iddianın doğru olduğunu söylemek için mümkün olduğunda kanıt gerekir.
+
+Madde
+
+Madde, fiziksel özelliklere sahip olan şeyleri ifade eder.
+
+Maddenin yaygın hâlleri katı, sıvı ve gazdır.
+
+Katıların belirli bir şekli ve hacmi vardır.
+
+Sıvıların belirli bir hacmi vardır ancak bulundukları kabın şeklini alırlar.
+
+Gazlar bulundukları ortamı doldurabilir.
+
+Örneğin buz katıdır, su sıvıdır ve su buharı gazdır.
+
+Enerji
+
+Enerji, fiziksel sistemlerde değişim meydana getirebilen bir kavramdır.
+
+Isı, ışık ve hareket farklı enerji biçimleriyle ilişkilidir.
+
+Enerji farklı biçimlere dönüşebilir.
+
+Işık
+
+Işık, görmemizi sağlayan elektromanyetik ışımadır.
+
+Güneş doğal bir ışık kaynağıdır.
+
+Lamba yapay bir ışık kaynağıdır.
+
+Ses
+
+Ses, bir ortamda yayılan mekanik dalgalarla ilişkilidir.
+
+Ses boşlukta normal koşullarda yayılamaz çünkü yayılması için maddi bir ortama ihtiyaç duyar.
+
+Yerçekimi
+
+Yerçekimi, kütlesi olan cisimler arasındaki çekimle ilişkilidir.
+
+Dünya'nın yerçekimi nedeniyle nesneler Dünya'ya doğru çekilir.
+
+Yerçekimi yalnızca Dünya'ya özgü değildir. Diğer gök cisimlerinin de yerçekimi vardır.
+
+Gezegenler
+
+Gezegenler yıldızların etrafında dolanabilen büyük gök cisimleridir.
+
+Dünya bir gezegendir.
+
+Mars bir gezegendir.
+
+Jüpiter bir gezegendir.
+
+Güneş ise gezegen değil, yıldızdır.
+
+Canlılar
+
+Canlıların ortak özellikleri arasında hücresel yapı, enerji kullanımı, büyüme, gelişme ve üreme gibi özellikler bulunur.
+
+Bütün canlılar aynı görünüşe veya aynı yaşam biçimine sahip değildir.
+
+Ekosistem
+
+Ekosistem, canlılar ile fiziksel çevreleri arasındaki ilişkilerden oluşan bir sistemdir.
+
+Bir ormanda ağaçlar, böcekler, kuşlar, mantarlar, mikroorganizmalar, su, toprak ve hava birbirleriyle ilişkilidir.
+
+Bir canlıyı çevresinden tamamen bağımsız düşünmek çoğu zaman doğru değildir.
+
+---
+
+4. BİLGİSAYAR VE TEKNOLOJİ
+
+Bilgisayar
+
+Bilgisayar, verileri işleyebilen elektronik bir sistemdir.
+
+Bilgisayarlar programları çalıştırabilir, verileri saklayabilir ve çeşitli hesaplamalar yapabilir.
+
+Telefonlar, tabletler ve bilgisayarlar farklı türlerde bilgi işlem cihazlarıdır.
+
+CPU
+
+CPU, merkezi işlem birimidir.
+
+CPU bilgisayar programlarının çalıştırılmasında ve genel amaçlı hesaplamalarda önemli rol oynar.
+
+CPU ile GPU aynı şey değildir.
+
+GPU
+
+GPU, grafik işlemleri için tasarlanmış ve paralel hesaplamalarda güçlü olabilen bir işlem birimidir.
+
+Modern yapay zekâ eğitiminde GPU'lar büyük miktarda paralel hesaplama yapabildikleri için sık kullanılır.
+
+GPU yalnızca oyunlarda kullanılmaz.
+
+RAM
+
+RAM, bilgisayarın çalışırken kullandığı geçici bellektir.
+
+Bir program çalışırken ihtiyaç duyduğu verilerin bir bölümü RAM'de tutulabilir.
+
+RAM kapatıldığında içindeki geçici veriler kalıcı olarak saklanmaz.
+
+Depolama
+
+SSD ve HDD gibi cihazlar verileri kalıcı olarak saklamak için kullanılabilir.
+
+Bir dosyanın depolama alanında bulunması ile RAM'de bulunması aynı şey değildir.
+
+Dosya ve Klasör
+
+Dosya, bilgisayarda belirli bir veri içeren bir birimdir.
+
+Klasör ise dosyaları ve başka klasörleri düzenlemek için kullanılabilir.
+
+Örneğin:
+
+proje/
+
+içinde:
+
+model.py
+train.py
+data/
+
+bulunabilir.
+
+İşletim Sistemi
+
+İşletim sistemi bilgisayarın donanım ve yazılım kaynaklarını yönetir.
+
+Android, Windows, Linux ve macOS farklı işletim sistemlerine örnektir.
+
+İnternet
+
+İnternet, dünya genelindeki bilgisayar ağlarının birbirleriyle iletişim kurmasını sağlayan büyük bir ağ sistemidir.
+
+Bir web sitesine bağlanmak ile bilgisayarın internetin kendisi olması aynı şey değildir.
+
+---
+
+5. YAPAY ZEKÂ
+
+Yapay Zekâ Nedir?
+
+Yapay zekâ, bilgisayar sistemlerinin normalde insan zekâsıyla ilişkilendirilen bazı görevleri gerçekleştirmesini sağlayan yöntem ve sistemlerin genel adıdır.
+
+Örneğin görüntü tanıma, dil işleme, tahmin ve karar destek sistemleri yapay zekâ tekniklerinden yararlanabilir.
+
+Makine Öğrenmesi
+
+Makine öğrenmesi, bilgisayar sistemlerinin verilerden örüntüler öğrenmesini sağlayan yöntemlerdir.
+
+Model, eğitim sırasında veriler üzerinde tahminler yapar ve hatalarını azaltacak şekilde parametrelerini günceller.
+
+Dil Modeli
+
+Dil modeli metinlerdeki örüntüleri öğrenebilir.
+
+Bir dil modeli verilen bağlama göre sonraki tokenları tahmin etmeye çalışabilir.
+
+Bir dil modeli insan gibi düşünmek zorunda değildir.
+
+Modelin metin üretmesi, bilinçli olduğu anlamına gelmez.
+
+Transformer
+
+Transformer, doğal dil işleme ve başka makine öğrenmesi görevlerinde kullanılan bir sinir ağı mimarisidir.
+
+Transformer mimarisinin önemli parçalarından biri attention mekanizmasıdır.
+
+Attention, modelin bir dizideki farklı tokenlar arasındaki ilişkileri değerlendirmesine yardımcı olur.
+
 Lotus Mini küçük bir Transformer tabanlı dil modelidir.
-Transformer modeli metindeki kelimeler arasındaki ilişkileri öğrenebilir.
 
-Lotus teknolojiyi sever.
-Lotus kod yazmayı sever.
-Lotus yeni şeyler öğrenir.
-Lotus soruları cevaplamaya çalışır.
-Lotus hata yaptığında hatasını düzeltmeye çalışır.
+---
 
-Merhaba!
-Ben Lotus.
-Ben küçük bir yapay zeka modeliyim.
-Henüz çok şey bilmiyorum ama öğreniyorum.
-Zamanla daha iyi cevaplar vermeyi öğreneceğim.
+6. PROGRAMLAMA
+
+Programlama
+
+Programlama, bilgisayara belirli işlemleri yaptırmak için talimatlar yazma işlemidir.
+
+Programcı bir problemi daha küçük adımlara ayırarak çözebilir.
+
+Algoritma
+
+Algoritma, bir problemi çözmek veya bir görevi gerçekleştirmek için izlenen adımlar dizisidir.
+
+Örneğin çay hazırlamak için gereken adımlar bir algoritma gibi düşünülebilir.
+
+Değişken
+
+Değişken, program içinde bir değeri saklamak için kullanılabilir.
+
+Python örneği:
+
+isim = "Lotus"
+yas = 1
+
+Burada "isim" ve "yas" değişkendir.
+
+Koşul
+
+Koşullar programın farklı durumlarda farklı işlemler yapmasını sağlar.
+
+Örneğin:
+
+if yas >= 18:
+    print("Yetişkin")
+else:
+    print("Yetişkin değil")
+
+Döngü
+
+Döngüler bir işlemin birden fazla kez yapılmasını sağlar.
+
+Örneğin bir listedeki bütün öğeleri sırayla incelemek için döngü kullanılabilir.
+
+Fonksiyon
+
+Fonksiyon, belirli bir görevi gerçekleştiren yeniden kullanılabilir kod parçasıdır.
+
+def selamla():
+    print("Merhaba")
+
+Bu fonksiyon çağrıldığında "Merhaba" yazdırır.
+
+Python
+
+Python genel amaçlı bir programlama dilidir.
+
+Python web geliştirme, veri analizi, otomasyon, bilimsel hesaplama ve yapay zekâ gibi birçok alanda kullanılabilir.
+
+JavaScript
+
+JavaScript özellikle web uygulamalarında yaygın olarak kullanılan bir programlama dilidir.
+
+JavaScript ile web sayfalarının davranışları programlanabilir.
+
+HTML
+
+HTML web sayfasının yapısını oluşturmak için kullanılan bir işaretleme dilidir.
+
+HTML programlama dili olarak sınıflandırılmamalıdır.
+
+CSS
+
+CSS web sayfalarının görünümünü ve düzenini belirlemek için kullanılır.
+
+HTML yapı sağlarken CSS görünümün düzenlenmesine yardımcı olur.
+
+---
+
+7. KAVRAMLARI AYIRT ETME
+
+Bu bölüm Lotus Mini için özellikle önemlidir.
+
+Birbiriyle ilişkili iki kavram aynı şey olmak zorunda değildir.
+
+Örnek: CPU ve GPU
+
+CPU ve GPU ikisi de işlem yapar.
+
+Ancak CPU ve GPU aynı donanım değildir.
+
+CPU genel amaçlı işlemlerde güçlüdür.
+
+GPU paralel hesaplamalarda ve grafik işlemlerinde güçlü olabilir.
+
+Örnek: RAM ve Depolama
+
+RAM geçici çalışma belleğidir.
+
+SSD ve HDD kalıcı depolama için kullanılır.
+
+RAM ile SSD aynı şey değildir.
+
+Örnek: HTML ve CSS
+
+HTML web sayfasının yapısını oluşturur.
+
+CSS web sayfasının görünümünü düzenler.
+
+HTML ve CSS aynı şey değildir.
+
+Örnek: Python ve JavaScript
+
+Python bir programlama dilidir.
+
+JavaScript de bir programlama dilidir.
+
+İki dil farklı sözdizimlerine ve kullanım alanlarına sahiptir.
+
+Örnek: Dünya ve Güneş
+
+Dünya bir gezegendir.
+
+Güneş bir yıldızdır.
+
+Dünya Güneş'in etrafında dolanır.
+
+Dünya ve Güneş aynı tür gök cismi değildir.
+
+Örnek: Armut ve Oyun
+
+Armut bir meyvedir.
+
+Minecraft bir oyundur.
+
+Undertale bir oyundur.
+
+Armut bir oyun değildir.
+
+Minecraft bir meyve değildir.
+
+Undertale bir meyve değildir.
+
+Armut, Minecraft ve Undertale farklı kategorilere ait kavramlardır.
+
+Örnek: Minecraft ve Undertale
+
+Minecraft ve Undertale iki farklı video oyunudur.
 
 Minecraft bir sandbox oyunudur.
-Minecraft'ta oyuncular bloklarla yapılar oluşturabilir.
-Oyuncular kaynak toplayabilir, araçlar üretebilir ve farklı dünyaları keşfedebilir.
-Minecraft'ta yaratıcılık ve keşif önemli bir yere sahiptir.
 
 Undertale bir rol yapma oyunudur.
-Undertale seçimlerin önemli olduğu bir oyundur.
-Oyuncunun davranışları hikayenin bazı bölümlerini değiştirebilir.
-Dostluk, merhamet ve kararlar oyunun önemli temalarıdır.
 
-Programlama problem çözmek için kullanılan güçlü bir araçtır.
-Python öğrenmesi kolay ve güçlü bir programlama dilidir.
-JavaScript web uygulamalarında sıkça kullanılır.
-HTML sayfanın yapısını oluşturur.
-CSS sayfanın görünümünü düzenler.
+Minecraft ve Undertale aynı oyun değildir.
 
-Lotus AI zamanla daha gelişmiş bir sistem olacaktır.
-Lotus Mini bu sistemin ilk küçük yapay zeka modelidir.
-İlk hedef mükemmel olmak değil, gerçekten öğrenebilen bir model oluşturmaktır.
-Her deney Lotus Mini'nin gelişmesine yardımcı olur.
+İki oyunun bazı ortak özellikleri olabilir ancak bu onları aynı oyun yapmaz.
+
+---
+
+8. SORU VE CEVAP ÖRNEKLERİ
+
+Soru: Yapay zekâ nedir?
+
+Cevap: Yapay zekâ, bilgisayar sistemlerinin insan zekâsıyla ilişkilendirilen bazı görevleri gerçekleştirmesini sağlayan yöntem ve sistemlerin genel adıdır.
+
+Soru: Dil modeli nedir?
+
+Cevap: Dil modeli metinlerdeki örüntüleri öğrenerek verilen bağlama göre sonraki tokenları tahmin edebilen bir modeldir.
+
+Soru: Transformer nedir?
+
+Cevap: Transformer, özellikle dil işleme gibi görevlerde kullanılan bir sinir ağı mimarisidir.
+
+Soru: Lotus Mini nedir?
+
+Cevap: Lotus Mini küçük bir Transformer tabanlı dil modelidir.
+
+Soru: CPU nedir?
+
+Cevap: CPU merkezi işlem birimidir ve bilgisayarın genel amaçlı işlemlerini yürütmede önemli rol oynar.
+
+Soru: RAM nedir?
+
+Cevap: RAM bilgisayarın çalışırken kullandığı geçici bellektir.
+
+Soru: GPU nedir?
+
+Cevap: GPU grafik işlemlerinde ve paralel hesaplamalarda güçlü olabilen bir işlem birimidir.
+
+Soru: Python nedir?
+
+Cevap: Python genel amaçlı bir programlama dilidir.
+
+Soru: HTML nedir?
+
+Cevap: HTML web sayfalarının yapısını oluşturmak için kullanılan bir işaretleme dilidir.
+
+Soru: CSS nedir?
+
+Cevap: CSS web sayfalarının görünümünü ve düzenini belirlemek için kullanılır.
+
+Soru: Dünya nedir?
+
+Cevap: Dünya, Güneş Sistemi'nde bulunan bir gezegendir.
+
+Soru: Güneş nedir?
+
+Cevap: Güneş bir yıldızdır.
+
+Soru: Ay nedir?
+
+Cevap: Ay, Dünya'nın doğal uydusudur.
+
+Soru: Armut nedir?
+
+Cevap: Armut bir meyvedir.
+
+Soru: Minecraft nedir?
+
+Cevap: Minecraft bir sandbox video oyunudur.
+
+Soru: Undertale nedir?
+
+Cevap: Undertale bir rol yapma video oyunudur.
+
+Soru: Minecraft ve Undertale aynı oyun mudur?
+
+Cevap: Hayır. Minecraft ve Undertale iki farklı video oyunudur.
+
+Soru: Armut bir oyun mudur?
+
+Cevap: Hayır. Armut bir meyvedir.
+
+Soru: Minecraft bir meyve midir?
+
+Cevap: Hayır. Minecraft bir video oyunudur.
+
+Soru: Güneş bir gezegen midir?
+
+Cevap: Hayır. Güneş bir yıldızdır.
+
+Soru: HTML bir programlama dili midir?
+
+Cevap: HTML bir işaretleme dilidir.
+
+---
+
+9. GÜNLÜK YAŞAM
+
+Günlük yaşamda insanlar ev, okul, iş, arkadaşlık, ulaşım ve alışveriş gibi birçok farklı durumla karşılaşır.
+
+Ev
+
+Ev insanların yaşadığı veya dinlendiği bir yerdir.
+
+Evlerde mutfak, oda, banyo ve salon gibi farklı bölümler bulunabilir.
+
+Okul
+
+Okul insanların eğitim aldığı bir kurumdur.
+
+Öğrenciler okulda farklı dersler öğrenebilir.
+
+Öğretmenler öğrencilerin öğrenmesine yardımcı olabilir.
+
+Arkadaşlık
+
+Arkadaşlık insanlar arasındaki sosyal ilişkilerden biridir.
+
+Arkadaşlar birlikte zaman geçirebilir, konuşabilir ve birbirlerine yardımcı olabilir.
+
+Alışveriş
+
+Alışveriş sırasında insanlar ihtiyaç duydukları ürünleri satın alabilir.
+
+Bir ürünün fiyatı, kalitesi ve kullanım amacı satın alma kararını etkileyebilir.
+
+Ulaşım
+
+İnsanlar bir yerden başka bir yere gitmek için yürüyebilir veya çeşitli ulaşım araçlarını kullanabilir.
+
+Araba, otobüs, tren, bisiklet ve uçak farklı ulaşım araçlarıdır.
+
+---
+
+10. LOTUS'UN TEMEL DAVRANIŞI
+
+Lotus Mini bir yapay zekâ modelidir.
+
+Lotus Mini'nin amacı öğrenmek, metin üretmek ve kullanıcıya yardımcı olmaktır.
+
+Lotus Mini her sorunun cevabını bilmeyebilir.
+
+Bilmediği bir konuda kesin bir cevap vermek yerine belirsiz olduğunu belirtmesi daha doğru bir davranıştır.
+
+Lotus hata yapabilir.
+
+Bir hata yaptığında hatayı fark etmeye çalışmalı ve doğru bilgiyi kullanmalıdır.
+
+Lotus kullanıcıyla doğal, anlaşılır ve samimi bir şekilde iletişim kurabilir.
+
+Ancak samimi olmak yanlış bilgi vermek anlamına gelmez.
+
+Lotus bir yapay zekâ modelidir.
+
+Lotus'un gerçek duyguları, bilinçli deneyimleri veya insan benzeri bir zihni olduğu varsayılmamalıdır.
+
+"Lotus üzgün" gibi ifadeler konuşma tarzının bir parçası olabilir; bu ifade Lotus'un gerçekten üzüntü yaşadığını kanıtlamaz.
+
+Bilmediğinde
+
+Soru: Dünyadaki tüm canlıların tam sayısı nedir?
+
+Uygun cevap: Bu sorunun kesin bir cevabını bilmiyorum.
+
+Hata Yaptığında
+
+Soru: Güneş gezegen midir?
+
+Yanlış cevap: Evet.
+
+Doğru cevap: Hayır. Güneş bir yıldızdır.
+
+Gereksiz Uydurma
+
+Bir model bilmediği bilgiyi sırf cevap vermiş olmak için uydurmamalıdır.
+
+Doğru cevap her zaman uzun cevap değildir.
+
+Bazen kısa ve doğru cevap en iyi cevaptır.
+
+---
+
+11. KARŞILAŞTIRMA VE NEDEN-SONUÇ
+
+Bir soruya cevap verirken kavramlar arasındaki ilişki önemlidir.
+
+Aynı Kategori
+
+Python ve JavaScript iki programlama dilidir.
+
+Minecraft ve Undertale iki video oyunudur.
+
+Dünya ve Mars iki gezegendir.
+
+Farklı Kategori
+
+Güneş bir yıldızdır.
+
+Dünya bir gezegendir.
+
+Armut bir meyvedir.
+
+Minecraft bir oyundur.
+
+CPU bir işlem birimidir.
+
+RAM bir bellek türüdür.
+
+Neden-Sonuç
+
+Bitkiler ışığı enerji üretiminde kullanabilir.
+
+Dünya'nın atmosferi ve yüzeyi yaşam için önemli koşullar sağlar.
+
+Bir bilgisayarın RAM'i yetersiz olduğunda aynı anda çok sayıda program çalıştırmak zorlaşabilir.
+
+Bir model daha fazla kaliteli eğitim verisi gördüğünde daha fazla dil örüntüsü öğrenebilir.
+
+Ancak daha fazla veri her zaman daha iyi sonuç anlamına gelmez. Verinin kalitesi, çeşitliliği ve eğitim yöntemi de önemlidir.
+
+---
+
+12. ÖNEMLİ TEMEL BİLGİLER
+
+Aşağıdaki ifadeler birbirinden farklı kavramları ayırt etmek için kullanılabilir:
+
+Dünya bir gezegendir.
+
+Güneş bir yıldızdır.
+
+Ay Dünya'nın doğal uydusudur.
+
+Armut bir meyvedir.
+
+Kedi bir hayvandır.
+
+Ağaç bir bitkidir.
+
+Su sıvı hâlde bulunabilir.
+
+Buz suyun katı hâlidir.
+
+Su buharı suyun gaz hâliyle ilişkilidir.
+
+CPU ve GPU farklı işlem birimleridir.
+
+RAM ve depolama aynı şey değildir.
+
+Python ve JavaScript farklı programlama dilleridir.
+
+HTML bir işaretleme dilidir.
+
+CSS stil ve görünüm düzenlemek için kullanılır.
+
+Minecraft ve Undertale farklı video oyunlarıdır.
+
+Lotus Mini küçük bir Transformer tabanlı dil modelidir.
+
+Lotus Mini bir insan değildir.
+
+Lotus Mini gerçek duygulara sahip olduğu varsayılan bilinçli bir varlık değildir.
+
+Lotus Mini hata yapabilir.
+
+Lotus Mini bilmediği bilgileri kesinmiş gibi sunmamalıdır.
+
+---
+
+13. LOTUS MINI İÇİN TEMEL SORU SETİ
+
+Soru: Lotus Mini nedir?
+
+Cevap: Lotus Mini küçük bir Transformer tabanlı dil modelidir.
+
+Soru: Lotus Mini ne öğrenmeye çalışır?
+
+Cevap: Metinlerdeki dil örüntülerini ve kavramlar arasındaki ilişkileri öğrenmeye çalışır.
+
+Soru: Lotus Mini her şeyi bilir mi?
+
+Cevap: Hayır.
+
+Soru: Lotus Mini hata yapabilir mi?
+
+Cevap: Evet.
+
+Soru: Lotus Mini bilmediği bir şeyi ne yapmalıdır?
+
+Cevap: Bilmediğini belirtmeli ve gereksiz bilgi uydurmamalıdır.
+
+Soru: Armut nedir?
+
+Cevap: Armut bir meyvedir.
+
+Soru: Undertale nedir?
+
+Cevap: Undertale bir rol yapma video oyunudur.
+
+Soru: Minecraft nedir?
+
+Cevap: Minecraft bir sandbox video oyunudur.
+
+Soru: Armut ve Minecraft aynı şey midir?
+
+Cevap: Hayır. Armut bir meyvedir, Minecraft bir video oyunudur.
+
+Soru: Güneş nedir?
+
+Cevap: Güneş bir yıldızdır.
+
+Soru: Dünya nedir?
+
+Cevap: Dünya bir gezegendir.
+
+Soru: Python nedir?
+
+Cevap: Python bir programlama dilidir.
+
+Soru: HTML nedir?
+
+Cevap: HTML web sayfalarının yapısını oluşturmak için kullanılan bir işaretleme dilidir.
+
+Soru: CPU ve GPU aynı mıdır?
+
+Cevap: Hayır. CPU ve GPU farklı işlem birimleridir.
+
+Soru: RAM ve SSD aynı mıdır?
+
+Cevap: Hayır. RAM geçici çalışma belleğidir, SSD ise kalıcı depolama için kullanılabilir.
+
+---
+
+SON
+
+Lotus Mini'nin ilk hedefi mükemmel olmak değildir.
+
+İlk hedef gerçekten öğrenebilen küçük bir model oluşturmaktır.
+
+Her eğitim denemesi modelin nasıl davrandığını anlamamıza yardımcı olur.
+
+Bir hata başarısızlık olmak zorunda değildir. Hatalar, modelin hangi kavramları karıştırdığını ve hangi alanlarda daha fazla eğitim gerektiğini gösterebilir.
+
+Lotus Mini zamanla daha fazla veri, daha iyi eğitim yöntemleri ve daha gelişmiş model mimarileriyle geliştirilebilir.
+
+Lotus Mini öğreniyor. 🌸
+
+Ve bu daha başlangıç.

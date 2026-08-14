@@ -29,37 +29,71 @@ const Auth = {
     // ------------------------------------------------------
 
     updateAccountUI() {
+updateAccountUI() {
 
-        const accountButton =
-            document.querySelector(
-                '.settings-item[data-setting="account"]'
-            );
+    const accountButton =
+        document.querySelector(
+            '.settings-item[data-setting="account"]'
+        );
 
-        if (!accountButton) return;
+    if (!accountButton) return;
 
-        const label =
-            accountButton.querySelector(
-                ".settings-label"
-            );
+    const label =
+        accountButton.querySelector(
+            ".settings-label"
+        );
 
-        if (!label) return;
+    if (!label) return;
 
-        if (this.user) {
 
-            label.innerHTML = `
-                <strong>Hesabım</strong>
-                <small>${this.user.email}</small>
-            `;
+    const email =
+        this.user?.email ?? null;
 
-        } else {
 
-            label.innerHTML = `
-                <strong>Hesap</strong>
-                <small>Giriş yap ve hesabını yönet</small>
-            `;
-        }
-    },
+    // SETTINGS → ACCOUNT BUTTON
 
+    if (email) {
+
+        label.innerHTML = `
+            <strong>Hesabım</strong>
+            <small>${email}</small>
+        `;
+
+    } else {
+
+        label.innerHTML = `
+            <strong>Hesap</strong>
+            <small>Giriş yap ve hesabını yönet</small>
+        `;
+    }
+
+
+    // ACCOUNT MODAL
+
+    const accountEmail =
+        document.getElementById(
+            "account-email"
+        );
+
+    const accountEmailDetail =
+        document.getElementById(
+            "account-email-detail"
+        );
+
+
+    if (accountEmail) {
+
+        accountEmail.textContent =
+            email ?? "Kullanıcı";
+    }
+
+
+    if (accountEmailDetail) {
+
+        accountEmailDetail.textContent =
+            email ?? "-";
+    }
+},
 
     // ------------------------------------------------------
     // OPEN AUTH MODAL

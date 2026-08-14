@@ -229,6 +229,85 @@ const Auth = {
         modal.style.display = "flex";
     },
 
+    // ------------------------------------------------------
+// OPEN GOOGLE ACCOUNT MODAL
+// ------------------------------------------------------
+
+openGoogleAccountModal() {
+
+    const modal =
+        document.getElementById(
+            "google-account-modal"
+        );
+
+    if (!modal) return;
+
+    const email =
+        this.user?.email ?? "Kullanıcı";
+
+
+    const accountEmail =
+        document.getElementById(
+            "google-account-email"
+        );
+
+    const accountEmailDetail =
+        document.getElementById(
+            "google-account-email-detail"
+        );
+
+
+    if (accountEmail) {
+
+        accountEmail.textContent =
+            email;
+    }
+
+
+    if (accountEmailDetail) {
+
+        accountEmailDetail.textContent =
+            email;
+    }
+
+
+    // Diğer hesap modalını kapat.
+
+    this.closeAccountModal();
+
+
+    // Login modalını da kapat.
+
+    this.closeAuthModal();
+
+
+    modal.classList.remove("hidden");
+
+    modal.hidden = false;
+
+    modal.style.display = "flex";
+
+
+    console.log(
+        "🔍 Google Account Modal açıldı:",
+        email
+    );
+
+    console.log(
+        "🔍 Google Account User:",
+        this.user
+    );
+
+    console.log(
+        "🔍 Provider:",
+        this.user?.app_metadata?.provider
+    );
+
+    console.log(
+        "🔍 Identities:",
+        this.user?.identities
+    );
+},
 
     // ------------------------------------------------------
     // CLOSE ACCOUNT MODAL
@@ -251,7 +330,26 @@ const Auth = {
         modal.style.display = "none";
     },
 
+// ------------------------------------------------------
+// CLOSE GOOGLE ACCOUNT MODAL
+// ------------------------------------------------------
 
+closeGoogleAccountModal() {
+
+    const modal =
+        document.getElementById(
+            "google-account-modal"
+        );
+
+    if (!modal) return;
+
+    modal.classList.add("hidden");
+
+    modal.hidden = true;
+
+    modal.style.display = "none";
+},
+    
     // ------------------------------------------------------
     // REFRESH SESSION
     // ------------------------------------------------------
@@ -1045,16 +1143,80 @@ document.addEventListener(
 
 
         const accountClose =
-            document.getElementById(
-                "account-close"
+    document.getElementById(
+        "account-close"
+    );
+
+const accountLogout =
+    document.getElementById(
+        "account-logout"
+    );
+
+        // --------------------------------------------------
+// GOOGLE ACCOUNT CLOSE
+// --------------------------------------------------
+
+googleAccountClose?.addEventListener(
+    "click",
+    () => {
+
+        Auth.closeGoogleAccountModal();
+    }
+);
+
+
+// --------------------------------------------------
+// GOOGLE ACCOUNT LOGOUT
+// --------------------------------------------------
+
+googleAccountLogout?.addEventListener(
+    "click",
+    async (event) => {
+
+        event.preventDefault();
+        event.stopPropagation();
+
+
+        googleAccountLogout.disabled = true;
+
+        googleAccountLogout.textContent =
+            "Çıkış yapılıyor...";
+
+
+        const result =
+            await Auth.logout();
+
+
+        googleAccountLogout.disabled = false;
+
+        googleAccountLogout.textContent =
+            "🚪 Çıkış Yap";
+
+
+        if (!result.success) {
+
+            alert(
+                "Çıkış yapılamadı:\n" +
+                result.error
             );
 
+            return;
+        }
 
-        const accountLogout =
-            document.getElementById(
-                "account-logout"
-            );
 
+        Auth.closeGoogleAccountModal();
+    }
+);
+
+const googleAccountClose =
+    document.getElementById(
+        "google-account-close"
+    );
+
+const googleAccountLogout =
+    document.getElementById(
+        "google-account-logout"
+    );
 
         // --------------------------------------------------
         // ACCOUNT BUTTON

@@ -858,8 +858,7 @@ document.addEventListener(
                 "account-logout"
             );
 
-
-        // --------------------------------------------------
+// --------------------------------------------------
 // ACCOUNT BUTTON
 // --------------------------------------------------
 
@@ -869,72 +868,85 @@ const accountButton =
     );
 
 
-accountButton?.addEventListener(
-    "click",
-    async (event) => {
+if (accountButton) {
 
-        event.preventDefault();
-        event.stopPropagation();
+    accountButton.addEventListener(
+        "click",
+        async (event) => {
 
-
-        // Kullanıcı zaten Auth.user içinde varsa
-        // tekrar Supabase sorgusu yapma.
-
-        let user = Auth.user;
+            event.preventDefault();
+            event.stopImmediatePropagation();
 
 
-        // Yoksa session'dan al.
-
-        if (!user) {
-
-            const session =
-                await Auth.getSession();
-
-            user =
-                session?.user ?? null;
-
-            Auth.user =
-                user;
-        }
+            console.log("🌸 ACCOUNT BUTTON TIKLANDI");
 
 
-        // ------------------------------------------------
-        // GİRİŞ YAPILMAMIŞ
-        // ------------------------------------------------
+            // --------------------------------------------
+            // KULLANICIYI AL
+            // --------------------------------------------
 
-        if (!user) {
-
-            Auth.openAuthModal();
-
-            return;
-        }
+            let user = Auth.user;
 
 
-        // ------------------------------------------------
-        // GİRİŞ YAPILMIŞ
-        // ------------------------------------------------
+            if (!user) {
 
-        Auth.openAccountModal();
+                console.log(
+                    "🌸 Auth.user boş, session kontrol ediliyor..."
+                );
 
-    }
-);
 
-        // --------------------------------------------------
-        // ACCOUNT CLOSE
-        // --------------------------------------------------
+                const session =
+                    await Auth.getSession();
 
-        accountClose?.addEventListener(
-            "click",
-            (event) => {
 
-                event.preventDefault();
-                event.stopPropagation();
+                user =
+                    session?.user ?? null;
 
-                Auth.closeAccountModal();
+
+                Auth.user =
+                    user;
             }
-        );
 
 
+            // --------------------------------------------
+            // GİRİŞ YOK
+            // --------------------------------------------
+
+            if (!user) {
+
+                console.log(
+                    "🔐 Kullanıcı giriş yapmamış → AUTH MODAL"
+                );
+
+
+                Auth.openAuthModal();
+
+                return;
+            }
+
+
+            // --------------------------------------------
+            // GİRİŞ VAR
+            // --------------------------------------------
+
+            console.log(
+                "🌸 Kullanıcı giriş yapmış:",
+                user.email
+            );
+
+
+            console.log(
+                "🌸 ACCOUNT MODAL AÇILIYOR"
+            );
+
+
+            Auth.openAccountModal();
+
+        },
+        true
+    );
+
+}
         // --------------------------------------------------
         // LOGOUT
         // --------------------------------------------------

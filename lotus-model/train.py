@@ -21,7 +21,7 @@ MODEL_PATH = Path("data/lotus-mini-v0.1.pt")
 
 EPOCHS = 20
 BATCH_SIZE = 4
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.003
 
 DEVICE = torch.device(
     "cuda" if torch.cuda.is_available()

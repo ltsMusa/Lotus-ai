@@ -121,3 +121,74 @@ document
 // ✅ Logout işlemini yönetir
 //
 // ==========================================================
+
+// ==========================================================
+// MOBILE MENU
+// ==========================================================
+
+const menuButton =
+    document.getElementById("menu-button");
+
+const mobileMenu =
+    document.getElementById("mobile-menu");
+
+
+// ==========================================================
+// OPEN / CLOSE MOBILE MENU
+// ==========================================================
+
+function toggleMobileMenu() {
+
+    if (!mobileMenu) return;
+
+    mobileMenu.classList.toggle("hidden");
+
+}
+
+
+// ==========================================================
+// MENU BUTTON
+// ==========================================================
+
+menuButton?.addEventListener(
+    "click",
+    event => {
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        toggleMobileMenu();
+
+    }
+);
+
+
+// ==========================================================
+// CLOSE MENU WHEN CLICKING OUTSIDE
+// ==========================================================
+
+document.addEventListener(
+    "click",
+    event => {
+
+        if (!mobileMenu) return;
+
+        if (
+            mobileMenu.classList.contains("hidden")
+        ) {
+            return;
+        }
+
+
+        if (
+            mobileMenu.contains(event.target) ||
+            menuButton?.contains(event.target)
+        ) {
+            return;
+        }
+
+
+        mobileMenu.classList.add("hidden");
+
+    }
+);

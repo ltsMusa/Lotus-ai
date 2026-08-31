@@ -120,7 +120,6 @@ document
 // ✅ Giriş yapılmışsa account-modal açar
 // ✅ Logout işlemini yönetir
 //
-// ==========================================================
 
 // ==========================================================
 // MOBILE MENU
@@ -134,14 +133,62 @@ const mobileMenu =
 
 
 // ==========================================================
-// OPEN / CLOSE MOBILE MENU
+// OPEN MOBILE MENU
+// ==========================================================
+
+function openMobileMenu() {
+
+    if (!mobileMenu) return;
+
+    mobileMenu.classList.remove("hidden");
+
+    mobileMenu.hidden = false;
+
+    mobileMenu.style.display = "block";
+
+    console.log("🌸 Mobile Menu açıldı");
+
+}
+
+
+// ==========================================================
+// CLOSE MOBILE MENU
+// ==========================================================
+
+function closeMobileMenu() {
+
+    if (!mobileMenu) return;
+
+    mobileMenu.classList.add("hidden");
+
+    mobileMenu.hidden = true;
+
+    mobileMenu.style.display = "none";
+
+}
+
+
+// ==========================================================
+// TOGGLE MOBILE MENU
 // ==========================================================
 
 function toggleMobileMenu() {
 
     if (!mobileMenu) return;
 
-    mobileMenu.classList.toggle("hidden");
+    const isHidden =
+        mobileMenu.classList.contains("hidden") ||
+        mobileMenu.hidden === true;
+
+    if (isHidden) {
+
+        openMobileMenu();
+
+    } else {
+
+        closeMobileMenu();
+
+    }
 
 }
 
@@ -150,21 +197,25 @@ function toggleMobileMenu() {
 // MENU BUTTON
 // ==========================================================
 
-menuButton?.addEventListener(
-    "click",
-    event => {
+if (menuButton) {
 
-        event.preventDefault();
-        event.stopPropagation();
+    menuButton.addEventListener(
+        "click",
+        event => {
 
-        toggleMobileMenu();
+            event.preventDefault();
+            event.stopPropagation();
 
-    }
-);
+            toggleMobileMenu();
+
+        }
+    );
+
+}
 
 
 // ==========================================================
-// CLOSE MENU WHEN CLICKING OUTSIDE
+// CLOSE WHEN CLICKING OUTSIDE
 // ==========================================================
 
 document.addEventListener(
@@ -179,7 +230,6 @@ document.addEventListener(
             return;
         }
 
-
         if (
             mobileMenu.contains(event.target) ||
             menuButton?.contains(event.target)
@@ -187,8 +237,7 @@ document.addEventListener(
             return;
         }
 
-
-        mobileMenu.classList.add("hidden");
+        closeMobileMenu();
 
     }
 );

@@ -185,16 +185,6 @@ Lotus AI'nin gelecekteki özelliklerinin önemli bir bölümünün bu temel üze
 
 ---
 
-🪶 Lotus Mini
-
-Lotus Mini, Lotus AI ekosistemi içerisinde daha küçük ve farklı kullanım senaryolarına yönelik bir AI sistemi oluşturma çalışmasıdır.
-
-Lotus Mini'nin amacı, Lotus AI'nin ana sisteminden bağımsız olarak daha hafif kullanım senaryolarını destekleyebilecek bir yapı oluşturmaktır.
-
-«Lotus Mini aktif geliştirme sürecinde olabilir ve özellikleri zaman içerisinde değişebilir.»
-
----
-
 🌐 Proje
 
 Lotus AI'nin geliştirme süreci açık kaynak geliştirme yaklaşımından ve modern web teknolojilerinden yararlanmaktadır.

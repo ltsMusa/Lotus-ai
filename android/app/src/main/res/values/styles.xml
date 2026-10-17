@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+        Tam ekran tema: başlık çubuğu yok, action bar yok, sistem
+        durum/gezinme çubukları MainActivity.java içinde immersive
+        sticky modla gizleniyor (kaydırınca geçici çıkıp otomatik
+        tekrar gizleniyor — oyun/medya tarzı tam ekran davranışı).
+    -->
+    <style name="AppTheme.Fullscreen" parent="android:Theme.Black.NoTitleBar.Fullscreen">
+        <item name="android:windowBackground">@color/lotus_bg</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+    </style>
+
+</resources>

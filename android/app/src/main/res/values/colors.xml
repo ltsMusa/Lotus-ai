@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches css/themes.css's bg color variable, so the native
+         launch screen (visible for a split second before the
+         WebView paints) doesn't flash white. -->
+    <color name="lotus_bg">#08080C</color>
+</resources>

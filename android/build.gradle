@@ -1,0 +1,27 @@
+// Top-level build file. Deliberately old/conservative versions
+// (AGP 7.4.2 + Gradle 7.5) — AIDE's bundled offline toolchain
+// matches this range far more reliably than the newest AGP.
+// If you're building with a newer AIDE release that prefers a
+// newer AGP, bump this and gradle/wrapper/gradle-wrapper.properties
+// together.
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.0.1'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

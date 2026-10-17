@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Groq/OpenAI/Gemini/OpenRouter and your Vercel proxy are all
+    HTTPS — this config doesn't affect them. It exists ONLY so
+    js/providers/ollama.js can reach a local Ollama server over
+    plain http:// (e.g. http://192.168.1.20:11434 on your PC),
+    since Android blocks cleartext HTTP by default since API 28.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

@@ -1,0 +1,32 @@
+/**
+ * ==========================================================
+ * Lotus AI — Premium Purple Neon Glassmorphism Theme
+ * ==========================================================
+ * Single fixed theme (no light/dark toggle, no Appearance
+ * settings section) — matches the violet/pink gradient accents
+ * already used throughout css/main.css (#A855F7 / #F472B6).
+ * ==========================================================
+ */
+
+:root {
+    --bg: #08080C;
+    --panel: rgba(24, 12, 40, 0.55);
+
+    --accent: #A855F7;       /* primary neon purple */
+    --accent-soft: #F472B6;  /* secondary neon pink */
+    --accent-glow: rgba(168, 85, 247, 0.45);
+
+    --text: #F5F5F7;
+    --muted: #a0a0b0;
+}
+
+.glass {
+    background: var(--panel);
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+
+    border: 1px solid rgba(168, 85, 247, 0.18);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}

@@ -1,0 +1,58 @@
+/**
+ * ==========================================================
+ * Lotus AI — Markdown / Code Block Rendering
+ * ==========================================================
+ * Referenced in index.html since the start of this project but
+ * never created (404) — code block styling was living in
+ * chat.css instead. Moved here to match the intended file
+ * layout (js/markdown.js renders this markup).
+ * ==========================================================
+ */
+
+.code-block {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    margin: 8px 0;
+    overflow: hidden;
+}
+
+.code-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    font-size: 0.7rem;
+    color: var(--muted, #a0a0a0);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.code-copy-button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text, #fff);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+.code-block pre {
+    margin: 0;
+    padding: 10px;
+    overflow-x: auto;
+}
+
+/* ==========================================================
+   GENERATED IMAGES (js/imageGen.js, rendered via markdown !())
+   ========================================================== */
+
+.message-image {
+    display: block;
+    max-width: 100%;
+    width: 320px;
+    border-radius: 16px;
+    margin-top: 6px;
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(168, 85, 247, 0.12);
+}

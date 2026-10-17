@@ -1,0 +1,16 @@
+# Gizli dosyalar - ASLA commit etme
+*.jks
+*.keystore
+local.properties
+.env
+.env.*
+.vercel
+
+# Build / bağımlılıklar
+node_modules/
+build/
+.gradle/
+*.apk
+*.aab
+.idea/
+.DS_Store

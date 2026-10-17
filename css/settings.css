@@ -1,0 +1,1998 @@
+/* ==========================================================
+   LOTUS AI — SETTINGS
+   Version : 4.0
+   ========================================================== */
+
+
+/* ==========================================================
+   SETTINGS MODAL
+   ========================================================== */
+
+#settings-modal {
+    position: fixed;
+    inset: 0;
+
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0, 0, 0, 0.55);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+
+/* ==========================================================
+   HIDDEN
+   ========================================================== */
+
+#settings-modal.hidden {
+    display: none !important;
+}
+
+
+/* ==========================================================
+   SETTINGS WINDOW
+   ========================================================== */
+
+#settings-modal .modal-content {
+    width: 100%;
+    max-width: 520px;
+    max-height: min(720px, 90dvh);
+
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(25, 23, 32, 0.97),
+            rgba(10, 10, 15, 0.98)
+        );
+
+    border:
+        1px solid rgba(255, 255, 255, 0.09);
+
+    border-radius: 24px;
+
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.55),
+        0 0 40px rgba(168, 85, 247, 0.08);
+
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+}
+
+
+/* ==========================================================
+   SETTINGS HEADER
+   ========================================================== */
+
+#settings-modal .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 20px 20px 16px;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.06);
+}
+
+
+#settings-modal .modal-header h2 {
+    margin: 0;
+
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 27px;
+
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    color: #F5F5F7;
+}
+
+
+/* ==========================================================
+   CLOSE BUTTON
+   ========================================================== */
+
+#settings-modal .close-modal {
+    width: 38px;
+    height: 38px;
+
+    flex: 0 0 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+
+    border-radius: 12px;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    color:
+        rgba(245, 245, 247, 0.8);
+
+    font-size: 16px;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        border-color 0.18s ease;
+}
+
+
+#settings-modal .close-modal:active {
+    transform: scale(0.9);
+
+    background:
+        rgba(255, 255, 255, 0.08);
+}
+
+
+/* ==========================================================
+   SETTINGS CONTENT
+   ========================================================== */
+
+#settings-content {
+    padding: 12px;
+
+    overflow-y: auto;
+
+    scrollbar-width: none;
+}
+
+
+#settings-content::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* ==========================================================
+   SETTINGS ITEM
+   ========================================================== */
+
+.settings-item {
+    width: 100%;
+
+    min-height: 68px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 13px;
+
+    padding: 11px 12px;
+
+    margin-bottom: 6px;
+
+    border:
+        1px solid transparent;
+
+    border-radius: 17px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color: #F5F5F7;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+
+.settings-item:last-child {
+    margin-bottom: 0;
+}
+
+
+.settings-item:active {
+    transform: scale(0.985);
+
+    background:
+        rgba(168, 85, 247, 0.07);
+
+    border-color:
+        rgba(168, 85, 247, 0.25);
+
+    box-shadow:
+        0 0 20px rgba(168, 85, 247, 0.06);
+}
+
+
+/* ==========================================================
+   SETTINGS ICON
+   ========================================================== */
+
+.settings-icon {
+    width: 42px;
+    height: 42px;
+
+    flex: 0 0 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.06);
+
+    border-radius: 13px;
+
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    font-size: 19px;
+}
+
+
+/* ==========================================================
+   SETTINGS LABEL
+   ========================================================== */
+
+.settings-label {
+    min-width: 0;
+
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+
+.settings-label strong {
+    font-size: 14px;
+
+    font-weight: 600;
+
+    color:
+        rgba(245, 245, 247, 0.94);
+}
+
+
+.settings-label small {
+    font-size: 11px;
+
+    line-height: 1.3;
+
+    color:
+        rgba(245, 245, 247, 0.42);
+}
+
+
+/* ==========================================================
+   SETTINGS ARROW
+   ========================================================== */
+
+.settings-arrow {
+    flex: 0 0 auto;
+
+    color:
+        rgba(245, 245, 247, 0.3);
+
+    font-size: 24px;
+
+    line-height: 1;
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 500px) {
+
+    #settings-modal {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    #settings-modal .modal-content {
+        max-width: none;
+        max-height: 88dvh;
+
+        border-radius:
+            24px
+            24px
+            0
+            0;
+    }
+
+    #settings-modal .modal-header {
+        padding:
+            18px
+            18px
+            16px;
+    }
+
+}
+
+
+/* ==========================================================
+   SETTINGS OPEN ANIMATION
+   ========================================================== */
+
+@keyframes settingsBackdropIn {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+}
+
+
+@keyframes settingsSlideUp {
+
+    from {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+
+/* ==========================================================
+   SETTINGS BACKDROP
+   ========================================================== */
+
+#settings-modal:not(.hidden) {
+
+    animation:
+        settingsBackdropIn
+        0.25s
+        ease-out;
+
+}
+
+
+/* ==========================================================
+   SETTINGS PANEL
+   ========================================================== */
+
+#settings-modal:not(.hidden) .modal-content {
+
+    animation:
+        settingsSlideUp
+        0.38s
+        cubic-bezier(0.22, 1, 0.36, 1);
+
+}
+
+
+/* ==========================================================
+   DESKTOP SETTINGS ANIMATION
+   ========================================================== */
+
+@media (min-width: 501px) {
+
+    #settings-modal:not(.hidden) .modal-content {
+
+        animation:
+            settingsSlideUpDesktop
+            0.35s
+            cubic-bezier(0.22, 1, 0.36, 1);
+
+    }
+
+}
+
+
+@keyframes settingsSlideUpDesktop {
+
+    from {
+        opacity: 0;
+        transform:
+            translateY(45px)
+            scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform:
+            translateY(0)
+            scale(1);
+    }
+
+}
+/* ==========================================================
+   SETTINGS CLOSE ANIMATION
+   ========================================================== */
+
+@keyframes settingsSlideDown {
+
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+
+}
+
+
+@keyframes settingsBackdropOut {
+
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+
+}
+
+
+/* Kapanış */
+
+#settings-modal.closing {
+
+    animation:
+        settingsBackdropOut
+        0.25s
+        ease-in
+        forwards;
+
+}
+
+
+#settings-modal.closing .modal-content {
+
+    animation:
+        settingsSlideDown
+        0.3s
+        cubic-bezier(0.55, 0, 0.78, 0.22)
+        forwards;
+
+}
+
+/* ==========================================================
+   LOTUS AI — AUTHENTICATION
+   ========================================================== */
+
+#auth-modal {
+    position: fixed;
+    inset: 0;
+
+    z-index: 2000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(0, 0, 0, 0.68);
+
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+
+/* ==========================================================
+   AUTH HIDDEN
+   ========================================================== */
+
+#auth-modal.hidden {
+    display: none !important;
+}
+
+
+/* ==========================================================
+   AUTH WINDOW
+   ========================================================== */
+
+#auth-modal .modal-content {
+    position: relative;
+
+    width: 100%;
+    max-width: 430px;
+
+    padding: 28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(27, 24, 35, 0.98),
+            rgba(10, 10, 15, 0.99)
+        );
+
+    border:
+        1px solid rgba(255, 255, 255, 0.09);
+
+    border-radius: 26px;
+
+    box-shadow:
+        0 30px 90px rgba(0, 0, 0, 0.65),
+        0 0 45px rgba(168, 85, 247, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.035);
+
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+
+    overflow: hidden;
+}
+
+
+/* ==========================================================
+   AUTH TOP GLOW
+   ========================================================== */
+
+#auth-modal .modal-content::before {
+    content: "";
+
+    position: absolute;
+
+    top: -100px;
+    left: 50%;
+
+    width: 220px;
+    height: 180px;
+
+    transform: translateX(-50%);
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(168, 85, 247, 0.16),
+            rgba(244, 114, 182, 0.06) 45%,
+            transparent 72%
+        );
+
+    pointer-events: none;
+}
+
+
+/* ==========================================================
+   AUTH HEADER
+   ========================================================== */
+
+#auth-modal .modal-header {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 2px 40px 20px;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.06);
+}
+
+
+#auth-modal .modal-header h2 {
+    margin: 0;
+
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 34px;
+
+    font-weight: 400;
+
+    line-height: 1;
+
+    letter-spacing: 2px;
+
+    background:
+        linear-gradient(
+            100deg,
+            #F5F5F7 0%,
+            #D8B4FE 42%,
+            #F472B6 75%,
+            #F5F5F7 100%
+        );
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    color: transparent;
+
+    text-align: center;
+}
+
+
+/* ==========================================================
+   AUTH CLOSE
+   ========================================================== */
+
+#auth-close {
+    position: absolute;
+
+    top: 0;
+    right: 0;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+
+    border-radius: 12px;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    color:
+        rgba(245, 245, 247, 0.70);
+
+    font-family:
+        "DM Sans",
+        sans-serif;
+
+    font-size: 17px;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease;
+}
+
+
+#auth-close:active {
+    transform: scale(0.90);
+
+    background:
+        rgba(168, 85, 247, 0.10);
+
+    border-color:
+        rgba(168, 85, 247, 0.30);
+
+    color:
+        #F5F5F7;
+}
+
+
+/* ==========================================================
+   AUTH CONTENT
+   ========================================================== */
+
+#auth-content {
+    position: relative;
+
+    padding-top: 24px;
+}
+
+
+/* ==========================================================
+   AUTH PANEL
+   ========================================================== */
+
+#login-panel,
+#register-panel {
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+}
+
+
+/* ==========================================================
+   AUTH PANEL TITLE
+   ========================================================== */
+
+#login-panel h3,
+#register-panel h3 {
+    margin: 0 0 7px;
+
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 29px;
+
+    font-weight: 400;
+
+    line-height: 1.05;
+
+    letter-spacing: 0.8px;
+
+    color:
+        #F5F5F7;
+}
+
+
+/* ==========================================================
+   AUTH DESCRIPTION
+   ========================================================== */
+
+#login-panel p,
+#register-panel p {
+    margin: 0 0 22px;
+
+    color:
+        rgba(245, 245, 247, 0.45);
+
+    font-size: 12px;
+
+    line-height: 1.5;
+
+    letter-spacing: 0.15px;
+}
+
+
+/* ==========================================================
+   AUTH INPUTS
+   ========================================================== */
+
+#auth-modal input {
+    width: 100%;
+
+    height: 52px;
+
+    margin-bottom: 10px;
+
+    padding:
+        0
+        15px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.075);
+
+    border-radius: 15px;
+
+    outline: none;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    color:
+        #F5F5F7;
+
+    font-family:
+        "DM Sans",
+        system-ui,
+        sans-serif;
+
+    font-size: 13px;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+#auth-modal input::placeholder {
+    color:
+        rgba(245, 245, 247, 0.30);
+}
+
+
+#auth-modal input:focus {
+    background:
+        rgba(168, 85, 247, 0.045);
+
+    border-color:
+        rgba(168, 85, 247, 0.48);
+
+    box-shadow:
+        0 0 0 3px rgba(168, 85, 247, 0.07),
+        0 0 20px rgba(168, 85, 247, 0.06);
+}
+
+
+/* ==========================================================
+   LOGIN BUTTON
+   ========================================================== */
+
+#login-button,
+#register-button {
+    width: 100%;
+    height: 52px;
+
+    margin-top: 7px;
+
+    border: none;
+    border-radius: 15px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8B5CF6 0%,
+            #C4B5FD 32%,
+            #F5F5F7 50%,
+            #F9A8D4 70%,
+            #EC4899 100%
+        );
+
+    color:
+        #09090D;
+
+    font-family:
+        "DM Sans",
+        sans-serif;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 0 18px rgba(168, 85, 247, 0.20),
+        0 0 30px rgba(244, 114, 182, 0.08);
+
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
+}
+
+
+#login-button:active,
+#register-button:active {
+    transform: scale(0.97);
+
+    box-shadow:
+        0 0 24px rgba(168, 85, 247, 0.35),
+        0 0 38px rgba(244, 114, 182, 0.16);
+}
+
+
+#login-button:disabled,
+#register-button:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* ==========================================================
+   GOOGLE BUTTON
+   ========================================================== */
+
+#google-login-button {
+    width: 100%;
+    height: 50px;
+
+    margin-top: 10px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.09);
+
+    border-radius: 15px;
+
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    color:
+        rgba(245, 245, 247, 0.88);
+
+    font-family:
+        "DM Sans",
+        sans-serif;
+
+    font-size: 13px;
+
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+
+#google-login-button:active {
+    transform: scale(0.97);
+
+    background:
+        rgba(255, 255, 255, 0.075);
+
+    border-color:
+        rgba(255, 255, 255, 0.16);
+
+    box-shadow:
+        0 0 18px rgba(255, 255, 255, 0.04);
+}
+
+
+#google-login-button:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+}
+
+
+/* ==========================================================
+   SWITCH LOGIN / REGISTER
+   ========================================================== */
+
+#show-register,
+#show-login {
+    width: 100%;
+
+    margin-top: 15px;
+
+    padding: 8px 4px;
+
+    border: none;
+
+    background: transparent;
+
+    color:
+        rgba(196, 181, 253, 0.75);
+
+    font-family:
+        "DM Sans",
+        sans-serif;
+
+    font-size: 11px;
+
+    cursor: pointer;
+
+    transition:
+        color 0.18s ease;
+}
+
+
+#show-register:active,
+#show-login:active {
+    color:
+        #F472B6;
+}
+
+
+/* ==========================================================
+   ACCOUNT MODAL
+   ========================================================== */
+
+#account-modal {
+    position: fixed;
+    inset: 0;
+
+    z-index: 2100;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(0, 0, 0, 0.68);
+
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+
+#account-modal.hidden {
+    display: none !important;
+}
+
+
+/* ==========================================================
+   ACCOUNT WINDOW
+   ========================================================== */
+
+.account-modal-content {
+    position: relative;
+
+    width: 100%;
+    max-width: 430px;
+
+    padding: 28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(27, 24, 35, 0.98),
+            rgba(10, 10, 15, 0.99)
+        );
+
+    border:
+        1px solid rgba(255, 255, 255, 0.09);
+
+    border-radius: 26px;
+
+    box-shadow:
+        0 30px 90px rgba(0, 0, 0, 0.65),
+        0 0 45px rgba(168, 85, 247, 0.10);
+
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+
+    overflow: hidden;
+}
+
+
+/* ==========================================================
+   ACCOUNT CLOSE
+   ========================================================== */
+
+#account-close {
+    position: absolute;
+
+    top: 18px;
+    right: 18px;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+
+    border-radius: 12px;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    color:
+        rgba(245, 245, 247, 0.70);
+
+    font-size: 21px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        border-color 0.18s ease;
+}
+
+
+#account-close:active {
+    transform: scale(0.9);
+
+    background:
+        rgba(244, 114, 182, 0.08);
+
+    border-color:
+        rgba(244, 114, 182, 0.28);
+}
+
+
+/* ==========================================================
+   ACCOUNT HEADER
+   ========================================================== */
+
+.account-header {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    padding:
+        2px
+        45px
+        22px
+        2px;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.06);
+}
+
+
+/* ==========================================================
+   ACCOUNT ICON
+   ========================================================== */
+
+.account-icon {
+    width: 56px;
+    height: 56px;
+
+    flex: 0 0 56px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+        1px solid rgba(168, 85, 247, 0.22);
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(168, 85, 247, 0.12),
+            rgba(244, 114, 182, 0.07)
+        );
+
+    font-size: 25px;
+
+    box-shadow:
+        0 0 22px rgba(168, 85, 247, 0.08);
+}
+
+
+/* ==========================================================
+   ACCOUNT TITLE
+   ========================================================== */
+
+.account-title {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+
+.account-title h2 {
+    margin: 0;
+
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 30px;
+
+    font-weight: 400;
+
+    line-height: 1;
+
+    letter-spacing: 0.8px;
+
+    color:
+        #F5F5F7;
+}
+
+
+.account-title p {
+    margin: 0;
+
+    max-width: 220px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    color:
+        rgba(245, 245, 247, 0.42);
+
+    font-size: 11px;
+}
+
+
+/* ==========================================================
+   ACCOUNT INFORMATION
+   ========================================================== */
+
+.account-info {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+
+    margin-top: 20px;
+}
+
+
+.account-info-item {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+
+    padding: 13px 14px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.055);
+
+    border-radius: 15px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+
+.account-info-item span {
+    color:
+        rgba(245, 245, 247, 0.40);
+
+    font-size: 10px;
+
+    letter-spacing: 0.2px;
+}
+
+
+.account-info-item strong {
+    color:
+        rgba(245, 245, 247, 0.88);
+
+    font-size: 12px;
+
+    font-weight: 500;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* ==========================================================
+   LOGOUT
+   ========================================================== */
+
+.account-logout {
+    width: 100%;
+    height: 50px;
+
+    margin-top: 18px;
+
+    border:
+        1px solid rgba(244, 114, 182, 0.16);
+
+    border-radius: 15px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(244, 114, 182, 0.07),
+            rgba(168, 85, 247, 0.045)
+        );
+
+    color:
+        rgba(249, 168, 212, 0.88);
+
+    font-family:
+        "DM Sans",
+        sans-serif;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+
+.account-logout:active {
+    transform: scale(0.97);
+
+    background:
+        rgba(244, 114, 182, 0.12);
+
+    border-color:
+        rgba(244, 114, 182, 0.35);
+
+    box-shadow:
+        0 0 22px rgba(244, 114, 182, 0.08);
+}
+
+
+/* ==========================================================
+   AUTH / ACCOUNT OPEN ANIMATION
+   ========================================================== */
+
+@keyframes authBackdropIn {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+}
+
+
+@keyframes authModalIn {
+
+    from {
+        opacity: 0;
+        transform:
+            translateY(25px)
+            scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform:
+            translateY(0)
+            scale(1);
+    }
+
+}
+
+
+#auth-modal:not(.hidden),
+#account-modal:not(.hidden) {
+    animation:
+        authBackdropIn
+        0.22s
+        ease-out;
+}
+
+
+#auth-modal:not(.hidden) .modal-content,
+#account-modal:not(.hidden) .account-modal-content {
+    animation:
+        authModalIn
+        0.32s
+        cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+/* ==========================================================
+   MOBILE AUTH
+   ========================================================== */
+
+@media (max-width: 500px) {
+
+    #auth-modal,
+    #account-modal {
+        align-items: flex-end;
+
+        padding: 0;
+    }
+
+
+    #auth-modal .modal-content,
+    .account-modal-content {
+        max-width: none;
+
+        border-radius:
+            26px
+            26px
+            0
+            0;
+
+        padding:
+            26px
+            20px
+            calc(26px + env(safe-area-inset-bottom));
+    }
+
+
+    #auth-modal .modal-header {
+        padding-bottom: 18px;
+    }
+
+
+    #auth-modal .modal-header h2 {
+        font-size: 31px;
+    }
+
+
+    #login-panel h3,
+    #register-panel h3 {
+        font-size: 27px;
+    }
+
+
+    .account-title h2 {
+        font-size: 28px;
+    }
+
+
+    .account-header {
+        padding-right: 42px;
+    }
+
+}
+
+
+/* ==========================================================
+   SMALL PHONES
+   ========================================================== */
+
+@media (max-width: 360px) {
+
+    #auth-modal .modal-content,
+    .account-modal-content {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+
+    #auth-modal input {
+        height: 49px;
+
+        font-size: 12px;
+    }
+
+
+    #login-button,
+    #register-button,
+    #google-login-button {
+        height: 49px;
+
+        font-size: 12px;
+    }
+
+
+    .account-icon {
+        width: 50px;
+        height: 50px;
+
+        flex-basis: 50px;
+
+        font-size: 22px;
+    }
+
+}
+
+/* ==========================================================
+   GOOGLE ACCOUNT MODAL
+   ========================================================== */
+
+#google-account-modal {
+    position: fixed;
+    inset: 0;
+
+    z-index: 2200;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(0, 0, 0, 0.68);
+
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+#google-account-modal.hidden {
+    display: none !important;
+}
+
+
+/* WINDOW */
+
+.google-account-modal-content {
+    position: relative;
+
+    width: 100%;
+    max-width: 430px;
+
+    padding: 28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(27, 24, 35, 0.98),
+            rgba(10, 10, 15, 0.99)
+        );
+
+    border:
+        1px solid rgba(168, 85, 247, 0.18);
+
+    border-radius: 26px;
+
+    box-shadow:
+        0 30px 90px rgba(0, 0, 0, 0.65),
+        0 0 45px rgba(168, 85, 247, 0.12);
+
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+
+    overflow: hidden;
+}
+
+
+/* CLOSE */
+
+#google-account-close {
+    position: absolute;
+
+    top: 18px;
+    right: 18px;
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+
+    border-radius: 12px;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    color:
+        rgba(245, 245, 247, 0.70);
+
+    font-size: 21px;
+
+    cursor: pointer;
+}
+
+
+/* HEADER */
+
+.google-account-header {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    padding:
+        2px
+        45px
+        22px
+        2px;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.06);
+}
+
+
+/* ICON */
+
+.google-account-icon {
+    width: 56px;
+    height: 56px;
+
+    flex: 0 0 56px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+        1px solid rgba(168, 85, 247, 0.25);
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(168, 85, 247, 0.14),
+            rgba(244, 114, 182, 0.08)
+        );
+
+    font-size: 25px;
+
+    box-shadow:
+        0 0 22px rgba(168, 85, 247, 0.10);
+}
+
+
+/* TITLE */
+
+.google-account-title {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.google-account-title h2 {
+    margin: 0;
+
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 30px;
+
+    font-weight: 400;
+
+    color:
+        #F5F5F7;
+}
+
+.google-account-title p {
+    margin: 0;
+
+    max-width: 220px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    color:
+        rgba(245, 245, 247, 0.42);
+
+    font-size: 11px;
+}
+
+
+/* INFO */
+
+.google-account-info {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+
+    margin-top: 20px;
+}
+
+.google-account-info-item {
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+
+    padding: 13px 14px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.055);
+
+    border-radius: 15px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.google-account-info-item span {
+    color:
+        rgba(245, 245, 247, 0.40);
+
+    font-size: 10px;
+}
+
+.google-account-info-item strong {
+    color:
+        rgba(245, 245, 247, 0.88);
+
+    font-size: 12px;
+
+    font-weight: 500;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 500px) {
+
+    #google-account-modal {
+        align-items: flex-end;
+
+        padding: 0;
+    }
+
+    .google-account-modal-content {
+        max-width: none;
+
+        border-radius:
+            26px
+            26px
+            0
+            0;
+
+        padding:
+            26px
+            20px
+            calc(26px + env(safe-area-inset-bottom));
+    }
+
+}
+
+/* ==========================================================
+   GOOGLE LOGIN — COMING SOON
+   ========================================================== */
+
+#google-login-button {
+    position: relative;
+
+    cursor: not-allowed;
+
+    opacity: 0.55;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color:
+        rgba(245, 245, 247, 0.45);
+
+    border-color:
+        rgba(255, 255, 255, 0.05);
+
+    box-shadow: none;
+}
+
+#google-login-button::after {
+    content: "Yakında";
+
+    margin-left: 8px;
+
+    padding: 3px 7px;
+
+    border-radius: 7px;
+
+    background:
+        rgba(168, 85, 247, 0.12);
+
+    color:
+        rgba(216, 180, 254, 0.75);
+
+    font-size: 9px;
+
+    font-weight: 600;
+
+    letter-spacing: 0.3px;
+}
+
+/* ==========================================================
+   SETTINGS SUB-PANELS (js/settings.js)
+   ========================================================== */
+
+.settings-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 4px 2px 12px;
+}
+
+.settings-back-button {
+    align-self: flex-start;
+    background: transparent;
+    border: none;
+    color: var(--accent-soft, #F472B6);
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.settings-panel-title {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.settings-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--text, #fff);
+}
+
+.settings-field input[type="text"],
+.settings-field input[type="password"],
+.settings-field select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text, #fff);
+    font-size: 0.85rem;
+}
+
+.settings-field-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.settings-note {
+    font-size: 0.75rem;
+    color: var(--muted, #a0a0a0);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.settings-inline-button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--text, #fff);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-align: center;
+}
+
+.settings-inline-button.danger {
+    border-color: rgba(255, 70, 70, 0.4);
+    color: #ff9b9b;
+}
+
+.settings-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 4px 0;
+}
+
+/* ==========================================================
+   "API Key Al↗" link (js/settings.js)
+   ========================================================== */
+
+.settings-field-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.settings-get-key-link {
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent, #A855F7);
+    text-decoration: none;
+    white-space: nowrap;
+    padding: 2px 8px;
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    border-radius: 999px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.settings-get-key-link:hover {
+    background: rgba(168, 85, 247, 0.15);
+    color: var(--accent-soft, #F472B6);
+}
+
+/* ==========================================================
+   MEMORY MODAL + ABOUT MODAL
+   ========================================================== */
+/* FIX: these two modals had ZERO dedicated CSS anywhere in the
+   project — only #settings-modal and #auth-modal were styled.
+   Without this, opening 🧠 Hafıza or "Hakkında" rendered the
+   modal as a plain unstyled block shoved into normal page flow
+   instead of a centered overlay window. */
+
+#memory-modal,
+#about-modal {
+    position: fixed;
+    inset: 0;
+
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0, 0, 0, 0.55);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+#memory-modal.hidden,
+#about-modal.hidden {
+    display: none !important;
+}
+
+#memory-modal .modal-content,
+#about-modal .modal-content {
+    width: 100%;
+    max-width: 480px;
+    max-height: min(680px, 90dvh);
+
+    overflow-y: auto;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 20px;
+
+    background: linear-gradient(
+        145deg,
+        rgba(25, 23, 32, 0.97),
+        rgba(10, 10, 15, 0.98)
+    );
+
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 24px;
+
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.55),
+        0 0 40px rgba(168, 85, 247, 0.08);
+
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+}
+
+#memory-modal .modal-header,
+#about-modal .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+#memory-modal .modal-header h2,
+#about-modal .modal-header h2 {
+    margin: 0;
+    font-family: "Cormorant Garamond", serif;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #F5F5F7;
+}
+
+#memory-modal .close-modal,
+#about-modal .close-modal {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    color: var(--text, #F5F5F7);
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+#memory-modal .close-modal:hover,
+#about-modal .close-modal:hover {
+    background: rgba(168, 85, 247, 0.15);
+}

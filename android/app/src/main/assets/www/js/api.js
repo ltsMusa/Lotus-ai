@@ -1,7 +1,7 @@
 /**
  * ==========================================================
  * Lotus AI - API Manager
- * Version : 4.0
+ * Version : 7.0
  * Description : Sends messages to AI providers with automatic
  *               fallback, streaming, backend-proxy routing,
  *               and Groq key-pool exhaustion handling.
@@ -317,7 +317,7 @@ export default class APIManager {
             let used = null;
 
             const text = await LocalAI.sendMessageStream(
-                { history, systemPrompt: buildCompactSystemPrompt({ memoryContext, searchContext }) },
+                { history, systemPrompt: buildCompactSystemPrompt({ memoryContext, searchContext, personalization: config.personalization }) },
                 onToken,
                 controller,
                 { onStatus, onModel: info => { used = info; } }
@@ -328,7 +328,7 @@ export default class APIManager {
 
         // Ollama: a real server, so the full prompt is fine.
         const text = await this.providers.ollama.sendMessageStream(
-            { history, systemPrompt: buildSystemPrompt({ memoryContext, searchContext: "" }) },
+            { history, systemPrompt: buildSystemPrompt({ memoryContext, searchContext: "", personalization: config.personalization }) },
             onToken,
             controller
         );
@@ -422,7 +422,7 @@ export default class APIManager {
 
             const goThroughProxy = config.useBackendProxy && !hasPersonalKey;
 
-            const systemPrompt = buildSystemPrompt({ memoryContext, searchContext });
+            const systemPrompt = buildSystemPrompt({ memoryContext, searchContext, personalization: config.personalization });
 
             try {
 
@@ -605,7 +605,7 @@ export default class APIManager {
             };
         }
 
-        const systemPrompt = buildSystemPrompt({ memoryContext, searchContext });
+        const systemPrompt = buildSystemPrompt({ memoryContext, searchContext, personalization: config.personalization });
 
         const attemptedErrors = [];
 

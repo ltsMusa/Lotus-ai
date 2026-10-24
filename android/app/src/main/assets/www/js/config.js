@@ -21,6 +21,7 @@
  */
 
 import { isPackagedApp } from "./env.js";
+import { DEFAULT_PERSONALIZATION, normalizePersonalization } from "./personalization.js";
 
 const STORAGE_KEY = "lotus_config_v1";
 
@@ -83,6 +84,12 @@ const DEFAULTS = {
         useGpu: false, // WebGPU offload is experimental on phones
         idleUnloadMinutes: 5 // free the RAM after this long without a message
     },
+
+    // Kişiselleştirme: the user's own standing instructions and style
+    // choices, added to the system prompt of every request
+    // (js/personalization.js, Settings → Kişiselleştirme). Separate from
+    // Hafıza, which holds the short facts Lotus collects.
+    personalization: { ...DEFAULT_PERSONALIZATION },
 
     // "Her mesajda otomatik web araması yapsın" — on by default so
     // answers stay grounded in current info instead of the model's
@@ -160,6 +167,9 @@ function deepMerge(base, override) {
 }
 
 const config = deepMerge(DEFAULTS, loadStoredConfig());
+
+// A hand-edited or damaged saved value must never reach the prompt.
+config.personalization = normalizePersonalization(config.personalization);
 
 function migrateRetiredModels(target) {
 
@@ -295,6 +305,31 @@ config.setLocal = function (updates = {}) {
 
         // no window (tests)
     }
+};
+
+config.setPersonalization = function (updates = {}) {
+
+    // Always store a complete, valid object — whatever the form (or a
+    // damaged localStorage entry) hands over.
+    this.personalization = normalizePersonalization({ ...this.personalization, ...updates });
+
+    persist();
+
+    try {
+
+        window.dispatchEvent(new CustomEvent("lotus:personalization-changed", { detail: this.personalization }));
+
+    } catch {
+
+        // no window (tests)
+    }
+
+    return this.personalization;
+};
+
+config.resetPersonalization = function () {
+
+    return this.setPersonalization({ ...DEFAULT_PERSONALIZATION });
 };
 
 config.setMemoryEnabled = function (enabled) {

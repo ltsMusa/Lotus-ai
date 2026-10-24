@@ -1,4 +1,4 @@
-# Lotus AI
+# Lotus AI · 7.0
 
 Mor-neon cam (glassmorphism) temalı yapay zekâ sohbet uygulaması — PWA + Android WebView paketi.
 
@@ -9,6 +9,7 @@ Mor-neon cam (glassmorphism) temalı yapay zekâ sohbet uygulaması — PWA + An
 - Ollama (isteğe bağlı): kendi sunucuna bağlanmak istersen `ollama/termux-kurulum.sh`
 - Web araması (Tavily / Jina / anahtarsız yedekler), sayfa özetleme/çeviri araçları
 - Görsel oluşturma (Pollinations, anahtarsız) + galeri, görsel/dosya analizi
+- **Kişiselleştirme** (Ayarlar → Kişiselleştirme): hitap şekli, kendin hakkında kısa not, cevap uzunluğu / üslup / dil ve özel talimatlar — her sohbette Lotus'a ek talimat olarak gider, canlı önizlemesi vardır, kapatılabilir ve sıfırlanabilir. Hafıza'dan ayrıdır
 - Hafıza: "hatırla: …", "unut: …", "neler hatırlıyorsun?" — misafirde cihazda, girişli kullanıcıda Supabase'de
 - Supabase hesap sistemi (isteğe bağlı), giriş yapılmazsa her şey localStorage'da
 - Çevrimdışı açılan, güncelleme bildirimi veren PWA (service worker)
@@ -33,7 +34,7 @@ Mor-neon cam (glassmorphism) temalı yapay zekâ sohbet uygulaması — PWA + An
   yavaşlama ölçülerek *tahmin edilir* — yani cihaz yavaşlamaya başladıktan sonra tepki verir.
 
 **Motor ve model dosyaları**
-- Motor: [wllama](https://github.com/ngxson/wllama) 3.12.0 (MIT, llama.cpp'nin WebAssembly derlemesi).
+- Motor: [wllama](https://github.com/ngxson/wllama) 3.8.1 (MIT, llama.cpp'nin WebAssembly derlemesi).
   `tools/fetch-local-ai.sh` motoru `vendor/wllama/` içine koyar (internetsiz açılır). Koymazsan ilk kullanımda jsDelivr'den gelir.
 - Model dosyaları depoya konmaz (GitHub 100 MB sınırı). Uygulama içinden indirilir ya da
   `tools/fetch-local-ai.sh --with-model` ile `models/` içine konup APK'ya gömülür.
@@ -49,9 +50,10 @@ Mor-neon cam (glassmorphism) temalı yapay zekâ sohbet uygulaması — PWA + An
 - `js/router.js`, `js/localPolicy.js`, `js/deviceMonitor.js`, `js/providers/local.js`, `js/autoSwitch.js`, `js/settingsLocal.js` — yönlendirme ve yerel yapay zekâ
 - `vendor/wllama/`, `models/` — yerel motor ve (isteğe bağlı) model dosyaları, `tools/fetch-local-ai.sh` ile gelir
 - `tools/` — `fetch-local-ai.sh` (motor/model), `sync-android.sh` (web dosyalarını Android kopyasına yansıtır)
-- `tests/local-ai.test.mjs` — yönlendirme/ısı politikası birim testleri
+- `js/prompts/systemPrompt.js` — Lotus'un kişiliği (tek yerde); `js/personalization.js` — Kişiselleştirme ayarları
+- `tests/` — birim testleri: `node --test tests/local-ai.test.mjs tests/personalization.test.mjs`
 - `lotus-model/` — küçük deneysel model eğitim betikleri (uygulama kullanmaz)
-- `ollama/termux-kurulum.sh` — (isteğe bağlı) telefonda Termux ile Ollama kurulumu
+- `ollama/termux-kurulum.sh` — (isteğe bağlı) telefonda Termux ile Ollama kurulumu; sistem promptu `node tools/export-system-prompt.mjs` ile `systemPrompt.js`'den kopyalanır
 
 ## Web
 Statik sunucu: `python3 -m http.server 8000` → http://localhost:8000

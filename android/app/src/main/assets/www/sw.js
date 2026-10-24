@@ -22,7 +22,7 @@
  * ==========================================================
  */
 
-const VERSION = "v8";
+const VERSION = "7.0";
 const SHELL_CACHE = `lotus-shell-${VERSION}`;
 const ASSET_CACHE = `lotus-assets-${VERSION}`;
 
@@ -56,6 +56,7 @@ const APP_SHELL = [
     "./js/localPolicy.js",
     "./js/markdown.js",
     "./js/memory.js",
+    "./js/personalization.js",
     "./js/prompts/systemPrompt.js",
     "./js/providers/gemini.js",
     "./js/providers/groq.js",

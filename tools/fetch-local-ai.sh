@@ -19,7 +19,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-ENGINE_VERSION="3.12.0"
+ENGINE_VERSION="3.8.1"
 WITH_MODEL=""
 SYNC_ANDROID=0
 

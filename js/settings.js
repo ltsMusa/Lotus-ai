@@ -20,6 +20,14 @@ import DeviceProfile, { MODEL_BASE_CREDIT } from "./deviceProfile.js";
 import { showToast, showConfirm } from "./toast.js";
 import { icon } from "./utils.js";
 import { renderLocalSettings, bindLocalSettings } from "./settingsLocal.js";
+import {
+    PERSONALIZATION_LIMITS,
+    STYLE_OPTIONS,
+    TONE_OPTIONS,
+    LANGUAGE_OPTIONS,
+    buildPersonalizationBlock,
+    DEFAULT_PERSONALIZATION
+} from "./personalization.js";
 
 function escapeAttr(value) {
 
@@ -238,13 +246,107 @@ function renderChatPanel() {
     `);
 }
 
+function selectOptions(options, current) {
+
+    return options
+        .map(([value, label]) => `<option value="${value}" ${current === value ? "selected" : ""}>${label}</option>`)
+        .join("");
+}
+
+function counterText(length, max) {
+
+    return `${length} / ${max}`;
+}
+
+/** What Lotus will actually receive, shown as plain text in the preview box. */
+function personalizationPreviewText(personalization) {
+
+    const block = buildPersonalizationBlock(personalization).trim();
+
+    return block || "Henüz Lotus'a gönderilecek ek bir talimat yok. Bir alan doldurduğunda burada görünür.";
+}
+
 function renderPersonalizationPanel() {
 
+    const p = config.personalization;
+
+    const limits = PERSONALIZATION_LIMITS;
+
     return panelShell("Kişiselleştirme", `
+        ${toggleRow("personalization-enabled", "Kişiselleştirmeyi kullan", p.enabled)}
+
         <p class="settings-note">
-            Lotus AI'nin seninle ilgili hatırladıkları ayrı bir <strong>Hafıza</strong> penceresinde tutulur —
-            ekleyebilir, silebilir, tamamen temizleyebilirsin. Sohbette de yönetebilirsin:
-            <code>hatırla: …</code>, <code>unut: …</code>, <code>neler hatırlıyorsun?</code>
+            Burada yazdıkların <strong>her sohbette</strong> Lotus'a ek talimat olarak gider; bu cihazda
+            kayıtlı kalır, kapatırsan silinmeden beklemeye alınır.
+        </p>
+
+        <div id="personalization-fields" class="settings-fields ${p.enabled ? "" : "is-off"}">
+
+            ${section("Seni tanısın")}
+
+            <label class="settings-field">
+                <span class="settings-field-label-row">
+                    <span>Sana nasıl hitap etsin?</span>
+                    <span class="settings-counter" data-counter-for="personalization-nickname">${counterText(p.nickname.length, limits.nickname)}</span>
+                </span>
+                <input type="text" id="personalization-nickname" maxlength="${limits.nickname}"
+                    value="${escapeAttr(p.nickname)}" placeholder="Örn. Musa" autocomplete="off">
+            </label>
+
+            <label class="settings-field">
+                <span class="settings-field-label-row">
+                    <span>Senin hakkında</span>
+                    <span class="settings-counter" data-counter-for="personalization-about">${counterText(p.about.length, limits.about)}</span>
+                </span>
+                <textarea id="personalization-about" rows="3" maxlength="${limits.about}"
+                    placeholder="Ne iş yaparsın, neyle ilgilenirsin, nelerde yardım istersin?">${escapeAttr(p.about)}</textarea>
+            </label>
+
+            ${section("Konuşma tarzı")}
+
+            <label class="settings-field">
+                <span>Cevap uzunluğu</span>
+                <select id="personalization-style">${selectOptions(STYLE_OPTIONS, p.style)}</select>
+            </label>
+
+            <label class="settings-field">
+                <span>Üslup</span>
+                <select id="personalization-tone">${selectOptions(TONE_OPTIONS, p.tone)}</select>
+            </label>
+
+            <label class="settings-field">
+                <span>Dil</span>
+                <select id="personalization-language">${selectOptions(LANGUAGE_OPTIONS, p.language)}</select>
+            </label>
+
+            ${section("Özel talimatlar", "İstediğin her şeyi yazabilirsin")}
+
+            <label class="settings-field">
+                <span class="settings-field-label-row">
+                    <span>Lotus'un hep uyması gerekenler</span>
+                    <span class="settings-counter" data-counter-for="personalization-instructions">${counterText(p.instructions.length, limits.instructions)}</span>
+                </span>
+                <textarea id="personalization-instructions" rows="5" maxlength="${limits.instructions}"
+                    placeholder="Örn. Kod yazarken açıklamayı kısa tut. Cevapları madde madde verme.">${escapeAttr(p.instructions)}</textarea>
+            </label>
+
+            <details class="settings-details">
+                <summary>Lotus'a giden ek talimatı gör</summary>
+                <pre id="personalization-preview" class="settings-preview">${escapeAttr(personalizationPreviewText(p))}</pre>
+            </details>
+
+            <button id="personalization-reset" class="settings-inline-button danger" type="button">
+                ${icon("trash")}Kişiselleştirmeyi sıfırla
+            </button>
+
+        </div>
+
+        ${section("Hafıza", "Ayrı bir şey")}
+
+        <p class="settings-note">
+            Lotus'un senden <strong>öğrendiği kısa bilgiler</strong> (<code>hatırla: …</code>) Hafıza'da tutulur;
+            yukarıdakiler ise senin kendi koyduğun kalıcı tercihlerin. Hafızada
+            <strong id="personalization-memory-count">…</strong> kayıt var.
         </p>
 
         <button id="settings-open-memory-button" class="settings-inline-button" type="button">
@@ -268,6 +370,174 @@ const PANEL_RENDERERS = {
     personalization: renderPersonalizationPanel,
     about: renderAboutPanel
 };
+
+/**
+ * Wires the Kişiselleştirme panel: text boxes save while typing (debounced,
+ * and always when leaving the panel), the preview and counters follow along,
+ * and the Hafıza button opens the memory window.
+ */
+function bindPersonalizationPanel(container) {
+
+    const $ = id => container.querySelector(`#${id}`);
+
+    const enabledBox = $("personalization-enabled");
+    const fields = $("personalization-fields");
+    const preview = $("personalization-preview");
+
+    const textIds = {
+        "personalization-nickname": "nickname",
+        "personalization-about": "about",
+        "personalization-instructions": "instructions"
+    };
+
+    const selectIds = {
+        "personalization-style": "style",
+        "personalization-tone": "tone",
+        "personalization-language": "language"
+    };
+
+    let timer = null;
+
+    const collect = () => {
+
+        const updates = { enabled: Boolean(enabledBox?.checked) };
+
+        for (const [id, key] of Object.entries({ ...textIds, ...selectIds })) {
+
+            const element = $(id);
+
+            if (element) updates[key] = element.value;
+        }
+
+        return updates;
+    };
+
+    const refreshPreview = () => {
+
+        if (preview) preview.textContent = personalizationPreviewText(config.personalization);
+    };
+
+    const save = () => {
+
+        clearTimeout(timer);
+
+        timer = null;
+
+        config.setPersonalization(collect());
+
+        refreshPreview();
+    };
+
+    const updateCounters = () => {
+
+        for (const [id] of Object.entries(textIds)) {
+
+            const counter = container.querySelector(`[data-counter-for="${id}"]`);
+
+            const element = $(id);
+
+            if (counter && element) {
+
+                const max = PERSONALIZATION_LIMITS[textIds[id]];
+
+                counter.textContent = counterText(element.value.length, max);
+
+                counter.classList.toggle("is-near-limit", element.value.length >= max * 0.9);
+            }
+        }
+    };
+
+    enabledBox?.addEventListener("change", () => {
+
+        fields?.classList.toggle("is-off", !enabledBox.checked);
+
+        save();
+
+        showToast(enabledBox.checked ? "Kişiselleştirme açık." : "Kişiselleştirme kapatıldı (ayarların silinmedi).", "info");
+    });
+
+    for (const id of Object.keys(textIds)) {
+
+        const element = $(id);
+
+        element?.addEventListener("input", () => {
+
+            updateCounters();
+
+            clearTimeout(timer);
+
+            timer = setTimeout(save, 350);
+        });
+
+        // Leaving the box: save now and show the cleaned-up text
+        // (trimmed, control characters removed). Not while typing — that
+        // would move the cursor.
+        element?.addEventListener("change", () => {
+
+            save();
+
+            element.value = config.personalization[textIds[id]];
+
+            updateCounters();
+        });
+    }
+
+    for (const id of Object.keys(selectIds)) {
+
+        $(id)?.addEventListener("change", save);
+    }
+
+    $("personalization-reset")?.addEventListener("click", async () => {
+
+        if (JSON.stringify(config.personalization) === JSON.stringify(DEFAULT_PERSONALIZATION)) {
+
+            showToast("Sıfırlanacak bir şey yok.", "info");
+
+            return;
+        }
+
+        const confirmed = await showConfirm("Kişiselleştirmedeki her şey (hitap, hakkında, tarz, özel talimatlar) silinsin mi? Hafıza etkilenmez.", { okLabel: "Sıfırla", danger: true });
+
+        if (!confirmed) return;
+
+        config.resetPersonalization();
+
+        renderPanel("personalization");
+
+        showToast("Kişiselleştirme sıfırlandı.", "success");
+    });
+
+    // The back button must not lose an edit that is still waiting for the timer.
+    container.querySelector(".settings-back-button")?.addEventListener("click", () => {
+
+        if (timer) save();
+    }, { capture: true });
+
+    $("settings-open-memory-button")?.addEventListener("click", () => {
+
+        if (timer) save();
+
+        document.getElementById("settings-modal")?.classList.add("hidden");
+
+        document.getElementById("memory-modal")?.classList.remove("hidden");
+
+        Memory.renderModal();
+    });
+
+    Memory.getMemories()
+        .then(list => {
+
+            const count = $("personalization-memory-count");
+
+            if (count) count.textContent = String(Array.isArray(list) ? list.length : 0);
+        })
+        .catch(() => {
+
+            const count = $("personalization-memory-count");
+
+            if (count) count.textContent = "—";
+        });
+}
 
 function bindPanelEvents(container, key) {
 
@@ -336,17 +606,7 @@ function bindPanelEvents(container, key) {
 
     if (key === "personalization") {
 
-        container.querySelector("#settings-open-memory-button")?.addEventListener("click", () => {
-
-            const settingsModal = document.getElementById("settings-modal");
-            const memoryModal = document.getElementById("memory-modal");
-
-            settingsModal?.classList.add("hidden");
-
-            memoryModal?.classList.remove("hidden");
-
-            Memory.renderModal();
-        });
+        bindPersonalizationPanel(container);
     }
 
     if (key === "voice") {

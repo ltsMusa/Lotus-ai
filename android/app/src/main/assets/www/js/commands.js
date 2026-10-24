@@ -1,7 +1,7 @@
 /**
  * ==========================================================
  * Lotus AI - Command Manager
- * Version : 4.1
+ * Version : 7.0
  * Author  : ltsMusa
  * Description : Handles local commands (instant canned replies
  *               for things like "saat kaç" / "sen kimsin" that

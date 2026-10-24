@@ -21,17 +21,21 @@
  * ==========================================================
  */
 
-const MAX_COMMAND_LENGTH = 40;
+const MAX_COMMAND_WORDS = 4;
 
-function hasWord(message, word) {
+// Lowercase (Turkish rules), drop punctuation/emoji, collapse spaces.
+function normalize(text) {
 
-    // \b doesn't work well with Turkish characters (ı, ş, ğ, ç,
-    // ö, ü aren't in \w), so bound manually against whitespace/
-    // punctuation/string edges instead of relying on \b.
-    const pattern = new RegExp(`(^|[^\\p{L}\\p{N}])${word}($|[^\\p{L}\\p{N}])`, "u");
-
-    return pattern.test(` ${message} `);
+    return String(text ?? "")
+        .toLocaleLowerCase("tr-TR")
+        .replace(/[^\p{L}\p{N}\s]/gu, " ")
+        .replace(/\s+/g, " ")
+        .trim();
 }
+
+const GREETING = /^(?:merhaba|merhabalar|selam|selamlar)(?: lotus)?(?: ai)?$/u;
+const WHO_ARE_YOU = /^(?:sen kimsin|kimsin|sen kimsin lotus|kendini tanıt)$/u;
+const HELP = /^(?:yardım|help|komutlar|yardım et)$/u;
 
 export default class CommandManager {
 
@@ -45,18 +49,18 @@ export default class CommandManager {
         return [
 
             {
-                keywords: ["merhaba", "selam", "selamlar"],
-                response: "Merhaba! Ben Lotus AI. 😊"
+                pattern: GREETING,
+                response: "Merhaba! Ben Lotus AI. Bugün ne üretelim?"
             },
 
             {
-                keywords: ["sen kimsin", "kimsin"],
+                pattern: WHO_ARE_YOU,
                 response: "Ben Lotus AI. Senin kişisel yapay zekâ asistanınım."
             },
 
             {
-                keywords: ["yardım", "help"],
-                response: "Şu an saat, tarih ve temel sohbet komutlarını destekliyorum."
+                pattern: HELP,
+                response: "Bana istediğini sorabilirsin: kod yazarım, metin özetler/çeviririm, web'de güncel bilgi ararım, görsel oluştururum ve dosya ya da görsellerini incelerim. “hatırla: …” dersen bir şeyi aklımda tutarım, “unut: …” dersen silerim."
             }
 
         ];
@@ -67,17 +71,23 @@ export default class CommandManager {
         // Never intercept a message that has a file attached
         // (js/attachments.js) — the user always wants the AI to
         // actually read it, never a canned reply.
-        if (text.includes("[Eklenen dosya:")) return null;
+        if (String(text ?? "").includes("[Eklenen dosya:")) return null;
 
-        const trimmed = text.trim();
+        const message = normalize(text);
 
-        // Commands are short, command-like utterances ("saat kaç?"),
-        // not real questions that happen to contain the same word.
-        if (trimmed.length > MAX_COMMAND_LENGTH) return null;
+        if (!message) return null;
 
-        const message = trimmed.toLowerCase("tr-TR");
+        const words = message.split(" ");
 
-        if (hasWord(message, "saat")) {
+        // Commands are tiny utterances ("saat kaç?", "merhaba"). Anything
+        // longer — "Merhaba, bana Python öğretir misin?", "Osmanlı tarihi
+        // hakkında bilgi ver" — is a real question and goes to the AI.
+        // (A looser keyword match used to swallow those with a canned reply.)
+        if (words.length > MAX_COMMAND_WORDS) return null;
+
+        const has = word => words.includes(word);
+
+        if (has("saat") && (has("kaç") || has("ne") || has("kaçta") || has("söyle") || has("oldu"))) {
 
             const now = new Date();
 
@@ -87,35 +97,40 @@ export default class CommandManager {
             })}.`;
         }
 
-        if (hasWord(message, "tarih")) {
+        if (
+            /^(?:bugünün tarihi|bugün tarih ne|tarih ne|tarih|bugün ayın kaçı|ayın kaçı|bugün günlerden ne|günlerden ne)$/u.test(message) ||
+            /^(?:bugün )?tarih(?:i)? (?:ne|nedir|kaç)$/u.test(message)
+        ) {
 
             const now = new Date();
+
+            // "günlerden ne" asks for the weekday, the rest for the date.
+            if (message.includes("günlerden")) {
+
+                const days = [
+                    "Pazar", "Pazartesi", "Salı", "Çarşamba",
+                    "Perşembe", "Cuma", "Cumartesi"
+                ];
+
+                return `Bugün ${days[now.getDay()]}.`;
+            }
 
             return `Bugünün tarihi ${now.toLocaleDateString("tr-TR")}.`;
         }
 
-        if (
-            message.includes("günlerden ne") ||
-            hasWord(message, "hangi gün") ||
-            message === "gün ne"
-        ) {
+        if (/^(?:hangi gün|gün ne|bugün hangi gün)$/u.test(message)) {
 
             const days = [
                 "Pazar", "Pazartesi", "Salı", "Çarşamba",
                 "Perşembe", "Cuma", "Cumartesi"
             ];
 
-            const today = days[new Date().getDay()];
-
-            return `📅 Bugün ${today}.`;
+            return `Bugün ${days[new Date().getDay()]}.`;
         }
 
         for (const command of this.commands) {
 
-            if (command.keywords.some(keyword => hasWord(message, keyword))) {
-
-                return command.response;
-            }
+            if (command.pattern.test(message)) return command.response;
         }
 
         return null;

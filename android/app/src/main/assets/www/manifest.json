@@ -2,7 +2,7 @@
   "id": "/",
   "name": "Lotus AI",
   "short_name": "Lotus",
-  "description": "Cyberpunk temalı kişisel yapay zekâ asistanı",
+  "description": "Mor-neon temalı kişisel yapay zekâ asistanı",
 
   "start_url": "./index.html",
   "scope": "./",
@@ -10,8 +10,8 @@
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
 
-  "background_color": "#08080C",
-  "theme_color": "#08080C",
+  "background_color": "#07060B",
+  "theme_color": "#07060B",
 
   "orientation": "portrait",
 

@@ -16,8 +16,10 @@
 
 import config from "./config.js";
 import Memory from "./memory.js";
-import DeviceProfile from "./deviceProfile.js";
+import DeviceProfile, { MODEL_BASE_CREDIT } from "./deviceProfile.js";
 import { showToast, showConfirm } from "./toast.js";
+import { icon } from "./utils.js";
+import { renderLocalSettings, bindLocalSettings } from "./settingsLocal.js";
 
 function escapeAttr(value) {
 
@@ -45,13 +47,38 @@ const PROVIDER_KEY_URLS = {
     openrouter: "https://openrouter.ai/keys"
 };
 
+// Shown as the placeholder of each model-name box (the real defaults
+// live in config.js; hosted providers retire models from time to time,
+// which is why the name is editable at all).
+const MODEL_HINTS = {
+    groq: "openai/gpt-oss-120b",
+    gemini: "gemini-3.8-flash",
+    openai: "gpt-4o-mini",
+    openrouter: "openai/gpt-4o-mini"
+};
+
+const SEARCH_KEY_LINKS = [
+    ["Tavily (önerilen, ücretsiz kota)", "https://app.tavily.com/home"],
+    ["Jina", "https://jina.ai/api-dashboard"]
+];
+
 function panelShell(title, bodyHtml) {
 
     return `
         <div class="settings-panel">
-            <button class="settings-back-button" type="button">← Geri</button>
+            <button class="settings-back-button" type="button">${icon("chevron-left")}Geri</button>
             <h3 class="settings-panel-title">${title}</h3>
             ${bodyHtml}
+        </div>
+    `;
+}
+
+function section(title, hint = "") {
+
+    return `
+        <div class="settings-section">
+            <span class="settings-section-title">${title}</span>
+            ${hint ? `<span class="settings-section-hint">${hint}</span>` : ""}
         </div>
     `;
 }
@@ -62,122 +89,151 @@ function renderAIPanel() {
         .map(key => `<option value="${key}" ${config.provider === key ? "selected" : ""}>${PROVIDER_NAMES[key]}</option>`)
         .join("");
 
-    const keyInputs = Object.keys(PROVIDER_NAMES).map(key => `
-        <label class="settings-field">
-            <span class="settings-field-label-row">
-                <span>${PROVIDER_NAMES[key]} API Anahtarı ${key === "groq" ? "(opsiyonel)" : ""}</span>
+    const providerFields = Object.keys(PROVIDER_NAMES).map(key => `
+        <div class="settings-provider-card">
+            <div class="settings-field-label-row">
+                <strong>${PROVIDER_NAMES[key]}</strong>
                 <a class="settings-get-key-link" href="${PROVIDER_KEY_URLS[key]}" target="_blank" rel="noopener noreferrer">
                     API Key Al↗
                 </a>
-            </span>
-            <input type="password" data-provider-key="${key}" value="${escapeAttr(config.providers[key].apiKey)}" placeholder="${key === "groq" ? "boş bırakılırsa otomatik Groq kullanılır" : "sk-..."}">
-        </label>
+            </div>
+
+            <label class="settings-field">
+                <span>API anahtarı ${key === "groq" ? "(isteğe bağlı)" : ""}</span>
+                <input type="password" data-provider-key="${key}" value="${escapeAttr(config.providers[key].apiKey)}" placeholder="${key === "groq" ? "boş bırakılırsa ortak Groq kullanılır" : "anahtarını yapıştır"}" autocomplete="off">
+            </label>
+
+            <label class="settings-field">
+                <span>Model adı</span>
+                <input type="text" data-provider-model="${key}" value="${escapeAttr(config.providers[key].model)}" placeholder="${MODEL_HINTS[key]}" autocomplete="off" autocapitalize="off" spellcheck="false">
+            </label>
+        </div>
     `).join("");
 
     const tierInfo = DeviceProfile.getTierInfo();
 
     return panelShell("Yapay Zekâ", `
         <p class="settings-note">
-            Lotus AI, Groq'u varsayılan olarak kendi paylaşılan anahtarıyla
-            otomatik kullanır — ekstra bir şey girmene gerek yok. Paylaşılan
-            kullanım limiti dolarsa sohbette kendi Groq anahtarını
-            ekleyebileceğin ya da yerel Ollama'ya geçebileceğin bir seçim
-            ekranı çıkar. Kendi anahtarını aşağıya girersen o sağlayıcı
-            için otomatik olarak senin anahtarın kullanılır.
+            Lotus AI varsayılan olarak ortak Groq anahtarıyla çalışır — bir şey girmen gerekmez.
+            Kendi anahtarını eklersen o sağlayıcı senin hakkından kullanılır. Ortak hak dolarsa
+            sohbette kendi anahtarını ekleyebileceğin bir seçim ekranı çıkar. Bir sağlayıcı
+            hata verirse ya da kotası dolarsa sıradaki otomatik denenir (Groq → OpenRouter → Gemini → OpenAI);
+            hiçbiri çalışmazsa cihazdaki Lotus Mini devreye girer.
         </p>
 
         <label class="settings-field">
-            <span>Aktif Sağlayıcı</span>
+            <span>Aktif sağlayıcı</span>
             <select id="settings-provider-select">${providerOptions}</select>
         </label>
 
-        ${keyInputs}
+        ${section("Sağlayıcılar", "Model adları zamanla değişir; “model bulunamadı” hatası alırsan güncel adı buraya yaz.")}
 
-        <div class="settings-divider"></div>
+        ${providerFields}
+
+        ${renderLocalSettings()}
+
+        ${section("Görsel / video analizi")}
 
         <label class="settings-field">
-            <span>Sunucu Proxy Adresi (uygulama olarak paketlendiyse gerekli)</span>
-            <input type="text" id="settings-proxy-url" value="${escapeAttr(config.backendProxyBaseUrl)}" placeholder="https://senin-projen.vercel.app">
+            <span>Groq görsel model adı</span>
+            <input type="text" id="settings-groq-vision-model" value="${escapeAttr(config.providers.groq.visionModel)}" placeholder="qwen/qwen3.8-27b" autocomplete="off" autocapitalize="off" spellcheck="false">
         </label>
 
         <p class="settings-note">
-            Web'de (bir sunucudan) açıyorsan burayı boş bırak. AIDE/Android
-            gibi bir uygulama olarak paketlediysen, otomatik Groq modu
-            çalışabilsin diye buraya <code>api/chat.js</code>'i deploy ettiğin
-            adresi (ör. Vercel linkin) yazman gerekir — aksi halde uygulama
-            göreli "/api/chat" adresine hiç ulaşamaz.
+            Görsel veya video eklediğinde sırayla Gemini, OpenAI, Groq ve OpenRouter denenir —
+            yalnızca <strong>kendi anahtarını</strong> girdiğin sağlayıcılar kullanılır.
         </p>
 
-        <div class="settings-divider"></div>
+        ${section("Web araması", "Her mesajda otomatik arama Sohbet bölümünden açılıp kapatılır.")}
 
         <label class="settings-field">
-            <span>Görsel/Video Analizi — Groq Model Adı</span>
-            <input type="text" id="settings-groq-vision-model" value="${escapeAttr(config.providers.groq.visionModel)}" placeholder="llama-3.2-11b-vision-preview">
+            <span>Arama sağlayıcısı</span>
+            <select id="settings-search-provider">
+                <option value="auto" ${config.searchProvider === "auto" ? "selected" : ""}>Otomatik (anahtardan anla)</option>
+                <option value="tavily" ${config.searchProvider === "tavily" ? "selected" : ""}>Tavily</option>
+                <option value="jina" ${config.searchProvider === "jina" ? "selected" : ""}>Jina</option>
+            </select>
+        </label>
+
+        <label class="settings-field">
+            <span class="settings-field-label-row">
+                <span>Arama API anahtarı (isteğe bağlı)</span>
+                <a class="settings-get-key-link" href="${SEARCH_KEY_LINKS[0][1]}" target="_blank" rel="noopener noreferrer">API Key Al↗</a>
+            </span>
+            <input type="password" id="settings-search-key" value="${escapeAttr(config.searchApiKey)}" placeholder="tvly-… ya da jina_…" autocomplete="off">
         </label>
 
         <p class="settings-note">
-            Görsel veya video yüklediğinde otomatik Groq modu DEĞİL —
-            Gemini, OpenAI, Groq ya da OpenRouter'dan hangisine kendi
-            anahtarını eklediysen o kullanılır (bu sırayla denenir).
-            Groq'un görsel modeli zamanla değişebilir; "model bulunamadı"
-            hatası alırsan buraya güncel model adını yaz.
+            Anahtar girmezsen sunucunun araması (varsa), o da yoksa Vikipedi kullanılır —
+            Vikipedi ansiklopedik bilgi verir, <strong>son dakika haberi vermez</strong>.
+            Ücretsiz kotası olan Tavily ile güncel haberleri alabilirsin.
         </p>
 
-        <div class="settings-divider"></div>
+        ${section("Gelişmiş")}
 
         <label class="settings-field">
-            <span>Yerel Ollama Sunucu Adresi</span>
-            <input type="text" id="settings-ollama-url" value="${escapeAttr(config.providers.ollama.baseUrl)}" placeholder="http://localhost:11434">
+            <span>Sunucu (proxy) adresi</span>
+            <input type="text" id="settings-proxy-url" value="${escapeAttr(config.backendProxyBaseUrl)}" placeholder="https://senin-projen.vercel.app" autocomplete="off" autocapitalize="off" spellcheck="false">
         </label>
 
         <p class="settings-note">
-            Ollama telefonda çalışmaz — bilgisayarında/ağındaki bir Ollama
-            sunucusunun adresini gir (örn. bilgisayarının yerel ağ IP'si).
-            Şu anki cihazına göre önerilen model seviyesi:
-            <strong>${tierInfo.label}</strong> (${tierInfo.models[0]}).
-            Yanıt süreleri sürekli yavaş/hızlı geldikçe bu seviye otomatik
-            ayarlanır.
+            Web'de (Vercel gibi bir sunucudan) açıyorsan boş bırak. Android uygulaması olarak
+            paketlediysen ortak Groq modunun çalışması için <code>api/chat.js</code>'i yayınladığın
+            adresi (ör. Vercel linkin) buraya yazman gerekir.
+        </p>
+
+        <label class="settings-field">
+            <span>Yerel Ollama adresi</span>
+            <input type="text" id="settings-ollama-url" value="${escapeAttr(config.providers.ollama.baseUrl)}" placeholder="http://localhost:11434" autocomplete="off" autocapitalize="off" spellcheck="false">
+        </label>
+
+        <p class="settings-note">
+            Telefonda yerel çalıştırmak için Termux'ta Ollama'yı kur (<code>ollama/termux-kurulum.sh</code>)
+            ve adresi <strong>http://localhost:11434</strong> bırak. Bilgisayardaki bir Ollama için o cihazın
+            yerel ağ IP'sini yazabilirsin. Bu cihaz için önerilen model seviyesi:
+            <strong>${tierInfo.label}</strong> (${DeviceProfile.getDisplayName()}).
         </p>
     `);
+}
+
+function toggleRow(id, label, checked) {
+
+    return `
+        <label class="settings-field settings-field-row">
+            <span>${label}</span>
+            <input type="checkbox" id="${id}" ${checked ? "checked" : ""}>
+        </label>
+    `;
 }
 
 function renderVoicePanel() {
 
     return panelShell("Ses", `
-        <label class="settings-field settings-field-row">
-            <span>Sesle yazma (mikrofon)</span>
-            <input type="checkbox" id="settings-stt-toggle" ${config.voice.sttEnabled ? "checked" : ""}>
-        </label>
+        ${toggleRow("settings-stt-toggle", "Sesle yazma (mikrofon)", config.voice.sttEnabled)}
+        ${toggleRow("settings-tts-toggle", "Cevapları sesli oku", config.voice.ttsEnabled)}
 
-        <label class="settings-field settings-field-row">
-            <span>Cevapları sesli oku</span>
-            <input type="checkbox" id="settings-tts-toggle" ${config.voice.ttsEnabled ? "checked" : ""}>
-        </label>
+        <p class="settings-note">
+            Sesli yazma ve okuma, tarayıcının/telefonun kendi ses motorunu kullanır; desteklenmeyen
+            cihazlarda ilgili düğme çalışmaz.
+        </p>
     `);
 }
 
 function renderChatPanel() {
 
     return panelShell("Sohbet", `
-        <label class="settings-field settings-field-row">
-            <span>Hafızayı sohbetlerde kullan</span>
-            <input type="checkbox" id="settings-memory-toggle" ${config.memoryEnabled ? "checked" : ""}>
-        </label>
-
-        <label class="settings-field settings-field-row">
-            <span>Her mesajda otomatik web araması</span>
-            <input type="checkbox" id="settings-websearch-toggle" ${config.webSearchEnabled ? "checked" : ""}>
-        </label>
+        ${toggleRow("settings-memory-toggle", "Hafızayı sohbetlerde kullan", config.memoryEnabled)}
+        ${toggleRow("settings-websearch-toggle", "Her mesajda otomatik web araması", config.webSearchEnabled)}
 
         <p class="settings-note">
-            Açıkken, cevap üretmeden önce mesajınla ilgili hızlı bir web
-            araması yapılır ve sonuçlar cevaba dahil edilir — güncel
-            olayları, tarihleri ve "en son" bilgileri doğru vermek için.
-            Her mesajı biraz yavaşlatır; hız istiyorsan kapatabilirsin.
+            Web araması açıkken cevaptan önce mesajınla ilgili hızlı bir arama yapılır ve sonuçlar
+            cevaba eklenir — güncel olayları, tarihleri ve “en son” bilgileri doğru vermek için.
+            Her mesajı biraz yavaşlatır; hız istiyorsan kapat. Sorun için sohbette
+            <strong>Web Araçları → Web'de Ara</strong> ile tek seferlik arama da yapabilirsin.
         </p>
 
         <button id="settings-clear-memory-button" class="settings-inline-button danger" type="button">
-            🧠 Tüm hafızayı sil
+            ${icon("trash")}Tüm hafızayı sil
         </button>
     `);
 }
@@ -186,13 +242,13 @@ function renderPersonalizationPanel() {
 
     return panelShell("Kişiselleştirme", `
         <p class="settings-note">
-            Lotus AI'nin seninle ilgili hatırladığı şeyler burada değil,
-            ayrı bir Hafıza penceresinde tutulur — ekleyebilir, silebilir,
-            tamamen temizleyebilirsin.
+            Lotus AI'nin seninle ilgili hatırladıkları ayrı bir <strong>Hafıza</strong> penceresinde tutulur —
+            ekleyebilir, silebilir, tamamen temizleyebilirsin. Sohbette de yönetebilirsin:
+            <code>hatırla: …</code>, <code>unut: …</code>, <code>neler hatırlıyorsun?</code>
         </p>
 
         <button id="settings-open-memory-button" class="settings-inline-button" type="button">
-            🧠 Hafızayı Aç
+            ${icon("brain")}Hafızayı aç
         </button>
     `);
 }
@@ -200,7 +256,8 @@ function renderPersonalizationPanel() {
 function renderAboutPanel() {
 
     return panelShell("Hakkında", `
-        <p class="settings-note">Lotus AI — Düşün. Üret. Geliş. 🌸</p>
+        <p class="settings-note">Lotus AI — Düşün. Üret. Geliş.</p>
+        <p class="settings-note">Yerel model olan <strong>Lotus Mini</strong>, açık kaynak ${MODEL_BASE_CREDIT} bir modeldir; sıfırdan eğitilmemiştir.</p>
     `);
 }
 
@@ -221,6 +278,8 @@ function bindPanelEvents(container, key) {
 
     if (key === "ai") {
 
+        bindLocalSettings(container);
+
         container.querySelector("#settings-provider-select")?.addEventListener("change", event => {
 
             config.setProvider(event.target.value);
@@ -234,6 +293,19 @@ function bindPanelEvents(container, key) {
             });
         });
 
+        container.querySelectorAll("[data-provider-model]").forEach(input => {
+
+            input.addEventListener("change", () => {
+
+                const name = input.dataset.providerModel;
+
+                // An emptied box goes back to the built-in default.
+                config.setProviderModel(name, input.value.trim() || MODEL_HINTS[name]);
+
+                input.value = config.providers[name].model;
+            });
+        });
+
         container.querySelector("#settings-proxy-url")?.addEventListener("change", event => {
 
             config.setBackendProxyBaseUrl(event.target.value);
@@ -242,11 +314,23 @@ function bindPanelEvents(container, key) {
         container.querySelector("#settings-groq-vision-model")?.addEventListener("change", event => {
 
             config.setGroqVisionModel(event.target.value);
+
+            event.target.value = config.providers.groq.visionModel;
         });
 
         container.querySelector("#settings-ollama-url")?.addEventListener("change", event => {
 
             config.setOllamaBaseUrl(event.target.value);
+        });
+
+        container.querySelector("#settings-search-provider")?.addEventListener("change", event => {
+
+            config.setSearchProvider(event.target.value);
+        });
+
+        container.querySelector("#settings-search-key")?.addEventListener("change", event => {
+
+            config.setSearchApiKey(event.target.value);
         });
     }
 
@@ -292,7 +376,7 @@ function bindPanelEvents(container, key) {
 
         container.querySelector("#settings-clear-memory-button")?.addEventListener("click", async () => {
 
-            const confirmed = await showConfirm("Tüm hafızanı silmek istediğine emin misin? Bu işlem geri alınamaz.");
+            const confirmed = await showConfirm("Tüm hafızanı silmek istediğine emin misin? Bu işlem geri alınamaz.", { okLabel: "Hepsini sil", danger: true });
 
             if (!confirmed) return;
 
@@ -379,7 +463,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Reset to the menu every time settings is opened, so a
     // previously-open sub-panel doesn't linger the next time (see
     // renderMenu — this is now a cheap class toggle, not a rebuild).
-    ["settings-button", "header-settings-button", "mobile-settings"].forEach(id => {
+    ["settings-button", "header-settings-button"].forEach(id => {
 
         document.getElementById(id)?.addEventListener("click", () => {
 

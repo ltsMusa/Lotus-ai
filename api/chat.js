@@ -35,7 +35,9 @@ const OPENAI_STYLE = {
     groq: {
         url: "https://api.groq.com/openai/v1/chat/completions",
         envKey: "GROQ_API_KEY",
-        defaultModel: "llama-3.3-70b-versatile"
+        // llama-3.3-70b-versatile was shut down for free/developer Groq accounts on
+        // 2026-08-16. Override with the GROQ_MODEL env var if Groq changes things again.
+        defaultModel: process.env.GROQ_MODEL || "openai/gpt-oss-120b"
     },
     openai: {
         url: "https://api.openai.com/v1/chat/completions",
@@ -51,8 +53,118 @@ const OPENAI_STYLE = {
 
 const GEMINI = {
     envKey: "GEMINI_API_KEY",
-    defaultModel: "gemini-2.0-flash"
+    // gemini-2.0-flash was shut down on 2026-06-01.
+    defaultModel: "gemini-3.8-flash"
 };
+
+// Vision-capable Groq model (llama-3.2-*-vision and llama-4-scout/maverick
+// were retired). Override with the GROQ_VISION_MODEL env var if Groq
+// renames it again.
+const GROQ_VISION_MODEL = process.env.GROQ_VISION_MODEL || "qwen/qwen3.8-27b";
+
+// The shared server keys must not be usable to run ANY model a client
+// asks for (e.g. an expensive one on the OpenAI key). A requested model
+// outside this list is silently swapped for the provider default, so an
+// outdated client setting never breaks chat either. Extend per deploy
+// with EXTRA_ALLOWED_MODELS="id1,id2".
+const ALLOWED_MODELS = {
+    groq: ["openai/gpt-oss-120b", "openai/gpt-oss-20b", process.env.GROQ_MODEL, GROQ_VISION_MODEL].filter(Boolean),
+    gemini: [/^gemini-[\d.]+-flash(-lite)?$/],
+    openai: ["gpt-4o-mini", "gpt-4.1-mini", "gpt-6-luna", "gpt-5.6-luna"],
+    openrouter: ["openai/gpt-4o-mini", /:free$/]
+};
+
+function pickModel(provider, requested, fallback) {
+
+    const extra = (process.env.EXTRA_ALLOWED_MODELS || "").split(",").map(item => item.trim()).filter(Boolean);
+
+    const allowed = [...(ALLOWED_MODELS[provider] || []), ...extra];
+
+    const ok = typeof requested === "string" && allowed.some(rule =>
+        rule instanceof RegExp ? rule.test(requested) : rule === requested
+    );
+
+    return ok ? requested : fallback;
+}
+
+const MAX_IMAGES = 4;
+const MAX_IMAGE_DATA_URL_CHARS = 3_500_000;
+const MAX_BODY_TEXT_CHARS = 400_000;
+
+function countImages(messages) {
+
+    let count = 0;
+
+    for (const message of messages) {
+
+        if (!Array.isArray(message.content)) continue;
+
+        for (const part of message.content) {
+
+            if (part?.type === "image_url") count++;
+        }
+    }
+
+    return count;
+}
+
+function validatePayload(messages) {
+
+    let textChars = 0;
+
+    for (const message of messages) {
+
+        if (typeof message?.role !== "string") return "Geçersiz mesaj.";
+
+        if (typeof message.content === "string") {
+
+            textChars += message.content.length;
+
+        } else if (Array.isArray(message.content)) {
+
+            for (const part of message.content) {
+
+                if (part?.type === "text") {
+
+                    textChars += String(part.text || "").length;
+
+                } else if (part?.type === "image_url") {
+
+                    const url = part.image_url?.url;
+
+                    if (typeof url !== "string" || !/^data:image\/(png|jpe?g|webp|gif);base64,/i.test(url)) return "Görsel biçimi desteklenmiyor.";
+
+                    if (url.length > MAX_IMAGE_DATA_URL_CHARS) return "Görsel çok büyük.";
+
+                } else {
+
+                    return "Geçersiz mesaj bölümü.";
+                }
+            }
+
+        } else {
+
+            return "Geçersiz mesaj içeriği.";
+        }
+    }
+
+    if (textChars > MAX_BODY_TEXT_CHARS) return "Mesaj çok uzun.";
+
+    if (countImages(messages) > MAX_IMAGES) return `En fazla ${MAX_IMAGES} görsel gönderilebilir.`;
+
+    return null;
+}
+
+function setCors(res) {
+
+    // The app can be served from another origin (or from file:// inside
+    // an Android WebView, origin "null"), so the proxy has to answer the
+    // browser's preflight. No cookies/credentials are used, so "*" is fine.
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Max-Age", "86400");
+}
 
 // Very small in-memory rate limiter. Resets on cold start, so
 // it's a speed bump against casual abuse, not a real limiter —
@@ -86,11 +198,25 @@ function splitSystemMessage(messages) {
     return { systemText: systemMessage?.content || "", rest };
 }
 
+function toGeminiParts(content) {
+
+    if (typeof content === "string") return [{ text: content }];
+
+    return content.map(part => {
+
+        if (part.type === "text") return { text: String(part.text || "") };
+
+        const match = /^data:(image\/[\w.+-]+);base64,(.+)$/i.exec(part.image_url?.url || "");
+
+        return match ? { inline_data: { mime_type: match[1], data: match[2] } } : { text: "" };
+    });
+}
+
 function toGeminiContents(messages) {
 
     return messages.map(message => ({
         role: message.role === "assistant" ? "model" : "user",
-        parts: [{ text: message.content }]
+        parts: toGeminiParts(message.content)
     }));
 }
 
@@ -198,6 +324,15 @@ async function pipeStream(upstreamResponse, res) {
 
 export default async function handler(req, res) {
 
+    setCors(res);
+
+    if (req.method === "OPTIONS") {
+
+        res.status(204).end();
+
+        return;
+    }
+
     if (req.method !== "POST") {
 
         res.status(405).json({ error: "Yalnızca POST destekleniyor." });
@@ -223,9 +358,20 @@ export default async function handler(req, res) {
         return;
     }
 
+    const invalid = validatePayload(messages);
+
+    if (invalid) {
+
+        res.status(400).json({ error: invalid });
+
+        return;
+    }
+
+    const hasImages = countImages(messages) > 0;
+
     const controller = new AbortController();
 
-    const timeout = setTimeout(() => controller.abort(), stream ? 60_000 : 20_000);
+    const timeout = setTimeout(() => controller.abort(), stream ? 60_000 : hasImages ? 40_000 : 20_000);
 
     try {
 
@@ -237,7 +383,7 @@ export default async function handler(req, res) {
 
             const { systemText, rest } = splitSystemMessage(messages);
 
-            const chosenModel = model || GEMINI.defaultModel;
+            const chosenModel = pickModel("gemini", model, GEMINI.defaultModel);
 
             const buildRequest = apiKey => ({
                 url: stream
@@ -310,7 +456,10 @@ export default async function handler(req, res) {
                     "Authorization": `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({
-                    model: model || providerConfig.defaultModel,
+                    // Images need a vision model — the text defaults can't read them.
+                    model: provider === "groq" && hasImages
+                        ? GROQ_VISION_MODEL
+                        : pickModel(provider, model, providerConfig.defaultModel),
                     messages,
                     stream
                 })

@@ -60,7 +60,8 @@ Bu yol tamamen `gradlew`/`gradle-wrapper.jar`'dan bağımsız — hiçbir
   çubukları gizli (kenardan kaydırınca kısa süreliğine çıkıp otomatik
   tekrar gizleniyor).
 - **`assets/www/`**: mevcut web uygulamanın birebir kopyası
-  (`index.html`, `css/`, `js/`, `assets/`). `api/` ve `supabase/` klasörleri
+  (`index.html`, `css/`, `js/`, `assets/`). Web'i güncelleyince bu klasörü
+  yeniden kopyala. `api/` ve `supabase/` klasörleri
   buraya kopyalanmadı — onlar sunucu tarafı dosyalar, telefonda işe
   yaramaz.
 - **Harici linkler** (`window.open`, `target="_blank"` — "API Key Al↗"
@@ -79,9 +80,13 @@ Bu yol tamamen `gradlew`/`gradle-wrapper.jar`'dan bağımsız — hiçbir
 
 ## ⚠️ Paketlemeden önce MUTLAKA yapman gereken tek ayar
 
-Uygulama artık bir web sunucusundan değil, telefonun içinden
-(`file:///android_asset/...`) çalışıyor. Bu yüzden **göreli `/api/chat`
-adresine ulaşamıyor** — yani otomatik Groq modu, sen bir şey
+Uygulama bir web sunucusundan değil, telefonun içinden çalışıyor:
+sayfa `https://appassets.androidplatform.net/www/index.html` adresiyle
+açılıyor ve `MainActivity.shouldInterceptRequest` her isteği doğrudan
+`assets/www`'den cevaplıyor (internete çıkmaz). Bu yol bilerek seçildi:
+`file:///android_asset/...` ile açılınca Chromium ES modüllerini
+engelliyor ve uygulama açılış ekranında takılı kalıyor. Bu yüzden
+**göreli `/api/chat` adresine ulaşamıyor** — yani otomatik Groq modu, sen bir şey
 yapılandırmadan **çalışmaz**.
 
 Uygulamayı ilk açtığında:
@@ -98,7 +103,18 @@ sağlayıcı için kendi kişisel API anahtarını gir (proxy hiç gerekmez).
   Chrome uygulaması olmadığı için) hiç çalışmayabilir — bu Android'in
   platform kısıtı, buradan düzeltilemez. Kendi cihazında test et.
 - **Ollama**: telefonda native çalışmaz. Ayarlar'dan ağındaki bir
-  bilgisayarın Ollama adresini girmen gerekir.
+  bilgisayarın Ollama adresini girmen gerekir. (Telefonda internetsiz yapay zekâ için
+  Ollama'ya gerek yok: **Lotus Mini** uygulamanın içinde çalışır.)
+- **Lotus Mini (cihazda yapay zekâ)**: motor WebAssembly'dir; `assets/www/vendor/wllama/` doluysa APK içinden,
+  boşsa ilk kullanımda CDN'den yüklenir. Model dosyası (~469 MB / ~1,04 GB) APK'ya konmadıysa ilk kullanımda
+  uygulamadan indirilir. **Bu özellik gerçek bir telefonda henüz denenmedi**: hız, bellek ve ısınma davranışı
+  cihaza göre değişir; çok iş parçacığı için gereken `Cross-Origin-Opener/Embedder-Policy` başlıkları
+  `MainActivity`'de verilir ama WebView sürümüne bağlıdır — çalışmazsa uygulama kendiliğinden tek iş parçacığına düşer.
+- **Isı/pil bilgisi**: `MainActivity` içindeki `LotusNative.getDeviceInfo()` RAM'i, Android ısı durumunu (Android 10+),
+  pil sıcaklığını/seviyesini ve güç tasarrufunu verir; eski Android'lerde ısı durumu okunamaz, pil sıcaklığı ve ölçülen
+  hız kullanılır.
+- **Modeli APK'ya gömmek**: `tools/fetch-local-ai.sh --with-model --android` (bash + npm gerekir; Termux'ta `pkg install nodejs curl`).
+  APK yaklaşık 0,5 GB büyür; AIDE'de derleme uzun sürebilir ve bellek isteyebilir — gömmeden de çalışır.
 - Bu proje **imzasız (unsigned) debug APK** üretir — sadece kendi
   cihazına kurmak için yeterli. Play Store'a yüklemek istersen ayrı bir
   imzalama (keystore) adımı gerekir, bu pakette yok.
@@ -111,3 +127,8 @@ genelde en yeni AGP'den çok bu aralıkla daha sorunsuz çalışıyor. Daha
 yeni bir AIDE sürümün varsa ve farklı bir AGP istiyorsa, hem
 `build.gradle` hem `gradle/wrapper/gradle-wrapper.properties`
 dosyalarını birlikte güncelle.
+
+## Not: eski sürümden güncelleme
+Önceki paket `file://` adresini kullanıyordu; yeni paket farklı bir
+adres kullandığı için eski kurulumda localStorage'da duran sohbetler,
+hafıza ve ayarlar yeni sürüme taşınmaz (Supabase hesabındakiler taşınır).

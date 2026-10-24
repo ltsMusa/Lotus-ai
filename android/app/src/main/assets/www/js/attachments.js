@@ -26,15 +26,22 @@
  * ==========================================================
  */
 
-import { escapeHtml } from "./utils.js";
+import { escapeHtml, icon } from "./utils.js";
 import { showToast } from "./toast.js";
 
 const MAX_TEXT_FILE_BYTES = 200 * 1024; // 200 KB per text file
 const MAX_CHARS_PER_FILE = 6000;
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024; // 8 MB per image
+const MAX_IMAGE_BYTES = 20 * 1024 * 1024; // 20 MB picked from the gallery/camera (it is shrunk below)
 const MAX_VIDEO_BYTES = 60 * 1024 * 1024; // 60 MB per video
-const MAX_ATTACHMENTS = 5;
+const MAX_ATTACHMENTS = 8; // a video counts as VIDEO_FRAME_COUNT slots (one per frame)
 const VIDEO_FRAME_COUNT = 4;
+
+// Photos are shrunk before they are sent. A phone photo is 3–8 MB; as
+// base64 that exceeds Vercel's 4.5 MB request limit and Groq's 4 MB image
+// limit, so the "vision" feature silently failed for real photos. 1280 px
+// on the long edge is plenty for a vision model and lands around 150–400 KB.
+const IMAGE_MAX_EDGE = 1280;
+const IMAGE_JPEG_QUALITY = 0.82;
 
 const TEXT_EXTENSIONS = [
     "txt", "md", "markdown", "csv", "tsv", "json", "js", "jsx", "ts", "tsx",
@@ -65,6 +72,63 @@ function fileToDataUrl(file) {
 
         reader.readAsDataURL(file);
     });
+}
+
+function loadImageElement(file) {
+
+    return new Promise((resolve, reject) => {
+
+        const url = URL.createObjectURL(file);
+
+        const image = new Image();
+
+        image.onload = () => {
+
+            URL.revokeObjectURL(url);
+
+            resolve(image);
+        };
+
+        image.onerror = () => {
+
+            URL.revokeObjectURL(url);
+
+            reject(new Error(`"${file.name}" bir resim olarak açılamadı.`));
+        };
+
+        image.src = url;
+    });
+}
+
+/**
+ * Re-encodes an image as a JPEG no larger than IMAGE_MAX_EDGE px.
+ * Transparent areas become white; animated GIFs keep their first frame.
+ */
+async function downscaleImage(file) {
+
+    const source = window.createImageBitmap
+        ? await createImageBitmap(file).catch(() => loadImageElement(file))
+        : await loadImageElement(file);
+
+    const width = source.width || source.naturalWidth;
+    const height = source.height || source.naturalHeight;
+
+    const scale = Math.min(1, IMAGE_MAX_EDGE / Math.max(width, height));
+
+    const canvas = document.createElement("canvas");
+
+    canvas.width = Math.max(1, Math.round(width * scale));
+    canvas.height = Math.max(1, Math.round(height * scale));
+
+    const context = canvas.getContext("2d");
+
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(source, 0, 0, canvas.width, canvas.height);
+
+    source.close?.();
+
+    return canvas.toDataURL("image/jpeg", IMAGE_JPEG_QUALITY);
 }
 
 function fileToText(file) {
@@ -158,6 +222,8 @@ function extractVideoFrames(file) {
 
 function renderChips() {
 
+    document.dispatchEvent(new CustomEvent("lotus:attachments-changed"));
+
     const chip = document.getElementById("attachment-chip");
 
     if (!chip) return;
@@ -176,13 +242,13 @@ function renderChips() {
 
         const preview = item.type === "image"
             ? `<img class="attachment-chip-thumb" src="${item.dataUrl}" alt="">`
-            : "📎";
+            : `<span class="attachment-chip-file">${icon("file")}</span>`;
 
         return `
             <span class="attachment-chip-item">
                 ${preview}
                 <span class="attachment-chip-name">${escapeHtml(item.name)}</span>
-                <button class="attachment-chip-remove" type="button" data-index="${index}" aria-label="Kaldır">✕</button>
+                <button class="attachment-chip-remove" type="button" data-index="${index}" aria-label="Kaldır">${icon("x")}</button>
             </span>
         `;
     }).join("");
@@ -265,9 +331,27 @@ async function addImageFile(file) {
         return;
     }
 
-    const dataUrl = await fileToDataUrl(file);
+    let dataUrl;
+    let mimeType = "image/jpeg";
 
-    attachments.push({ type: "image", name: file.name, mimeType: file.type, dataUrl });
+    try {
+
+        dataUrl = await downscaleImage(file);
+
+    } catch (error) {
+
+        // The browser could not decode it (e.g. HEIC). Send the original only
+        // if it is small enough for the servers to accept.
+        if (file.size > 3 * 1024 * 1024) {
+
+            throw new Error(`"${file.name}" bu cihazda küçültülemedi ve çok büyük. JPG veya PNG olarak dene.`);
+        }
+
+        dataUrl = await fileToDataUrl(file);
+        mimeType = file.type;
+    }
+
+    attachments.push({ type: "image", name: file.name || "yapıştırılan-görsel.jpg", mimeType, dataUrl });
 }
 
 async function addVideoFile(file) {
@@ -304,13 +388,17 @@ async function addVideoFile(file) {
     });
 }
 
-async function handleFiles(fileList) {
+export async function addFiles(fileList) {
 
     const files = Array.from(fileList);
 
-    if (attachments.length + files.length > MAX_ATTACHMENTS) {
+    if (files.length === 0) return;
 
-        showToast(`En fazla ${MAX_ATTACHMENTS} dosya/görsel ekleyebilirsin.`, "error");
+    const slots = files.reduce((sum, file) => sum + (VIDEO_MIME_TYPES.includes(file.type) ? VIDEO_FRAME_COUNT : 1), 0);
+
+    if (attachments.length + slots > MAX_ATTACHMENTS) {
+
+        showToast(`En fazla ${MAX_ATTACHMENTS} ek (video kareleri dahil) ekleyebilirsin.`, "error");
         return;
     }
 
@@ -348,12 +436,118 @@ async function handleFiles(fileList) {
     renderChips();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function ensureFileInput() {
+
+    let input = document.getElementById("file-input");
+
+    if (input) return input;
+
+    // index.html is supposed to ship this <input>; if it is ever missing the
+    // 📎 button used to silently do nothing. Create it instead.
+    input = document.createElement("input");
+
+    input.type = "file";
+    input.id = "file-input";
+    input.multiple = true;
+    input.hidden = true;
+
+    document.body.appendChild(input);
+
+    return input;
+}
+
+function bindPasteAndDrop() {
+
+    const messageInput = document.getElementById("message-input");
+
+    // Pasting a screenshot / copied picture straight into the box.
+    messageInput?.addEventListener("paste", event => {
+
+        const files = Array.from(event.clipboardData?.files || []).filter(file => file.type.startsWith("image/"));
+
+        if (files.length === 0) return;
+
+        event.preventDefault();
+
+        addFiles(files);
+    });
+
+    // Drag files anywhere onto the window.
+    let overlay = null;
+    let depth = 0;
+
+    const hasFiles = event => Array.from(event.dataTransfer?.types || []).includes("Files");
+
+    const showOverlay = () => {
+
+        if (!overlay) {
+
+            overlay = document.createElement("div");
+
+            overlay.id = "drop-overlay";
+            overlay.innerHTML = `<div><span>${icon("paperclip", "ic ic-xl")}</span><strong>Dosyayı bırak</strong><small>Görsel, video, metin veya kod dosyası</small></div>`;
+
+            document.body.appendChild(overlay);
+        }
+
+        overlay.classList.add("visible");
+    };
+
+    const hideOverlay = () => {
+
+        depth = 0;
+
+        overlay?.classList.remove("visible");
+    };
+
+    window.addEventListener("dragenter", event => {
+
+        if (!hasFiles(event)) return;
+
+        event.preventDefault();
+
+        depth += 1;
+
+        showOverlay();
+    });
+
+    window.addEventListener("dragover", event => {
+
+        if (!hasFiles(event)) return;
+
+        event.preventDefault();
+
+        event.dataTransfer.dropEffect = "copy";
+    });
+
+    window.addEventListener("dragleave", event => {
+
+        if (!hasFiles(event)) return;
+
+        depth = Math.max(0, depth - 1);
+
+        if (depth === 0) hideOverlay();
+    });
+
+    window.addEventListener("drop", event => {
+
+        if (!hasFiles(event)) return;
+
+        event.preventDefault();
+
+        hideOverlay();
+
+        addFiles(event.dataTransfer.files);
+    });
+}
+
+function init() {
 
     const attachButton = document.getElementById("attach-button");
-    const fileInput = document.getElementById("file-input");
 
-    if (!attachButton || !fileInput) return;
+    if (!attachButton) return;
+
+    const fileInput = ensureFileInput();
 
     fileInput.accept = [
         ...TEXT_EXTENSIONS.map(ext => "." + ext),
@@ -370,8 +564,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     fileInput.addEventListener("change", () => {
 
-        if (fileInput.files?.length) handleFiles(fileInput.files);
+        if (fileInput.files?.length) addFiles(fileInput.files);
 
         fileInput.value = "";
     });
-});
+
+    bindPasteAndDrop();
+}
+
+if (document.readyState === "loading") {
+
+    document.addEventListener("DOMContentLoaded", init);
+
+} else {
+
+    init();
+}

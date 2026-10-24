@@ -18,8 +18,8 @@
  */
 
 import { supabase, Auth } from "./auth.js";
-import { generateId, formatRelativeDate, escapeHtml, debounce } from "./utils.js";
-import { showConfirm } from "./toast.js";
+import { generateId, formatRelativeDate, escapeHtml, debounce, icon } from "./utils.js";
+import { showToast } from "./toast.js";
 
 const LOCAL_KEY = "lotus_conversations_v1";
 const ACTIVE_KEY = "lotus_active_conversation";
@@ -41,10 +41,100 @@ function saveLocal(conversations) {
     localStorage.setItem(LOCAL_KEY, JSON.stringify(conversations));
 }
 
+// ----------------------------------------------------------
+// PINS — stored per device (a pin is a view preference, not chat
+// data, so it needs no database migration).
+// ----------------------------------------------------------
+
+const PIN_KEY = "lotus_pinned_v1";
+
+function getPinned() {
+
+    try {
+
+        const list = JSON.parse(localStorage.getItem(PIN_KEY));
+
+        return new Set(Array.isArray(list) ? list : []);
+
+    } catch {
+
+        return new Set();
+    }
+}
+
+function savePinned(set) {
+
+    try {
+
+        localStorage.setItem(PIN_KEY, JSON.stringify([...set]));
+
+    } catch {
+
+        // storage full / blocked — pins just won't persist this session
+    }
+}
+
+/** Single-line, trimmed chat title from the first message. */
+function makeTitle(text) {
+
+    const clean = String(text || "")
+        .replace(/\[Sayfa içeriği\][\s\S]*$/, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    if (!clean) return "Yeni Sohbet";
+
+    return clean.length > 42 ? clean.slice(0, 42).trimEnd() + "…" : clean;
+}
+
+const DAY_MS = 86400000;
+
+function dayStart(date) {
+
+    const d = new Date(date);
+
+    d.setHours(0, 0, 0, 0);
+
+    return d.getTime();
+}
+
+const GROUPS = ["Sabitlenenler", "Bugün", "Dün", "Son 7 gün", "Son 30 gün", "Daha eski"];
+
+function groupIndex(conversation, pinned) {
+
+    if (pinned) return 0;
+
+    const days = Math.round((dayStart(Date.now()) - dayStart(conversation.updated_at)) / DAY_MS);
+
+    if (days <= 0) return 1;
+    if (days === 1) return 2;
+    if (days <= 7) return 3;
+    if (days <= 30) return 4;
+
+    return 5;
+}
+
+function formatItemDate(dateInput) {
+
+    const date = new Date(dateInput);
+
+    if (isNaN(date)) return "";
+
+    if (dayStart(date) === dayStart(Date.now())) {
+
+        return date.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    return date.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+}
+
+let cloudWarned = false;
+
 const Storage = {
 
     activeId: null,
     useSupabase: false,
+    renderedIds: new Set(),
 
     // ------------------------------------------------------
     // INIT
@@ -61,6 +151,8 @@ const Storage = {
         await this.renderSidebar();
 
         this.bindUI();
+
+        window.addEventListener("online", () => this.recheckCloud());
 
         // Restore the last conversation after ChatManager has registered
         // its conversation-change listener.
@@ -131,8 +223,7 @@ const Storage = {
     bindUI() {
 
         const newChatButtons = [
-            document.getElementById("new-chat-button"),
-            document.getElementById("mobile-new-chat")
+            document.getElementById("new-chat-button")
         ];
 
         newChatButtons.forEach(button => {
@@ -180,6 +271,13 @@ const Storage = {
                 console.warn("💾 Sohbetler Supabase'den alınamadı, localStorage kullanılıyor:", error);
 
                 this.useSupabase = false;
+
+                if (!cloudWarned) {
+
+                    cloudWarned = true;
+
+                    showToast("Bulut bağlantısı yok — sohbetler şimdilik bu cihazda tutuluyor, bağlantı gelince otomatik eşitlenir.", "info", 5000);
+                }
 
                 return loadLocal();
             }
@@ -240,7 +338,7 @@ const Storage = {
 
         if (this.activeId) return this.activeId;
 
-        const title = firstUserMessage.slice(0, 40) + (firstUserMessage.length > 40 ? "…" : "");
+        const title = makeTitle(firstUserMessage);
 
         if (this.useSupabase) {
 
@@ -346,6 +444,8 @@ const Storage = {
 
         console.log(`💾 ${localConversations.length} misafir sohbeti hesaba aktarılıyor...`);
 
+        const failed = [];
+
         for (const conversation of localConversations) {
 
             try {
@@ -365,6 +465,8 @@ const Storage = {
 
                     console.warn("💾 Sohbet aktarılamadı:", conversation.title, error);
 
+                    failed.push(conversation);
+
                     continue;
                 }
 
@@ -372,15 +474,32 @@ const Storage = {
 
                 if (messages.length > 0) {
 
+                    // Explicit, strictly increasing timestamps: a multi-row
+                    // INSERT otherwise stamps every row with the same now(),
+                    // which leaves message order undefined on reload.
+                    const base = Date.parse(conversation.created_at) || Date.now() - messages.length * 1000;
+
                     const { error: messagesError } = await supabase
                         .from("messages")
-                        .insert(messages.map(m => ({
+                        .insert(messages.map((m, index) => ({
                             conversation_id: data.id,
                             role: m.role,
-                            content: m.content
+                            content: m.content,
+                            created_at: new Date(base + index * 1000).toISOString()
                         })));
 
-                    if (messagesError) console.warn("💾 Sohbet mesajları aktarılamadı:", messagesError);
+                    if (messagesError) {
+
+                        console.warn("💾 Sohbet mesajları aktarılamadı:", messagesError);
+
+                        // Roll back the half-created cloud copy and keep the
+                        // local one, so nothing is lost and a retry is clean.
+                        await supabase.from("conversations").delete().eq("id", data.id);
+
+                        failed.push(conversation);
+
+                        continue;
+                    }
                 }
 
                 // The guest conversation's local id is about to stop
@@ -397,12 +516,53 @@ const Storage = {
             } catch (error) {
 
                 console.warn("💾 Sohbet aktarılırken hata:", conversation.title, error);
+
+                failed.push(conversation);
             }
         }
 
-        localStorage.removeItem(LOCAL_KEY);
+        // Only conversations that really made it to the cloud are dropped
+        // locally; anything that failed stays put and is retried next time.
+        if (failed.length === 0) {
 
-        console.log("💾 Misafir sohbetleri hesaba aktarıldı.");
+            localStorage.removeItem(LOCAL_KEY);
+
+        } else {
+
+            saveLocal(failed);
+        }
+
+        console.log("💾 Misafir sohbetleri hesaba aktarıldı.", failed.length ? `(${failed.length} tanesi sonraya kaldı)` : "");
+    },
+
+    /**
+     * Network came back after a cloud fallback: switch back to the
+     * account, upload anything written while offline.
+     */
+    async recheckCloud() {
+
+        if (this.useSupabase) return;
+
+        const user = await Auth.getCurrentUser?.().catch(() => null);
+
+        if (!user) return;
+
+        try {
+
+            await this.migrateLocalToSupabase(user.id);
+
+            this.useSupabase = true;
+
+            cloudWarned = false;
+
+            await this.renderSidebar();
+
+            showToast("Bulut bağlantısı geri geldi, sohbetler eşitlendi.", "success", 3000);
+
+        } catch (error) {
+
+            console.warn("💾 Bulut yeniden bağlanamadı:", error);
+        }
     },
 
     async setMessages(conversationId, messages) {
@@ -411,15 +571,41 @@ const Storage = {
 
         if (this.useSupabase) {
 
-            await supabase.from("messages").delete().eq("conversation_id", conversationId);
+            // Insert the new rows FIRST, then delete the old ones: if the
+            // insert fails the old conversation is still intact (the old
+            // delete-then-insert order could wipe a chat on a flaky
+            // connection). Explicit increasing timestamps keep the order
+            // stable — one multi-row INSERT otherwise stamps every row
+            // with the same now().
+            const { data: oldRows } = await supabase
+                .from("messages")
+                .select("id")
+                .eq("conversation_id", conversationId);
 
             if (messages.length > 0) {
 
+                const base = Date.now();
+
                 const { error } = await supabase.from("messages").insert(
-                    messages.map(m => ({ conversation_id: conversationId, role: m.role, content: m.content }))
+                    messages.map((m, index) => ({
+                        conversation_id: conversationId,
+                        role: m.role,
+                        content: m.content,
+                        created_at: new Date(base + index).toISOString()
+                    }))
                 );
 
-                if (error) console.warn("💾 Mesajlar yeniden yazılamadı:", error);
+                if (error) {
+
+                    console.warn("💾 Mesajlar yeniden yazılamadı:", error);
+
+                    return;
+                }
+            }
+
+            if (oldRows?.length) {
+
+                await supabase.from("messages").delete().in("id", oldRows.map(row => row.id));
             }
 
             await supabase
@@ -463,6 +649,10 @@ const Storage = {
             saveLocal(loadLocal().filter(c => c.id !== conversationId));
         }
 
+        const pinned = getPinned();
+
+        if (pinned.delete(conversationId)) savePinned(pinned);
+
         if (this.activeId === conversationId) {
 
             await this.startNewConversation();
@@ -487,59 +677,256 @@ const Storage = {
     },
 
     // ------------------------------------------------------
+    // RENAME / PIN / EXPORT / IMAGES
+    // ------------------------------------------------------
+
+    async renameConversation(conversationId, title) {
+
+        const clean = makeTitle(title).replace(/…$/, "") || "Yeni Sohbet";
+
+        const finalTitle = String(title || "").trim().slice(0, 80) || clean;
+
+        if (this.useSupabase) {
+
+            const { error } = await supabase
+                .from("conversations")
+                .update({ title: finalTitle })
+                .eq("id", conversationId);
+
+            if (error) {
+
+                console.warn("💾 Sohbet adı değiştirilemedi:", error);
+
+                return false;
+            }
+
+        } else {
+
+            const conversations = loadLocal();
+
+            const conversation = conversations.find(c => c.id === conversationId);
+
+            if (!conversation) return false;
+
+            conversation.title = finalTitle;
+
+            saveLocal(conversations);
+        }
+
+        await this.renderSidebar();
+
+        return true;
+    },
+
+    isPinned(conversationId) {
+
+        return getPinned().has(conversationId);
+    },
+
+    async togglePin(conversationId) {
+
+        const pinned = getPinned();
+
+        const nowPinned = !pinned.has(conversationId);
+
+        if (nowPinned) pinned.add(conversationId);
+        else pinned.delete(conversationId);
+
+        savePinned(pinned);
+
+        await this.renderSidebar();
+
+        return nowPinned;
+    },
+
+    async exportMarkdown(conversationId) {
+
+        const conversation = (await this.listConversations()).find(c => c.id === conversationId);
+
+        const messages = await this.loadMessages(conversationId);
+
+        const title = conversation?.title || "Sohbet";
+
+        const lines = [`# ${title}`, "", `_Lotus AI · ${new Date().toLocaleString("tr-TR")}_`, ""];
+
+        for (const message of messages) {
+
+            lines.push(`**${message.role === "user" ? "Sen" : "Lotus"}:**`, "", message.content, "", "---", "");
+        }
+
+        const slug = title
+            .toLowerCase()
+            .replace(/ç/g, "c").replace(/ğ/g, "g").replace(/ı/g, "i").replace(/ö/g, "o").replace(/ş/g, "s").replace(/ü/g, "u")
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "")
+            .slice(0, 40) || "sohbet";
+
+        return { title, filename: `lotus-${slug}.md`, markdown: lines.join("\n") };
+    },
+
+    /** Every generated image across all chats, newest first. */
+    async listImages() {
+
+        const conversations = await this.listConversations();
+
+        const titleOf = new Map(conversations.map(c => [c.id, c.title]));
+
+        const pattern = /!\[([^\]]*)\]\((https:\/\/image\.pollinations\.ai\/[^\s)]+)\)/g;
+
+        const found = [];
+
+        const collect = (conversationId, createdAt, content) => {
+
+            for (const match of String(content || "").matchAll(pattern)) {
+
+                found.push({
+                    url: match[2],
+                    alt: match[1],
+                    conversationId,
+                    title: titleOf.get(conversationId) || "Sohbet",
+                    createdAt
+                });
+            }
+        };
+
+        if (this.useSupabase) {
+
+            const { data, error } = await supabase
+                .from("messages")
+                .select("conversation_id, content, created_at")
+                .eq("role", "assistant")
+                .ilike("content", "%image.pollinations.ai%")
+                .order("created_at", { ascending: false })
+                .limit(200);
+
+            if (error) console.warn("💾 Görseller alınamadı:", error);
+
+            (data || []).forEach(row => collect(row.conversation_id, row.created_at, row.content));
+
+        } else {
+
+            loadLocal().forEach(conversation => {
+
+                (conversation.messages || []).forEach(message => {
+
+                    if (message.role === "assistant") {
+
+                        collect(conversation.id, message.created_at || conversation.updated_at, message.content);
+                    }
+                });
+            });
+
+            found.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        }
+
+        const seen = new Set();
+
+        return found.filter(image => !seen.has(image.url) && seen.add(image.url));
+    },
+
+    // ------------------------------------------------------
     // SIDEBAR RENDER
     // ------------------------------------------------------
 
-    async renderSidebar(filter = "") {
+    async renderSidebar(filter) {
 
         const list = document.getElementById("chat-list");
 
         if (!list) return;
 
+        // Callers that just refresh the list (new message, rename, pin…)
+        // pass nothing — keep whatever the user typed in the search box
+        // instead of silently resetting the list to "everything".
+        const query = (filter ?? document.getElementById("search-chat")?.value ?? "").trim().toLowerCase();
+
         const conversations = await this.listConversations();
 
-        const filtered = filter
-            ? conversations.filter(c => (c.title || "").toLowerCase().includes(filter))
+        const pinned = getPinned();
+
+        const filtered = query
+            ? conversations.filter(c =>
+                (c.title || "").toLowerCase().includes(query) ||
+                (c.messages || []).some(m => String(m.content || "").toLowerCase().includes(query)))
             : conversations;
 
         if (filtered.length === 0) {
 
-            list.innerHTML = `<div class="chat-list-empty">Henüz sohbet yok.</div>`;
+            list.innerHTML = query
+                ? `<div class="chat-list-empty"><span class="empty-icon">${icon("search", "ic ic-lg")}</span>Sonuç bulunamadı.</div>`
+                : `<div class="chat-list-empty"><span class="empty-icon">${icon("chat", "ic ic-lg")}</span>Henüz sohbet yok.<small>Yeni bir sohbet başlat, burada görünsün.</small></div>`;
+
+            this.renderedIds = new Set();
 
             return;
         }
 
-        list.innerHTML = filtered.map(conversation => `
-            <div class="chat-list-item ${conversation.id === this.activeId ? "active" : ""}" data-id="${conversation.id}">
-                <div class="chat-list-item-title">${escapeHtml(conversation.title || "Yeni Sohbet")}</div>
-                <div class="chat-list-item-date">${formatRelativeDate(conversation.updated_at)}</div>
-                <button class="chat-list-item-delete" data-id="${conversation.id}" title="Sil">🗑</button>
-            </div>
-        `).join("");
+        const buckets = GROUPS.map(() => []);
+
+        filtered.forEach(conversation => buckets[groupIndex(conversation, pinned.has(conversation.id))].push(conversation));
+
+        // Pinned chats keep their own recency order; the rest are already
+        // newest-first from listConversations().
+        let enterIndex = 0;
+
+        const nextRendered = new Set();
+
+        list.innerHTML = buckets.map((items, index) => {
+
+            if (items.length === 0) return "";
+
+            const rows = items.map(conversation => {
+
+                const isNew = !this.renderedIds.has(conversation.id);
+
+                nextRendered.add(conversation.id);
+
+                const classes = [
+                    "chat-list-item",
+                    conversation.id === this.activeId ? "active" : "",
+                    pinned.has(conversation.id) ? "pinned" : "",
+                    isNew ? "enter" : ""
+                ].filter(Boolean).join(" ");
+
+                const delay = isNew ? ` style="--i:${Math.min(enterIndex++, 12)}"` : "";
+
+                return `
+                    <div class="${classes}" data-id="${escapeHtml(conversation.id)}" role="button" tabindex="0"${delay}>
+                        <div class="chat-list-item-main">
+                            <div class="chat-list-item-title">${escapeHtml(conversation.title || "Yeni Sohbet")}</div>
+                            <div class="chat-list-item-date">${escapeHtml(formatItemDate(conversation.updated_at))}</div>
+                        </div>
+                        <button class="chat-list-item-menu" type="button" data-id="${escapeHtml(conversation.id)}" aria-label="Sohbet seçenekleri">${icon("more")}</button>
+                    </div>
+                `;
+
+            }).join("");
+
+            return `<div class="chat-list-group"><div class="chat-list-group-label">${GROUPS[index]}</div>${rows}</div>`;
+
+        }).join("");
+
+        this.renderedIds = nextRendered;
 
         list.querySelectorAll(".chat-list-item").forEach(item => {
 
+            const open = () => this.switchTo(item.dataset.id);
+
             item.addEventListener("click", event => {
 
-                if (event.target.closest(".chat-list-item-delete")) return;
+                if (event.target.closest(".chat-list-item-menu")) return;
 
-                this.switchTo(item.dataset.id);
+                open();
             });
-        });
 
-        list.querySelectorAll(".chat-list-item-delete").forEach(button => {
+            item.addEventListener("keydown", event => {
 
-            button.addEventListener("click", async event => {
+                if (event.target !== item) return;
 
-                event.stopPropagation();
+                if (event.key === "Enter" || event.key === " ") {
 
-                const confirmed = await showConfirm("Bu sohbeti silmek istediğine emin misin?");
+                    event.preventDefault();
 
-                if (confirmed) {
-
-                    button.closest(".chat-list-item")?.classList.add("removing");
-
-                    setTimeout(() => this.deleteConversation(button.dataset.id), 160);
+                    open();
                 }
             });
         });

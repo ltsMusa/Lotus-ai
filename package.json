@@ -1,0 +1,10 @@
+{
+  "name": "lotus-ai",
+  "version": "7.1.0",
+  "private": true,
+  "description": "Lotus AI — premium purple neon AI chat (PWA + Android WebView)",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  }
+}

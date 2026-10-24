@@ -12,6 +12,22 @@
  * ==========================================================
  */
 
+import config from "./config.js";
+import LocalAI from "./providers/local.js";
+
+// Where the last answer came from — shown next to "Hazır" when it was the
+// on-device model, so the automatic switch is visible at a glance.
+let lastRoute = null;
+
+function localSuffix() {
+
+    if (config.routeMode === "local") return " · yerel";
+
+    if (lastRoute?.kind === "local") return ` · ${lastRoute.label || "Lotus Mini"}`;
+
+    return "";
+}
+
 function setStatus(text, modifier) {
 
     const dot = document.getElementById("status-dot");
@@ -30,7 +46,7 @@ function refreshConnectivity() {
 
     if (!navigator.onLine) {
 
-        setStatus("Çevrimdışı", "status-offline");
+        setStatus(LocalAI.hasModel() && config.routeMode !== "cloud" ? "Çevrimdışı · cihazda" : "Çevrimdışı", "status-offline");
 
     } else if (document.body.classList.contains("lotus-generating")) {
 
@@ -38,9 +54,18 @@ function refreshConnectivity() {
 
     } else {
 
-        setStatus("Hazır", null);
+        setStatus(`Hazır${localSuffix()}`, null);
     }
 }
+
+window.addEventListener("lotus:route-changed", event => {
+
+    lastRoute = event.detail?.to || null;
+
+    refreshConnectivity();
+});
+
+window.addEventListener("lotus:local-state", refreshConnectivity);
 
 window.addEventListener("online", refreshConnectivity);
 window.addEventListener("offline", refreshConnectivity);

@@ -1,421 +1,266 @@
-/**
- * ==========================================================
- * Lotus AI — Premium Animations & Micro-interactions
- * ==========================================================
- * Referenced in index.html from the very start of this project
- * but never actually created — every animation "hook" in the
- * markup existed, nothing filled it in. This file is that fill.
- *
- * Respects prefers-reduced-motion throughout — every animation
- * is disabled (falls back to an instant state change) for users
- * who've asked their OS for reduced motion.
- * ==========================================================
- */
-
 /* ==========================================================
-   SPLASH SCREEN — smooth fade instead of an instant cut
+   LOTUS AI — MOTION
+   Every keyframe lives here, plus the entrance choreography of
+   the splash and welcome screens. Components reference these by
+   name; nothing below animates anything that gets re-rendered
+   while a reply streams (that would flicker on every token).
    ========================================================== */
 
-#splash-screen {
-    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+/* ==========================================================
+   KEYFRAMES
+   ========================================================== */
+
+@keyframes lotus-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
-#splash-screen.hidden {
-    display: flex !important; /* overrides .hidden's display:none so opacity can transition */
-    opacity: 0;
-    pointer-events: none;
+@keyframes lotus-fade-out {
+    from { opacity: 1; }
+    to   { opacity: 0; }
 }
 
-#splash-logo {
-    animation: lotus-splash-breathe 2.2s ease-in-out infinite;
+@keyframes lotus-rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes lotus-msg-in {
+    from { opacity: 0; transform: translateY(14px) scale(0.985); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes lotus-pop {
+    from { opacity: 0; transform: scale(0.9) translateY(6px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes lotus-pulse {
+    0%, 100% { opacity: 1;    transform: scale(1); }
+    50%      { opacity: 0.55; transform: scale(0.78); }
+}
+
+@keyframes lotus-ring {
+    0%   { opacity: 0.8; transform: scale(1); }
+    100% { opacity: 0;   transform: scale(1.55); }
+}
+
+@keyframes lotus-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes lotus-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-7px); }
+}
+
+@keyframes lotus-caret {
+    to { visibility: hidden; }
+}
+
+@keyframes lotus-typing-bounce {
+    0%, 60%, 100% { opacity: 0.4; transform: translateY(0) scale(0.85); }
+    30%           { opacity: 1;   transform: translateY(-6px) scale(1); }
+}
+
+@keyframes lotus-avatar-glow {
+    0%, 100% { box-shadow: 0 0 14px rgba(168, 85, 247, 0.25); }
+    50%      { box-shadow: 0 0 30px rgba(244, 114, 182, 0.6); }
+}
+
+@keyframes lotus-shimmer {
+    from { background-position: 200% 0, 0 0; }
+    to   { background-position: 0 0, 0 0; }
+}
+
+@keyframes lotus-gradient-pan {
+    to { background-position: 200% center; }
+}
+
+@keyframes lotus-halo-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes lotus-drift-a {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to   { transform: translate3d(9vmax, 7vmax, 0) scale(1.12); }
+}
+
+@keyframes lotus-drift-b {
+    from { transform: translate3d(0, 0, 0) scale(1.05); }
+    to   { transform: translate3d(-8vmax, -9vmax, 0) scale(0.92); }
+}
+
+@keyframes lotus-drift-c {
+    from { transform: translate3d(-4vmax, 3vmax, 0) scale(0.9); }
+    to   { transform: translate3d(6vmax, -5vmax, 0) scale(1.15); }
 }
 
 @keyframes lotus-splash-breathe {
-    0%, 100% { transform: scale(1); opacity: 0.92; }
-    50%      { transform: scale(1.06); opacity: 1; }
+    0%, 100% { transform: scale(1);    filter: drop-shadow(0 0 22px rgba(192, 132, 252, 0.6)) drop-shadow(0 0 48px rgba(244, 114, 182, 0.25)); }
+    50%      { transform: scale(1.06); filter: drop-shadow(0 0 34px rgba(192, 132, 252, 0.95)) drop-shadow(0 0 70px rgba(244, 114, 182, 0.45)); }
 }
 
-/* ==========================================================
-   TYPING INDICATOR — animated dots (js/chat.js showTyping)
-   ========================================================== */
-
-.typing-dots {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    margin-left: 6px;
-    vertical-align: middle;
-}
-
-.typing-dots span {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.5;
-    animation: lotus-typing-bounce 1.1s ease-in-out infinite;
-}
-
-.typing-dots span:nth-child(2) { animation-delay: 0.15s; }
-.typing-dots span:nth-child(3) { animation-delay: 0.3s; }
-
-@keyframes lotus-typing-bounce {
-    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-    30%           { transform: translateY(-4px); opacity: 1; }
-}
-
-/* ==========================================================
-   MODAL ENTRANCE — settings / auth / memory / about / account
-   ========================================================== */
-
-#settings-modal:not(.hidden) .modal-content,
-#auth-modal:not(.hidden) .modal-content,
-#memory-modal:not(.hidden) .modal-content,
-#about-modal:not(.hidden) .modal-content,
-#account-modal:not(.hidden) .account-modal-content,
-#google-account-modal:not(.hidden) .modal-content {
-    animation: lotus-modal-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+@keyframes lotus-loader {
+    0%   { transform: translateX(-110%); }
+    100% { transform: translateX(260%); }
 }
 
 @keyframes lotus-modal-in {
-    from {
-        opacity: 0;
-        transform: translateY(10px) scale(0.97);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+    from { opacity: 0; transform: translateY(30px) scale(0.96); }
+    to   { opacity: 1; transform: none; }
 }
 
-/* Backdrop fades in slightly faster than the card so the card
-   feels like it's "arriving" onto an already-dimmed stage. */
-#memory-modal:not(.hidden),
-#about-modal:not(.hidden) {
-    animation: lotus-backdrop-in 0.2s ease-out;
+@keyframes lotus-modal-out {
+    from { opacity: 1; transform: none; }
+    to   { opacity: 0; transform: translateY(24px) scale(0.97); }
 }
 
-@keyframes lotus-backdrop-in {
-    from { background-color: rgba(0, 0, 0, 0); backdrop-filter: blur(0); }
-    to   { background-color: rgba(0, 0, 0, 0.55); backdrop-filter: blur(12px); }
+@keyframes lotus-slide-in {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: none; }
 }
 
-/* ==========================================================
-   SETTINGS PANEL SWITCH — menu <-> sub-panel (js/settings.js)
-   ========================================================== */
-
-#settings-menu-view:not(.hidden),
-#settings-panel-view:not(.hidden) {
-    animation: lotus-panel-slide-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+@keyframes lotus-sheet-in {
+    from { opacity: 0.4; transform: translateY(100%); }
+    to   { opacity: 1;   transform: none; }
 }
 
-@keyframes lotus-panel-slide-in {
-    from { opacity: 0; transform: translateX(8px); }
-    to   { opacity: 1; transform: translateX(0); }
+@keyframes lotus-sheet-out {
+    from { opacity: 1; transform: none; }
+    to   { opacity: 0.4; transform: translateY(100%); }
 }
 
-/* ==========================================================
-   MOBILE MENU — slide + fade instead of an instant appear
-   ========================================================== */
-
-#mobile-menu:not(.hidden):not([hidden]) {
-    animation: lotus-menu-rise 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+@keyframes lotus-toast-in {
+    from { opacity: 0; transform: translateY(-22px) scale(0.92); }
+    to   { opacity: 1; transform: none; }
 }
 
-@keyframes lotus-menu-rise {
-    from { opacity: 0; transform: translateY(8px) scale(0.98); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+@keyframes lotus-toast-out {
+    from { opacity: 1; transform: none; }
+    to   { opacity: 0; transform: translateY(-14px) scale(0.94); }
 }
 
-/* ==========================================================
-   SIDEBAR CHAT LIST — each conversation eases in
-   ========================================================== */
-
-.chat-list-item {
-    animation: lotus-list-item-in 0.2s ease-out;
-}
-
-@keyframes lotus-list-item-in {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ==========================================================
-   ATTACHMENT CHIP / MEMORY ITEM — small pop-in
-   ========================================================== */
-
-.attachment-chip-item,
-.memory-item {
-    animation: lotus-pop-in 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes lotus-pop-in {
-    from { opacity: 0; transform: scale(0.9); }
-    to   { opacity: 1; transform: scale(1); }
-}
-
-/* ==========================================================
-   BUTTON MICRO-INTERACTIONS — press feedback everywhere
-   ========================================================== */
-
-.settings-item,
-.settings-inline-button,
-.message-choice-button,
-.message-action-button,
-.chat-list-item,
-#new-chat-button,
-#memory-add-button,
-.settings-get-key-link {
-    transition: transform 0.12s ease, opacity 0.12s ease, background 0.15s ease;
-}
-
-.settings-item:active,
-.settings-inline-button:active,
-.message-choice-button:active,
-#new-chat-button:active,
-#memory-add-button:active {
-    transform: scale(0.97);
-}
-
-/* Composer buttons (send/stop/voice/attach) already have their own
-   hover states in main.css — this just adds a satisfying press-down. */
-#send-button:active,
-#voice-button:active,
-#attach-button:active {
-    transform: scale(0.9);
-}
-
-/* ==========================================================
-   MEMORY MODAL DELETE — item leaves gracefully instead of
-   popping out of the list instantly
-   ========================================================== */
-
-.memory-item.removing,
-.chat-list-item.removing {
-    animation: lotus-item-out 0.16s ease-in forwards;
+@keyframes lotus-item-in {
+    from { opacity: 0; transform: translateX(-14px); }
+    to   { opacity: 1; transform: none; }
 }
 
 @keyframes lotus-item-out {
-    from { opacity: 1; transform: scale(1); max-height: 60px; }
-    to   { opacity: 0; transform: scale(0.9); max-height: 0; }
+    to { opacity: 0; transform: translateX(-24px) scale(0.96); }
 }
+
 
 /* ==========================================================
-   SIDEBAR / WELCOME SCREEN
+   AMBIENT BACKGROUND
    ========================================================== */
 
-#welcome-screen {
-    animation: lotus-welcome-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+#aurora {
+    opacity: 0.85;
+
+    transition: opacity 1.2s ease;
 }
 
-@keyframes lotus-welcome-in {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
+body.lotus-generating #aurora {
+    opacity: 1;
 }
+
+#aurora i:nth-child(1) { animation: lotus-drift-a 28s ease-in-out infinite alternate; }
+#aurora i:nth-child(2) { animation: lotus-drift-b 34s ease-in-out infinite alternate; }
+#aurora i:nth-child(3) { animation: lotus-drift-c 22s ease-in-out infinite alternate; }
+
 
 /* ==========================================================
-   QUICK ACTION BUTTONS — hover lift + staggered entrance
+   SPLASH
    ========================================================== */
+
+#splash-logo {
+    animation: lotus-splash-breathe 2.6s ease-in-out infinite;
+}
+
+#splash-title,
+#splash-text,
+#splash-loader {
+    animation: lotus-rise 0.9s var(--ease) both;
+}
+
+#splash-title  { animation-delay: 0.1s; }
+#splash-text   { animation-delay: 0.22s; }
+#splash-loader { animation-delay: 0.34s; }
+
+#loader-bar {
+    animation: lotus-loader 1.3s var(--ease-in) infinite;
+}
+
+
+/* ==========================================================
+   WELCOME
+   ========================================================== */
+
+#welcome-screen > * {
+    animation: lotus-rise 0.85s var(--ease) both;
+}
+
+#welcome-screen > :nth-child(1) { animation-delay: 0.02s; }
+#welcome-screen > :nth-child(2) { animation-delay: 0.1s; }
+#welcome-screen > :nth-child(3) { animation-delay: 0.18s; }
+#welcome-screen > :nth-child(4) { animation-delay: 0.26s; }
+#welcome-screen > :nth-child(5) { animation-delay: 0.34s; }
+
+#welcome-logo {
+    animation: lotus-float 6s ease-in-out infinite;
+}
+
+.welcome-halo::before {
+    animation: lotus-halo-spin 16s linear infinite;
+}
+
+#welcome-screen h1 {
+    animation:
+        lotus-rise 0.85s var(--ease) 0.1s both,
+        lotus-gradient-pan 8s linear 1s infinite;
+}
 
 #quick-actions button {
-    animation: lotus-pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation: lotus-rise 0.8s var(--ease) both;
 }
 
-#quick-actions button:nth-child(1) { animation-delay: 0.05s; }
-#quick-actions button:nth-child(2) { animation-delay: 0.1s; }
-#quick-actions button:nth-child(3) { animation-delay: 0.15s; }
-#quick-actions button:nth-child(4) { animation-delay: 0.2s; }
+#quick-actions button:nth-child(1) { animation-delay: 0.42s; }
+#quick-actions button:nth-child(2) { animation-delay: 0.5s; }
+#quick-actions button:nth-child(3) { animation-delay: 0.58s; }
+#quick-actions button:nth-child(4) { animation-delay: 0.66s; }
 
-#quick-actions button:hover {
-    transform: translateY(-3px);
-    border-color: rgba(168, 85, 247, 0.4);
-    box-shadow: 0 10px 28px rgba(168, 85, 247, 0.18);
-}
-
-/* Generated image messages fade + scale in once loaded */
-.message-image {
-    animation: lotus-pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
 
 /* ==========================================================
-   ACCESSIBILITY — respect prefers-reduced-motion
+   FREE-STANDING SMALL EFFECTS
+   ========================================================== */
+
+#scroll-bottom {
+    animation: lotus-pop 0.3s var(--ease-spring) both;
+}
+
+#attachment-chip:not(.hidden) .attachment-chip-item {
+    animation: lotus-pop 0.35s var(--ease-spring) both;
+}
+
+
+/* ==========================================================
+   PEOPLE WHO ASKED FOR LESS MOTION
    ========================================================== */
 
 @media (prefers-reduced-motion: reduce) {
 
-    #splash-logo,
-    #header-brand img,
-    .typing-dots span,
-    #settings-modal .modal-content,
-    #auth-modal .modal-content,
-    #memory-modal .modal-content,
-    #about-modal .modal-content,
-    #account-modal .account-modal-content,
-    #google-account-modal .modal-content,
-    #memory-modal,
-    #about-modal,
-    #settings-menu-view,
-    #settings-panel-view,
-    #mobile-menu,
-    .chat-list-item,
-    .attachment-chip-item,
-    .memory-item,
-    #welcome-screen,
-    #quick-actions button,
-    .message-image,
-    #status-dot.status-generating {
-        animation: none !important;
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0s !important;
+        animation-iteration-count: 1 !important;
+
+        transition-duration: 0.01ms !important;
+        transition-delay: 0s !important;
+
+        scroll-behavior: auto !important;
     }
-
-    .settings-item:active,
-    .settings-inline-button:active,
-    .message-choice-button:active,
-    #send-button:active,
-    #voice-button:active,
-    #attach-button:active {
-        transform: none !important;
-    }
-}
-
-/* ==========================================================
-   TOAST NOTIFICATIONS (js/toast.js)
-   ========================================================== */
-
-#toast-container {
-    position: fixed;
-    top: calc(16px + env(safe-area-inset-top));
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10000;
-
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-
-    width: min(360px, calc(100% - 32px));
-    pointer-events: none;
-}
-
-.toast {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-    padding: 12px 14px;
-    border-radius: 14px;
-
-    background: linear-gradient(145deg, rgba(25, 23, 32, 0.97), rgba(10, 10, 15, 0.98));
-    border: 1px solid rgba(168, 85, 247, 0.25);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 24px rgba(168, 85, 247, 0.1);
-    backdrop-filter: blur(20px);
-
-    color: var(--text, #F5F5F7);
-    font-size: 0.85rem;
-
-    pointer-events: auto;
-
-    animation: lotus-toast-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.toast.toast-leaving {
-    animation: lotus-toast-out 0.2s ease-in forwards;
-}
-
-.toast-error {
-    border-color: rgba(248, 113, 113, 0.35);
-}
-
-.toast-success {
-    border-color: rgba(74, 222, 128, 0.3);
-}
-
-.toast-icon {
-    flex-shrink: 0;
-    font-size: 1rem;
-}
-
-.toast-message {
-    flex: 1;
-    line-height: 1.4;
-}
-
-.toast-close {
-    flex-shrink: 0;
-    background: transparent;
-    border: none;
-    color: var(--muted, #a0a0b0);
-    cursor: pointer;
-    font-size: 0.8rem;
-    padding: 2px;
-}
-
-.toast-close:hover {
-    color: var(--text, #F5F5F7);
-}
-
-@keyframes lotus-toast-in {
-    from { opacity: 0; transform: translateY(-12px) scale(0.96); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes lotus-toast-out {
-    from { opacity: 1; transform: scale(1); max-height: 100px; margin-bottom: 8px; }
-    to   { opacity: 0; transform: scale(0.95); max-height: 0; margin-bottom: 0; }
-}
-
-/* ==========================================================
-   TOAST-STYLE CONFIRM DIALOG (js/toast.js)
-   ========================================================== */
-
-.toast-confirm-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 10001;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
-
-    animation: lotus-backdrop-in 0.15s ease-out;
-}
-
-.toast-confirm-card {
-    width: 100%;
-    max-width: 340px;
-
-    padding: 20px;
-    border-radius: 20px;
-
-    background: linear-gradient(145deg, rgba(25, 23, 32, 0.97), rgba(10, 10, 15, 0.98));
-    border: 1px solid rgba(168, 85, 247, 0.25);
-    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.55);
-
-    animation: lotus-modal-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.toast-confirm-message {
-    margin: 0 0 16px;
-    color: var(--text, #F5F5F7);
-    font-size: 0.9rem;
-    line-height: 1.5;
-}
-
-.toast-confirm-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.toast-confirm-actions button {
-    flex: 1;
-    text-align: center;
-}
-
-.toast-prompt-input {
-    width: 100%;
-    margin-bottom: 16px;
-    box-sizing: border-box;
 }

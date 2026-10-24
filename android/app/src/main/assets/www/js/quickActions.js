@@ -4,17 +4,17 @@
  * ==========================================================
  * Connects the welcome-screen shortcuts and sidebar About
  * button to real functionality:
- *  - Kod Yaz     → fills a coding-focused starter prompt
- *  - Görsel Oluştur → REAL image generation (js/imageGen.js,
- *                     Pollinations.ai — free, keyless)
- *  - Web Analiz  → REAL page fetch (js/webAnalyze.js,
- *                     r.jina.ai reader) fed to the AI as context
- *  - Dosya Analiz → opens the real file picker (js/attachments.js)
+ *  - Kod Yaz        → fills a coding-focused starter prompt
+ *  - Görsel Oluştur → REAL image generation (js/imageGen.js)
+ *  - Web Analiz     → opens the "Özetle" web tool (js/tools.js):
+ *                     a link is fetched and read, or pasted text
+ *                     is summarised
+ *  - Dosya Analiz   → opens the real file picker (js/attachments.js)
  * ==========================================================
  */
 
 import chatManager from "./chat.js";
-import { fetchPageText } from "./webAnalyze.js";
+import { openTools } from "./tools.js";
 import { showPrompt, showToast } from "./toast.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -46,63 +46,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("quick-image")?.addEventListener("click", async () => {
 
+        if (chatManager.isGenerating) {
+
+            showToast("Lotus şu an bir yanıt hazırlıyor — bitince tekrar dene.", "info");
+
+            return;
+        }
+
         const prompt = await showPrompt("Ne çizmemi istersin?", "örn. yağmurda duran mor bir lotus çiçeği");
 
         if (!prompt) return;
 
+        if (chatManager.isGenerating) return;
+
         chatManager.addUserMessage(`🎨 Görsel oluştur: ${prompt}`);
+
+        chatManager.scrollToBottom(true);
 
         await chatManager.regenerateImage(prompt);
     });
 
     // ------------------------------------------------------
-    // WEB ANALİZ — real page fetch, fed to the AI as context
+    // WEB ANALİZ — the "Özetle" tool
     // ------------------------------------------------------
 
-    document.getElementById("quick-web")?.addEventListener("click", async () => {
+    document.getElementById("quick-web")?.addEventListener("click", () => openTools("summarize"));
 
-        const url = await showPrompt("Analiz etmemi istediğin sayfanın linki:", "https://...");
-
-        if (!url || !url.trim()) return;
-
-        chatManager.showTyping("Sayfa okunuyor...");
-
-        try {
-
-            const page = await fetchPageText(url.trim());
-
-            chatManager.hideTyping();
-
-            const notice = page.truncated ? " (sayfa uzun olduğu için kısaltıldı)" : "";
-
-            // Mirrors js/attachments.js's pattern: the SAME text is both
-            // shown to the user and sent to the AI (processMessage finds
-            // "what to reply to" via the last entry in this.messages, so
-            // the displayed and sent text must be identical — a short
-            // display text with a separately-passed long prompt would
-            // silently send the SHORT text to the AI, losing the fetched
-            // page content entirely).
-            const fullText =
-                `🌐 Bu sayfayı özetle: ${page.url}${notice}\n\n[Sayfa içeriği]\n${page.text}`;
-
-            chatManager.addUserMessage(fullText);
-
-            await chatManager.processMessage(fullText);
-
-        } catch (error) {
-
-            chatManager.hideTyping();
-
-            chatManager.hideTyping();
-
-            // FIX: no user message was ever added at this point (the
-            // fetch failed before we got there), so the normal
-            // error-bubble "Tekrar dene" button would retry whatever
-            // unrelated message came before this — a toast avoids that
-            // misleading retry entirely.
-            showToast(error.message, "error");
-        }
-    });
+    // ------------------------------------------------------
+    // ABOUT
+    // ------------------------------------------------------
 
     document.getElementById("about-button")?.addEventListener("click", event => {
 

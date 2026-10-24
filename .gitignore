@@ -14,3 +14,6 @@ build/
 *.aab
 .idea/
 .DS_Store
+
+# Yerel model ağırlıkları (GitHub 100 MB sınırı; tools/fetch-local-ai.sh --with-model ile eklenir)
+models/*.gguf

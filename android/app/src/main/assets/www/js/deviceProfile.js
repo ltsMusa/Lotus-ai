@@ -18,18 +18,24 @@
 
 const STORAGE_KEY = "lotus_device_tier_v1";
 
+// "Lotus Mini" kullanıcıya gösterilen addır. Arkada Apache 2.0 lisanslı
+// Qwen2.5 açık kaynak modelleri çalışır (ollama/setup-lotus-mini.sh ile
+// "lotus-mini" takma adı da oluşturulabilir).
+export const MODEL_DISPLAY_NAME = "Lotus Mini";
+export const MODEL_BASE_CREDIT = "Qwen2.5 (Apache 2.0) tabanlı";
+
 export const TIERS = {
     low: {
         label: "Düşük (hafif cihaz)",
-        models: ["tinyllama", "qwen2.5:0.5b", "phi3:mini"]
+        models: ["qwen2.5:0.5b", "qwen2.5:1.5b"]
     },
     mid: {
         label: "Orta",
-        models: ["llama3.2:3b", "gemma2:2b", "phi3:mini"]
+        models: ["qwen2.5:1.5b", "qwen2.5:0.5b"]
     },
     high: {
         label: "Yüksek",
-        models: ["llama3.1:8b", "mistral", "llama3.2:3b"]
+        models: ["qwen2.5:3b", "qwen2.5:1.5b"]
     }
 };
 
@@ -69,6 +75,11 @@ const DeviceProfile = {
     getModel() {
 
         return TIERS[this.tier].models[0];
+    },
+
+    getDisplayName() {
+
+        return MODEL_DISPLAY_NAME;
     },
 
     getTierInfo() {

@@ -2,6 +2,16 @@
 // LOTUS AI — AUTHENTICATION
 // ==========================================================
 
+import { showToast } from "./toast.js";
+import { isPackagedApp } from "./env.js";
+
+/** Messages used to go through the browser's native notify() box, which
+ *  looks out of place (and is awkward inside the Android WebView). */
+function notify(message, type = "error") {
+
+    showToast(String(message).replace(/\s*\n\s*/g, " ").trim(), type, 5200);
+}
+
 const SUPABASE_URL =
     "https://ecveafyfgelsyamoheyn.supabase.co";
 
@@ -47,7 +57,7 @@ function createOfflineStubClient() {
             error: { message: "Sunucuya (Supabase) ulaşılamıyor." }
         });
 
-        for (const method of ["select", "insert", "update", "delete", "eq", "order", "single"]) {
+        for (const method of ["select", "insert", "update", "upsert", "delete", "eq", "neq", "in", "is", "gt", "gte", "lt", "lte", "like", "ilike", "or", "not", "match", "order", "limit", "range", "single", "maybeSingle"]) {
 
             result[method] = () => stubQuery();
         }
@@ -66,7 +76,9 @@ function createOfflineStubClient() {
             signUp: () => Promise.resolve({ data: null, error: authError }),
             signOut: () => Promise.resolve({ error: null }),
             signInWithOAuth: () => Promise.resolve({ data: null, error: authError }),
-            resetPasswordForEmail: () => Promise.resolve({ data: null, error: authError })
+            resetPasswordForEmail: () => Promise.resolve({ data: null, error: authError }),
+            updateUser: () => Promise.resolve({ data: null, error: authError }),
+            refreshSession: () => Promise.resolve({ data: { session: null }, error: null })
         },
         from() {
             return stubQuery();
@@ -757,7 +769,7 @@ const Auth = {
         // needs either a native Google Sign-In SDK integration or a
         // custom URL scheme + Android intent-filter deep link — both
         // beyond a JS-only fix.
-        if (window.location.protocol === "file:") {
+        if (isPackagedApp()) {
 
             return {
                 success: false,
@@ -1214,7 +1226,7 @@ document.addEventListener(
                     !password
                 ) {
 
-                    alert(
+                    notify(
                         "E-posta ve şifre gerekli."
                     );
 
@@ -1243,7 +1255,7 @@ document.addEventListener(
                         !result.success
                     ) {
 
-                        alert(
+                        notify(
                             "Giriş başarısız:\n" +
                             result.error
                         );
@@ -1291,7 +1303,7 @@ document.addEventListener(
                     !password
                 ) {
 
-                    alert(
+                    notify(
                         "E-posta ve şifre gerekli."
                     );
 
@@ -1303,7 +1315,7 @@ document.addEventListener(
                     password.length < 6
                 ) {
 
-                    alert(
+                    notify(
                         "Şifre en az 6 karakter olmalı."
                     );
 
@@ -1332,7 +1344,7 @@ document.addEventListener(
                         !result.success
                     ) {
 
-                        alert(
+                        notify(
                             "Kayıt başarısız:\n" +
                             result.error
                         );
@@ -1345,9 +1357,10 @@ document.addEventListener(
                         !result.session
                     ) {
 
-                        alert(
+                        notify(
                             "Hesabın oluşturuldu! " +
-                            "E-posta adresini doğrulaman gerekebilir."
+                            "E-posta adresini doğrulaman gerekebilir.",
+                            "success"
                         );
 
                     } else {
@@ -1393,7 +1406,7 @@ document.addEventListener(
                         !result.success
                     ) {
 
-                        alert(
+                        notify(
                             "Google girişi başarısız:\n" +
                             result.error
                         );
@@ -1407,7 +1420,7 @@ document.addEventListener(
                     );
 
 
-                    alert(
+                    notify(
                         "Google girişi başlatılamadı.\n" +
                         (
                             error?.message ??
@@ -1617,7 +1630,7 @@ document.addEventListener(
                         !result.success
                     ) {
 
-                        alert(
+                        notify(
                             "Çıkış yapılamadı:\n" +
                             result.error
                         );
@@ -1629,7 +1642,7 @@ document.addEventListener(
                         false;
 
                     accountLogout.textContent =
-                        "🚪 Çıkış Yap";
+                        "Çıkış Yap";
                 }
             }
         );
@@ -1684,7 +1697,7 @@ document.addEventListener(
                         !result.success
                     ) {
 
-                        alert(
+                        notify(
                             "Çıkış yapılamadı:\n" +
                             result.error
                         );
@@ -1701,7 +1714,7 @@ document.addEventListener(
                         false;
 
                     googleAccountLogout.textContent =
-                        "🚪 Çıkış Yap";
+                        "Çıkış Yap";
                 }
             }
         );

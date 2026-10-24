@@ -1,7 +1,7 @@
 /**
  * ==========================================================
  * Lotus AI - Chat Manager
- * Version : 5.0
+ * Version : 7.0
  * Description : Chat, streaming, message actions (copy /
  *               edit / regenerate / stop), and the "Limit
  *               doldu" choice screen.

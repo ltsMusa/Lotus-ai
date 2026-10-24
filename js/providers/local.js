@@ -35,7 +35,10 @@ import { pickLocalModel, recommendedModelId } from "../localPolicy.js";
 import DeviceMonitor from "../deviceMonitor.js";
 import { ProviderError } from "./providerError.js";
 
-const ENGINE_VERSION = "3.12.0";
+// The newest wllama that is actually PUBLISHED on npm (the GitHub master branch
+// is ahead of npm — pointing the CDN URLs at an unpublished version 404s and
+// the engine never loads, which looks like "the model does not download").
+const ENGINE_VERSION = "3.8.1";
 
 const ENGINE_URLS = [
     {
@@ -44,9 +47,14 @@ const ENGINE_URLS = [
         wasm: new URL("../../vendor/wllama/wllama.wasm", import.meta.url).href
     },
     {
-        label: "CDN",
+        label: "jsDelivr",
         module: `https://cdn.jsdelivr.net/npm/@wllama/wllama@${ENGINE_VERSION}/esm/index.js`,
         wasm: `https://cdn.jsdelivr.net/npm/@wllama/wllama@${ENGINE_VERSION}/src/wasm/wllama.wasm`
+    },
+    {
+        label: "unpkg",
+        module: `https://unpkg.com/@wllama/wllama@${ENGINE_VERSION}/esm/index.js`,
+        wasm: `https://unpkg.com/@wllama/wllama@${ENGINE_VERSION}/src/wasm/wllama.wasm`
     }
 ];
 
@@ -121,15 +129,42 @@ let wllama = null; // the Wllama instance (one at a time)
 let EngineClass = null;
 let enginePaths = null;
 let enginePromise = null;
+let engineSource = "";
+
+/** Short, human reason why a source could not be used (HTTP status or network). */
+async function probeSource(url) {
+
+    try {
+
+        const controller = new AbortController();
+
+        const timer = setTimeout(() => controller.abort(), 4000);
+
+        const response = await fetch(url, { method: "HEAD", signal: controller.signal });
+
+        clearTimeout(timer);
+
+        return response.ok ? "dosya var ama yüklenemedi" : `HTTP ${response.status}`;
+
+    } catch {
+
+        return navigator.onLine === false ? "internet yok" : "ulaşılamadı";
+    }
+}
 
 async function importEngine() {
 
-    let lastError = null;
+    const failures = [];
 
     for (const source of ENGINE_URLS) {
 
-        // The CDN copy is only worth trying while online.
-        if (source.label === "CDN" && navigator.onLine === false) continue;
+        // The CDN copies are only worth trying while online.
+        if (source.label !== "uygulama içi" && navigator.onLine === false) {
+
+            failures.push(`${source.label}: internet yok`);
+
+            continue;
+        }
 
         try {
 
@@ -139,16 +174,19 @@ async function importEngine() {
 
             EngineClass = module.Wllama;
             enginePaths = { default: source.wasm };
+            engineSource = source.label;
 
             return;
 
         } catch (error) {
 
-            lastError = error;
+            failures.push(`${source.label}: ${await probeSource(source.module)}`);
+
+            console.warn(`Yerel motor (${source.label}) yüklenemedi:`, error?.message || error);
         }
     }
 
-    throw lastError || new Error("motor yüklenemedi");
+    throw new Error(failures.join(" · ") || "motor yüklenemedi");
 }
 
 /** Loads the engine module once. Throws ProviderError(NO_ENGINE | UNSUPPORTED). */
@@ -166,7 +204,7 @@ async function ensureEngineModule() {
             enginePromise = null;
 
             state.engine = "missing";
-            state.engineError = "Yerel yapay zekâ motoru bulunamadı. Uygulama dosyalarına eklemek için tools/fetch-local-ai.sh çalıştır; ya da internete bağlanıp tekrar dene.";
+            state.engineError = `Yerel yapay zekâ motoru yüklenemedi (${error.message}). İnternete bağlıyken tekrar dene; internetsiz kullanım için motoru uygulamaya eklemek gerekir (tools/fetch-local-ai.sh).`;
 
             emit();
 
@@ -327,6 +365,8 @@ const LocalAI = {
 
     displayName: LOCAL_MODEL_NAME,
 
+    engineSource: () => engineSource,
+
     subscribe(listener) {
 
         listeners.add(listener);
@@ -456,7 +496,7 @@ const LocalAI = {
         }
     },
 
-    /** Throws a friendly error if the device has no room for the model. */
+    /** Throws a friendly error only when the device clearly has no room for the model. */
     async checkStorage(bytes) {
 
         try {
@@ -467,11 +507,13 @@ const LocalAI = {
 
             const free = estimate.quota - (estimate.usage || 0);
 
-            if (free < bytes * 1.15) {
+            if (free < bytes) {
 
                 const needMB = Math.ceil(bytes / 1024 / 1024);
 
-                throw toError(`Yeterli depolama alanı yok (yaklaşık ${needMB} MB gerekli).`, "STORAGE");
+                const freeMB = Math.max(0, Math.floor(free / 1024 / 1024));
+
+                throw toError(`Yeterli depolama alanı yok (${needMB} MB gerekli, ${freeMB} MB boş görünüyor). Telefonda yer açıp tekrar dene.`, "STORAGE");
             }
 
         } catch (error) {

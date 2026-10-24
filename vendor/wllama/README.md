@@ -1,6 +1,6 @@
 # vendor/wllama
 
-Yerel yapay zekâ motoru: [wllama](https://github.com/ngxson/wllama) 3.12.0 (MIT) —
+Yerel yapay zekâ motoru: [wllama](https://github.com/ngxson/wllama) 3.8.1 (MIT) —
 llama.cpp'nin WebAssembly derlemesi. Bu klasör `tools/fetch-local-ai.sh` ile doldurulur
 (motor dosyaları boyutlu olduğu ve paket yöneticisinden geldiği için depoya elle konmadı).
 

@@ -10,6 +10,8 @@
  */
 
 import config from "./config.js";
+import { plainSpeech } from "./utils.js";
+import { showToast } from "./toast.js";
 
 const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -112,11 +114,13 @@ const Speech = {
 
         if (!config.voice.ttsEnabled) return;
 
-        if (!this.ttsSupported() || !text) return;
+        const spoken = plainSpeech(text);
+
+        if (!this.ttsSupported() || !spoken) return;
 
         window.speechSynthesis.cancel();
 
-        const utterance = new SpeechSynthesisUtterance(text);
+        const utterance = new SpeechSynthesisUtterance(spoken);
 
         utterance.lang = config.voice.language || "tr-TR";
         utterance.rate = config.voice.rate || 1;
@@ -171,6 +175,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 input.value = transcript;
 
+                // keep the composer's auto-height in sync with dictated text
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+
                 if (isFinal) voiceButton.classList.remove("listening");
             },
             errorMessage => {
@@ -178,6 +185,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 voiceButton.classList.remove("listening");
 
                 console.warn("🎙️", errorMessage);
+
+                showToast(errorMessage || "Mikrofon kullanılamıyor.", "error");
             }
         );
     });

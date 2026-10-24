@@ -17,8 +17,7 @@ const settingsModal =
 
 const settingsButtons = [
     document.getElementById("settings-button"),
-    document.getElementById("header-settings-button"),
-    document.getElementById("mobile-settings")
+    document.getElementById("header-settings-button")
 ];
 
 
@@ -122,166 +121,11 @@ document
 //
 
 // ==========================================================
-// MOBILE MENU
+// MENU (hamburger / sidebar drawer)
 // ==========================================================
-
-const menuButton =
-    document.getElementById("menu-button");
-
-const mobileMenu =
-    document.getElementById("mobile-menu");
-
-
-// ==========================================================
-// OPEN MOBILE MENU
-// ==========================================================
-
-function openMobileMenu() {
-
-    if (!mobileMenu) return;
-
-    mobileMenu.classList.remove("hidden");
-
-    mobileMenu.hidden = false;
-
-    mobileMenu.style.display = "block";
-
-    console.log("🌸 Mobile Menu açıldı");
-
-}
-
-
-// ==========================================================
-// CLOSE MOBILE MENU
-// ==========================================================
-
-function closeMobileMenu() {
-
-    if (!mobileMenu) return;
-
-    mobileMenu.classList.add("hidden");
-
-    mobileMenu.hidden = true;
-
-    mobileMenu.style.display = "none";
-
-}
-
-
-// ==========================================================
-// TOGGLE MOBILE MENU
-// ==========================================================
-
-function toggleMobileMenu() {
-
-    if (!mobileMenu) return;
-
-    const isHidden =
-        mobileMenu.classList.contains("hidden") ||
-        mobileMenu.hidden === true;
-
-    if (isHidden) {
-
-        openMobileMenu();
-
-    } else {
-
-        closeMobileMenu();
-
-    }
-
-}
-
-
-// ==========================================================
-// MENU BUTTON
-// ==========================================================
-
-if (menuButton) {
-
-    menuButton.addEventListener(
-        "click",
-        event => {
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            toggleMobileMenu();
-
-        }
-    );
-
-}
-
-
-// ==========================================================
-// CLOSE WHEN CLICKING OUTSIDE
-// ==========================================================
-
-document.addEventListener(
-    "click",
-    event => {
-
-        if (!mobileMenu) return;
-
-        if (
-            mobileMenu.classList.contains("hidden")
-        ) {
-            return;
-        }
-
-        if (
-            mobileMenu.contains(event.target) ||
-            menuButton?.contains(event.target)
-        ) {
-            return;
-        }
-
-        closeMobileMenu();
-
-    }
-);
-
-
-// ==========================================================
-// MOBILE MENU ACTIONS
-// ==========================================================
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    const aboutModal = document.getElementById("about-modal");
-
-    const mobileAbout = document.getElementById("mobile-about");
-
-    if (mobileAbout && aboutModal) {
-
-        mobileAbout.addEventListener("click", event => {
-
-            event.preventDefault();
-
-            aboutModal.classList.remove("hidden");
-            mobileMenu?.classList.add("hidden");
-            if (mobileMenu) {
-                mobileMenu.hidden = true;
-                mobileMenu.style.display = "none";
-            }
-        });
-
-        aboutModal.querySelectorAll(".close-modal").forEach(button => {
-
-            button.addEventListener("click", () => {
-
-                aboutModal.classList.add("hidden");
-            });
-        });
-    }
-
-    // Any actionable mobile-menu item closes the menu after the action.
-    ["mobile-new-chat", "mobile-memory", "mobile-settings"].forEach(id => {
-
-        document.getElementById(id)?.addEventListener("click", () => {
-
-            closeMobileMenu();
-        });
-    });
-});
+//
+// The hamburger button, the sidebar drawer, its backdrop, swipe
+// gestures and the global Esc handling live in js/sidebar.js.
+// The old floating "mobile menu" dropdown was removed — every
+// entry it had (new chat, memory, settings, about) is now in the
+// sidebar itself.

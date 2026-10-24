@@ -104,7 +104,12 @@ export async function streamSSE(url, fetchOptions, onEvent, providerLabel = "Sa�
             throw new ProviderError(detail || `${providerLabel} için tüm anahtarlar limitte.`, "KEYS_EXHAUSTED");
         }
 
-        const code = classifyHttpStatus(response.status);
+        // The Lotus server answers 500 "<PROVIDER>_API_KEY ..." when it has no
+        // key for this provider — that is "not connected", not a server fault,
+        // so the router parks the provider for a while instead of retrying it.
+        const noServerKey = response.status >= 500 && /_API_KEY/.test(detail);
+
+        const code = noServerKey ? "NO_KEY" : classifyHttpStatus(response.status);
 
         throw new ProviderError(detail || `${providerLabel} hatası (${response.status})`, code);
     }

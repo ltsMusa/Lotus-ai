@@ -1,58 +1,567 @@
-/**
- * ==========================================================
- * Lotus AI — Markdown / Code Block Rendering
- * ==========================================================
- * Referenced in index.html since the start of this project but
- * never created (404) — code block styling was living in
- * chat.css instead. Moved here to match the intended file
- * layout (js/markdown.js renders this markup).
- * ==========================================================
- */
+/* ==========================================================
+   LOTUS AI — MARKDOWN
+   Everything the renderer in js/markdown.js can produce:
+   paragraphs, headings, lists, quotes, tables, links,
+   inline code, code blocks (with syntax colours), images.
+   ========================================================== */
+
+
+/* ==========================================================
+   FLOW
+   ========================================================== */
+
+.message-content > :first-child { margin-top: 0; }
+.message-content > :last-child  { margin-bottom: 0; }
+
+.ai-message .message-content p {
+    margin: 0 0 0.85em;
+}
+
+.ai-message .message-content strong {
+    color: #fff;
+
+    font-weight: 700;
+}
+
+.ai-message .message-content em {
+    color: var(--accent-light);
+
+    font-style: italic;
+}
+
+.ai-message .message-content del {
+    color: var(--muted);
+}
+
+
+/* ==========================================================
+   HEADINGS
+   ========================================================== */
+
+.ai-message .message-content h1,
+.ai-message .message-content h2,
+.ai-message .message-content h3,
+.ai-message .message-content h4 {
+    margin: 1.35em 0 0.55em;
+
+    color: #fff;
+
+    line-height: 1.25;
+}
+
+.ai-message .message-content h1 {
+    font-family: var(--font-display);
+    font-size: 1.75em;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+
+    padding-bottom: 0.3em;
+
+    border-bottom: 1px solid var(--line);
+}
+
+.ai-message .message-content h2 {
+    font-family: var(--font-display);
+    font-size: 1.5em;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.ai-message .message-content h3 {
+    font-size: 1.14em;
+    font-weight: 700;
+}
+
+.ai-message .message-content h4 {
+    color: var(--accent-light);
+
+    font-size: 0.98em;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+
+/* ==========================================================
+   LISTS
+   ========================================================== */
+
+.ai-message .message-content ul,
+.ai-message .message-content ol {
+    margin: 0.2em 0 0.95em;
+    padding-left: 1.5em;
+}
+
+.ai-message .message-content li {
+    margin: 0.32em 0;
+
+    padding-left: 0.2em;
+}
+
+.ai-message .message-content li > p {
+    margin: 0.2em 0;
+}
+
+.ai-message .message-content li > ul,
+.ai-message .message-content li > ol {
+    margin: 0.3em 0 0.4em;
+}
+
+.ai-message .message-content ul > li::marker {
+    color: var(--accent);
+}
+
+.ai-message .message-content ol > li::marker {
+    color: var(--accent-light);
+
+    font-weight: 700;
+}
+
+
+/* ==========================================================
+   QUOTES + RULES
+   ========================================================== */
+
+.ai-message .message-content blockquote {
+    margin: 0.9em 0;
+    padding: 0.7em 1em 0.7em 1.1em;
+
+    color: var(--text-2);
+
+    border-left: 3px solid transparent;
+    border-image: linear-gradient(180deg, #a855f7, #f472b6) 1;
+    border-radius: 0 12px 12px 0;
+
+    background: linear-gradient(90deg, rgba(168, 85, 247, 0.12), rgba(168, 85, 247, 0.02));
+}
+
+.ai-message .message-content blockquote > :last-child {
+    margin-bottom: 0;
+}
+
+.ai-message .message-content hr {
+    height: 1px;
+
+    margin: 1.4em 0;
+
+    border: 0;
+
+    background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.55), rgba(244, 114, 182, 0.4), transparent);
+}
+
+
+/* ==========================================================
+   LINKS
+   ========================================================== */
+
+.ai-message .message-content a {
+    color: var(--accent-light);
+
+    text-decoration: underline;
+    text-decoration-color: rgba(216, 180, 254, 0.35);
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.ai-message .message-content a:hover {
+    color: var(--accent-soft);
+
+    text-decoration-color: currentColor;
+}
+
+.user-message .message-content a {
+    color: #fff;
+
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+
+/* ==========================================================
+   INLINE CODE
+   ========================================================== */
+
+.message-content code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+}
+
+.ai-message .message-content :not(pre) > code {
+    padding: 0.14em 0.45em;
+
+    color: #f0abfc;
+
+    border: 1px solid rgba(192, 132, 252, 0.22);
+    border-radius: 7px;
+
+    background: rgba(168, 85, 247, 0.14);
+
+    overflow-wrap: anywhere;
+}
+
+
+/* ==========================================================
+   CODE BLOCKS
+   ========================================================== */
 
 .code-block {
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    margin: 8px 0;
+    margin: 1em 0;
+
     overflow: hidden;
+
+    border: 1px solid rgba(192, 132, 252, 0.2);
+    border-radius: 16px;
+
+    background: #0a0814;
+
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+}
+
+.code-block:last-child {
+    margin-bottom: 0;
 }
 
 .code-block-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 6px 10px;
-    font-size: 0.7rem;
-    color: var(--muted, #a0a0a0);
-    background: rgba(255, 255, 255, 0.03);
+    justify-content: space-between;
+    gap: 12px;
+
+    padding: 7px 8px 7px 14px;
+
+    color: var(--muted);
+
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.5px;
+    text-transform: lowercase;
+
+    border-bottom: 1px solid var(--line);
+
+    background: linear-gradient(90deg, rgba(168, 85, 247, 0.16), rgba(244, 114, 182, 0.05));
+}
+
+.code-block-header > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.code-block-header > span::before {
+    content: "";
+
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: var(--grad);
+
+    box-shadow: 0 0 10px rgba(192, 38, 211, 0.7);
 }
 
 .code-copy-button {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: var(--text, #fff);
-    border-radius: 6px;
-    padding: 2px 8px;
-    font-size: 0.7rem;
-    cursor: pointer;
+    padding: 5px 12px;
+
+    color: var(--text-2);
+
+    font-family: var(--font-ui);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+
+    border: 1px solid var(--line-strong);
+    border-radius: 9px;
+
+    background: rgba(255, 255, 255, 0.05);
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.15s ease;
+}
+
+.code-copy-button:hover {
+    color: #fff;
+
+    border-color: var(--line-accent);
+
+    background: rgba(168, 85, 247, 0.22);
+}
+
+.code-copy-button:active {
+    transform: scale(0.94);
+}
+
+.code-copy-button.copied {
+    color: var(--success);
+
+    border-color: rgba(74, 222, 128, 0.4);
+
+    background: rgba(74, 222, 128, 0.1);
 }
 
 .code-block pre {
     margin: 0;
-    padding: 10px;
+    padding: 14px 16px;
+
     overflow-x: auto;
+
+    color: #e9e4f5;
+
+    font-size: 13.5px;
+    line-height: 1.65;
+
+    tab-size: 4;
+
+    -webkit-overflow-scrolling: touch;
 }
 
+.code-block pre code {
+    display: block;
+
+    padding: 0;
+
+    border: 0;
+    background: none;
+
+    font-size: inherit;
+    white-space: pre;
+}
+
+/* syntax colours */
+.tok-c   { color: #7a7396; font-style: italic; }
+.tok-s   { color: #86efac; }
+.tok-key { color: #67e8f9; }
+.tok-n   { color: #fdba74; }
+.tok-k   { color: #f0abfc; font-weight: 600; }
+.tok-f   { color: #93c5fd; }
+.tok-t   { color: #fde68a; }
+.tok-p   { color: #a8a0c4; }
+
+
 /* ==========================================================
-   GENERATED IMAGES (js/imageGen.js, rendered via markdown !())
+   TABLES
+   ========================================================== */
+
+.table-wrap {
+    margin: 1em 0;
+
+    overflow-x: auto;
+
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+
+    background: rgba(8, 6, 16, 0.5);
+
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-wrap:last-child {
+    margin-bottom: 0;
+}
+
+.table-wrap table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-size: 0.93em;
+}
+
+.table-wrap th,
+.table-wrap td {
+    padding: 9px 14px;
+
+    text-align: left;
+    vertical-align: top;
+
+    border-bottom: 1px solid var(--line);
+}
+
+.table-wrap th {
+    color: var(--accent-light);
+
+    font-size: 0.82em;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    white-space: nowrap;
+
+    background: rgba(168, 85, 247, 0.14);
+}
+
+.table-wrap tbody tr:nth-child(even) td {
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.table-wrap tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.table-wrap tbody tr {
+    transition: background 0.2s ease;
+}
+
+.table-wrap tbody tr:hover td {
+    background: rgba(168, 85, 247, 0.08);
+}
+
+
+/* ==========================================================
+   IMAGES (generated or attached)
    ========================================================== */
 
 .message-image {
     display: block;
-    max-width: 100%;
-    width: 320px;
+
+    width: auto;
+    max-width: min(100%, 440px);
+    height: auto;
+    min-height: 90px;
+
+    margin: 0.7em 0;
+
+    border: 1px solid var(--line-accent);
     border-radius: 16px;
-    margin-top: 6px;
-    border: 1px solid rgba(168, 85, 247, 0.25);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(168, 85, 247, 0.12);
+
+    background:
+        linear-gradient(110deg, rgba(255, 255, 255, 0.04) 30%, rgba(255, 255, 255, 0.11) 50%, rgba(255, 255, 255, 0.04) 70%) 0 0 / 200% 100%,
+        rgba(168, 85, 247, 0.08);
+
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.4);
+
+    cursor: zoom-in;
+
+    animation: lotus-shimmer 1.6s linear infinite;
+
+    transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease);
+}
+
+/* once it has decoded the shimmer is no longer needed
+   (js/chat.js adds .is-loaded from a capturing "load" listener) */
+.message-image.is-loaded {
+    min-height: 0;
+
+    background: none;
+
+    animation: none;
+}
+
+@media (hover: hover) {
+
+    .message-image:hover {
+        transform: scale(1.015);
+
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5), 0 0 34px rgba(168, 85, 247, 0.22);
+    }
+}
+
+/* picture that could not be loaded (js/chat.js swaps it for this card) */
+.image-broken {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+
+    width: min(100vw - 120px, 380px);
+    max-width: 100%;
+
+    margin: 0.7em 0;
+    padding: 14px 16px;
+
+    color: var(--text-2);
+
+    font-size: 13.5px;
+    line-height: 1.45;
+
+    border: 1px dashed rgba(192, 132, 252, 0.4);
+    border-radius: 16px;
+
+    background: rgba(168, 85, 247, 0.07);
+}
+
+.image-broken > .ic {
+    width: 26px;
+    height: 26px;
+
+    color: var(--accent-light);
+}
+
+.image-broken span {
+    flex: 1 1 150px;
+
+    min-width: 0;
+}
+
+.image-broken button {
+    flex: none;
+
+    margin-left: auto;
+    padding: 8px 15px;
+
+    color: #fff;
+
+    font-size: 12.5px;
+    font-weight: 600;
+
+    border-radius: 999px;
+
+    background: var(--grad);
+
+    transition: transform 0.15s ease, filter 0.2s ease;
+}
+
+.image-broken button:hover {
+    filter: brightness(1.12);
+}
+
+.image-broken button:active {
+    transform: scale(0.94);
+}
+
+
+/* ==========================================================
+   SELECTION + SCROLLBARS INSIDE MESSAGES
+   ========================================================== */
+
+.message-content ::selection {
+    background: rgba(244, 114, 182, 0.38);
+}
+
+.code-block pre::-webkit-scrollbar,
+.table-wrap::-webkit-scrollbar {
+    height: 8px;
+}
+
+.code-block pre::-webkit-scrollbar-thumb,
+.table-wrap::-webkit-scrollbar-thumb {
+    background: rgba(168, 85, 247, 0.4);
+
+    border: 2px solid transparent;
+    border-radius: 10px;
+
+    background-clip: content-box;
+}
+
+
+@media (max-width: 520px) {
+
+    .code-block pre {
+        padding: 12px 13px;
+
+        font-size: 12.5px;
+    }
+
+    .table-wrap th,
+    .table-wrap td {
+        padding: 8px 11px;
+    }
+
+    .ai-message .message-content h1 { font-size: 1.55em; }
+    .ai-message .message-content h2 { font-size: 1.35em; }
 }

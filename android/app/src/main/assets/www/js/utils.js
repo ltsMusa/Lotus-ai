@@ -13,6 +13,12 @@ export function escapeHtml(value) {
     return div.innerHTML;
 }
 
+/** Markup for an icon from the SVG sprite inlined in index.html. */
+export function icon(name, cls = "ic") {
+
+    return `<svg class="${cls}" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+}
+
 export function generateId() {
 
     if (window.crypto?.randomUUID) return window.crypto.randomUUID();
@@ -90,4 +96,37 @@ export async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
 
         clearTimeout(timer);
     }
+}
+
+
+/**
+ * Reasoning models (Qwen3, gpt-oss through some routes) can put their
+ * chain of thought inline as <think>…</think>. That is never part of
+ * the answer — drop finished blocks, and also a still-open block while
+ * the answer is streaming in.
+ */
+export function stripThinking(text) {
+
+    return String(text ?? "")
+        .replace(/<think>[\s\S]*?<\/think>/gi, "")
+        .replace(/<think>[\s\S]*$/i, "")
+        .replace(/^\s+/, "");
+}
+
+/** Markdown → something a speech synthesizer can read out loud. */
+export function plainSpeech(text) {
+
+    return String(text ?? "")
+        .replace(/```[\s\S]*?(```|$)/g, " (kod bloğu) ")
+        .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+        .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+        .replace(/https?:\/\/\S+/g, " bağlantı ")
+        .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+        .replace(/^\s*[-*+•]\s+/gm, "")
+        .replace(/^\s*\d+[.)]\s+/gm, "")
+        .replace(/^\s*>\s?/gm, "")
+        .replace(/[*_~`|]+/g, "")
+        .replace(/\p{Extended_Pictographic}/gu, "")
+        .replace(/\s+/g, " ")
+        .trim();
 }

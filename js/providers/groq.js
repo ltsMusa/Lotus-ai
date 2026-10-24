@@ -29,7 +29,7 @@ export default class GroqProvider {
                         "Authorization": `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
-                        model: config.providers.groq.model || "llama-3.3-70b-versatile",
+                        model: config.providers.groq.model || "openai/gpt-oss-120b",
                         messages: [
                             { role: "system", content: systemPrompt },
                             ...history
@@ -86,7 +86,7 @@ export default class GroqProvider {
                     "Authorization": `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({
-                    model: config.providers.groq.model || "llama-3.3-70b-versatile",
+                    model: config.providers.groq.model || "openai/gpt-oss-120b",
                     stream: true,
                     messages: [
                         { role: "system", content: systemPrompt },
@@ -133,11 +133,12 @@ export default class GroqProvider {
             throw new ProviderError("Groq API anahtarı ayarlanmamış.", "NO_KEY");
         }
 
-        const visionModel = config.providers.groq.visionModel || "llama-3.2-11b-vision-preview";
+        const visionModel = config.providers.groq.visionModel || "qwen/qwen3.8-27b";
 
         const userContent = [
             { type: "text", text: message },
-            ...images.map(image => ({ type: "image_url", image_url: { url: image.dataUrl } }))
+            // Groq's vision models accept at most 3 images per request.
+            ...images.slice(0, 3).map(image => ({ type: "image_url", image_url: { url: image.dataUrl } }))
         ];
 
         let response;

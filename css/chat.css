@@ -1,7 +1,7 @@
 /* ==========================================================
-   LOTUS AI — CHAT SYSTEM
-   Version : 4.0 Release
-   Theme   : Premium Dark / Soft Neon
+   LOTUS AI — CHAT
+   Message bubbles, actions, editing, typing, errors.
+   (Markdown content is styled in markdown.css.)
    ========================================================== */
 
 
@@ -10,57 +10,32 @@
    ========================================================== */
 
 .message {
-    display: flex;
+    position: relative;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
 
     width: 100%;
-    min-width: 0;
 
-    margin-bottom: 14px;
+    margin: 0 0 22px;
 
-    animation:
-        messageAppear 0.22s ease-out;
+    animation: lotus-msg-in 0.55s var(--ease) both;
 }
 
-.user-message {
-    justify-content: flex-end;
+/* A chat loaded from history fades in as a whole instead of
+   replaying a dozen slide-ups at once. */
+#chat.history-enter > .message {
+    animation: lotus-fade 0.45s ease both;
 }
-
-.ai-message {
-    justify-content: flex-start;
-}
-
-
-/* ==========================================================
-   MESSAGE CONTENT
-   ========================================================== */
 
 .message-content {
-    max-width: 85%;
+    min-width: 0;
 
-    padding:
-        12px 15px;
+    font-size: 15.5px;
+    line-height: 1.7;
 
-    border-radius: 17px;
-
-    font-family:
-        "DM Sans",
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        sans-serif;
-
-    font-size: 14px;
-    line-height: 1.55;
-
-    word-wrap: break-word;
     overflow-wrap: anywhere;
-
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+    word-break: break-word;
 }
 
 
@@ -68,772 +43,571 @@
    USER MESSAGE
    ========================================================== */
 
+.user-message {
+    justify-items: end;
+}
+
 .user-message .message-content {
-    color: #FFFFFF;
+    max-width: min(88%, 580px);
 
-    background:
-        linear-gradient(
-            135deg,
-            rgba(168, 85, 247, 0.72),
-            rgba(244, 114, 182, 0.48)
-        );
+    padding: 11px 17px;
 
-    border:
-        1px solid rgba(216, 180, 254, 0.18);
+    color: #fff;
 
-    border-bottom-right-radius: 5px;
+    white-space: pre-wrap;
+
+    border-radius: 22px 22px 6px 22px;
+
+    background: linear-gradient(135deg, #7c3aed 0%, #a21caf 58%, #db2777 100%);
 
     box-shadow:
-        0 5px 18px rgba(0, 0, 0, 0.18),
-        0 0 18px rgba(168, 85, 247, 0.07);
+        0 10px 28px rgba(147, 51, 234, 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.user-message .message-image {
+    margin-top: 8px;
+
+    max-width: min(100%, 300px);
+
+    border-radius: 14px;
+}
+
+.user-message .message-image:first-child {
+    margin-top: 0;
+}
+
+.user-message .message-image + .message-image {
+    margin-left: 6px;
 }
 
 
 /* ==========================================================
-   AI MESSAGE
+   AI MESSAGE  (avatar column + glass card)
    ========================================================== */
 
-.ai-message .message-content {
-    color:
-        rgba(245, 245, 247, 0.92);
+.ai-message {
+    grid-template-columns: 34px minmax(0, 1fr);
+    column-gap: 12px;
 
-    background:
-        linear-gradient(
-            145deg,
-            rgba(255, 255, 255, 0.055),
-            rgba(255, 255, 255, 0.025)
-        );
-
-    border:
-        1px solid rgba(255, 255, 255, 0.075);
-
-    border-bottom-left-radius: 5px;
-
-    box-shadow:
-        0 5px 20px rgba(0, 0, 0, 0.16);
+    align-items: start;
 }
 
+.ai-message::before {
+    content: "";
 
-/* ==========================================================
-   MESSAGE TEXT
-   ========================================================== */
+    grid-column: 1;
+    grid-row: 1 / span 4;
 
-.message-content p {
-    margin: 0 0 8px;
-}
+    width: 34px;
+    height: 34px;
 
-.message-content p:last-child {
-    margin-bottom: 0;
-}
+    margin-top: 1px;
 
-
-/* ==========================================================
-   LINKS
-   ========================================================== */
-
-.message-content a {
-    color: #D8B4FE;
-
-    text-decoration: none;
-
-    border-bottom:
-        1px solid rgba(216, 180, 254, 0.3);
-
-    transition:
-        color 0.2s ease,
-        border-color 0.2s ease;
-}
-
-.message-content a:hover {
-    color: #F472B6;
-
-    border-color:
-        rgba(244, 114, 182, 0.5);
-}
-
-
-/* ==========================================================
-   INLINE CODE
-   ========================================================== */
-
-.message-content code {
-    padding:
-        2px 6px;
-
-    border-radius: 6px;
-
-    background:
-        rgba(0, 0, 0, 0.28);
-
-    color: #E9D5FF;
-
-    font-family:
-        "JetBrains Mono",
-        "Fira Code",
-        monospace;
-
-    font-size: 0.9em;
-}
-
-
-/* ==========================================================
-   CODE BLOCK
-   ========================================================== */
-
-.message-content pre {
-    margin:
-        10px 0 2px;
-
-    padding:
-        13px 14px;
-
-    max-width: 100%;
-
-    overflow-x: auto;
-
-    border:
-        1px solid rgba(255, 255, 255, 0.07);
-
+    border: 1px solid var(--line-accent);
     border-radius: 12px;
 
     background:
-        rgba(0, 0, 0, 0.38);
+        url("../assets/icons/logo.png") center / 70% no-repeat,
+        linear-gradient(145deg, rgba(168, 85, 247, 0.3), rgba(244, 114, 182, 0.12));
+
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.28);
+}
+
+.ai-message > * {
+    grid-column: 2;
+}
+
+.ai-message .message-content {
+    padding: 13px 18px;
+
+    color: var(--text);
+
+    border: 1px solid var(--line);
+    border-radius: 6px 22px 22px 22px;
+
+    background: linear-gradient(165deg, rgba(38, 28, 66, 0.6), rgba(19, 14, 34, 0.74));
 
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.025);
+        0 12px 32px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
 
-.message-content pre code {
-    padding: 0;
-
-    background: transparent;
-
-    color:
-        rgba(245, 245, 247, 0.9);
-
-    font-size: 12px;
-
-    line-height: 1.6;
+/* while the answer is being written */
+.ai-message.streaming::before {
+    animation: lotus-avatar-glow 1.6s ease-in-out infinite;
 }
 
+.ai-message.streaming .message-content {
+    border-color: rgba(168, 85, 247, 0.34);
 
-/* ==========================================================
-   LISTS
-   ========================================================== */
-
-.message-content ul,
-.message-content ol {
-    margin:
-        7px 0 7px 20px;
-
-    padding: 0;
+    box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.28),
+        0 0 36px rgba(168, 85, 247, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
 
-.message-content li {
-    margin-bottom: 4px;
-}
+/* blinking caret at the end of the text that is being typed */
+.ai-message.streaming .message-content > p:last-child::after,
+.ai-message.streaming .message-content > h1:last-child::after,
+.ai-message.streaming .message-content > h2:last-child::after,
+.ai-message.streaming .message-content > h3:last-child::after,
+.ai-message.streaming .message-content > h4:last-child::after,
+.ai-message.streaming .message-content > ul:last-child > li:last-child::after,
+.ai-message.streaming .message-content > ol:last-child > li:last-child::after,
+.ai-message.streaming .message-content > blockquote:last-child > p:last-child::after {
+    content: "";
 
-
-/* ==========================================================
-   BLOCKQUOTE
-   ========================================================== */
-
-.message-content blockquote {
-    margin:
-        9px 0;
-
-    padding:
-        7px 11px;
-
-    border-left:
-        3px solid rgba(168, 85, 247, 0.65);
-
-    color:
-        rgba(245, 245, 247, 0.65);
-
-    background:
-        rgba(168, 85, 247, 0.035);
-
-    border-radius:
-        0 8px 8px 0;
-}
-
-
-/* ==========================================================
-   HEADINGS
-   ========================================================== */
-
-.message-content h1,
-.message-content h2,
-.message-content h3,
-.message-content h4 {
-    margin:
-        10px 0 6px;
-
-    color: #F5F5F7;
-
-    font-family:
-        "Cormorant Garamond",
-        serif;
-}
-
-.message-content h1 {
-    font-size: 22px;
-}
-
-.message-content h2 {
-    font-size: 20px;
-}
-
-.message-content h3 {
-    font-size: 18px;
-}
-
-.message-content h4 {
-    font-size: 16px;
-}
-
-
-/* ==========================================================
-   HORIZONTAL RULE
-   ========================================================== */
-
-.message-content hr {
-    margin:
-        12px 0;
-
-    border: 0;
-
-    border-top:
-        1px solid rgba(255, 255, 255, 0.08);
-}
-
-
-/* ==========================================================
-   TYPING MESSAGE
-   ========================================================== */
-
-.typing-message {
-    opacity: 0.9;
-}
-
-.typing-message .message-content {
-    padding:
-        10px 14px;
-
-    color:
-        rgba(216, 180, 254, 0.75);
-
-    font-size: 12px;
-
-    background:
-        rgba(255, 255, 255, 0.035);
-
-    border:
-        1px solid rgba(255, 255, 255, 0.055);
-}
-
-
-/* ==========================================================
-   SELECTION
-   ========================================================== */
-
-.message-content ::selection {
-    background:
-        rgba(168, 85, 247, 0.35);
-
-    color: #FFFFFF;
-}
-
-
-/* ==========================================================
-   SCROLLBAR — CODE BLOCKS
-   ========================================================== */
-
-.message-content pre::-webkit-scrollbar {
-    height: 5px;
-}
-
-.message-content pre::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.message-content pre::-webkit-scrollbar-thumb {
-    background:
-        rgba(255, 255, 255, 0.12);
-
-    border-radius: 10px;
-}
-
-
-/* ==========================================================
-   MOBILE
-   ========================================================== */
-
-@media (max-width: 500px) {
-
-    .message {
-        margin-bottom: 12px;
-    }
-
-    .message-content {
-        max-width: 88%;
-
-        padding:
-            11px 13px;
-
-        font-size: 14px;
-
-        border-radius: 16px;
-    }
-
-    .message-content pre {
-        padding:
-            11px 12px;
-    }
-
-}
-
-
-/* ==========================================================
-   VERY SMALL PHONES
-   ========================================================== */
-
-@media (max-width: 360px) {
-
-    .message-content {
-        max-width: 91%;
-
-        padding:
-            10px 12px;
-
-        font-size: 13px;
-    }
-
-    .message-content pre code {
-        font-size: 11px;
-    }
-
-}
-
-
-/* ==========================================================
-   MESSAGE ANIMATION
-   ========================================================== */
-
-@keyframes messageAppear {
-
-    from {
-        opacity: 0;
-        transform: translateY(5px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-}
-
-
-/* ==========================================================
-   REDUCE MOTION
-   ========================================================== */
-
-@media (prefers-reduced-motion: reduce) {
-
-    .message {
-        animation: none;
-    }
-
-}
-
-/* ==========================================================
-   CHAT HISTORY LIST (js/storage.js)
-   ========================================================== */
-
-.chat-list-empty {
-    padding: 16px 12px;
-    color: var(--muted, #a0a0a0);
-    font-size: 0.85rem;
-    text-align: center;
-}
-
-.chat-list-item {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 10px 32px 10px 12px;
-    border-radius: 10px;
-    cursor: pointer;
-    margin-bottom: 4px;
-    transition: background 0.15s ease;
-}
-
-.chat-list-item:hover {
-    background: rgba(255, 255, 255, 0.06);
-}
-
-.chat-list-item.active {
-    background: rgba(255, 43, 214, 0.12);
-    border: 1px solid rgba(255, 43, 214, 0.35);
-}
-
-.chat-list-item-title {
-    font-size: 0.85rem;
-    color: var(--text, #fff);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.chat-list-item-date {
-    font-size: 0.7rem;
-    color: var(--muted, #a0a0a0);
-}
-
-.chat-list-item-delete {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: var(--muted, #a0a0a0);
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-}
-
-.chat-list-item:hover .chat-list-item-delete {
-    opacity: 1;
-}
-
-.chat-list-item-delete:hover {
-    color: var(--accent, #A855F7);
-}
-
-/* ==========================================================
-   MESSAGE ERROR STATE (js/chat.js)
-   ========================================================== */
-
-.message.error-message .message-content {
-    border: 1px solid rgba(255, 70, 70, 0.5);
-    color: #ff9b9b;
-}
-
-.message-retry-button {
-    margin-top: 6px;
-    background: transparent;
-    border: 1px solid rgba(255, 70, 70, 0.5);
-    color: #ff9b9b;
-    border-radius: 8px;
-    padding: 4px 10px;
-    font-size: 0.75rem;
-    cursor: pointer;
-}
-
-/* Code block styling moved to css/markdown.css to match the
-   file layout index.html has always expected. */
-
-/* ==========================================================
-   MEMORY MODAL LIST (js/memory.js)
-   ========================================================== */
-
-.memory-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.03);
-    margin-bottom: 8px;
-}
-
-.memory-item-content {
-    font-size: 0.85rem;
-    color: var(--text, #fff);
-}
-
-.memory-item-category {
-    font-size: 0.7rem;
-    color: var(--accent-soft, #F472B6);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.memory-item-delete {
-    background: transparent;
-    border: none;
-    color: var(--muted, #a0a0a0);
-    cursor: pointer;
-    flex-shrink: 0;
-}
-
-.memory-item-delete:hover {
-    color: var(--accent, #A855F7);
-}
-
-.memory-empty {
-    padding: 16px;
-    text-align: center;
-    color: var(--muted, #a0a0a0);
-    font-size: 0.85rem;
-}
-
-/* ==========================================================
-   STREAMING MESSAGE (js/chat.js)
-   ========================================================== */
-
-.message.ai-message.streaming .message-content::after {
-    content: "▌";
     display: inline-block;
-    margin-left: 2px;
-    color: var(--accent, #A855F7);
-    animation: lotus-cursor-blink 0.9s steps(1) infinite;
+
+    width: 7px;
+    height: 1.05em;
+
+    margin-left: 4px;
+
+    vertical-align: -0.16em;
+
+    border-radius: 2px;
+
+    background: var(--grad);
+
+    box-shadow: 0 0 12px rgba(192, 38, 211, 0.7);
+
+    animation: lotus-caret 0.9s steps(2, start) infinite;
 }
 
-@keyframes lotus-cursor-blink {
-    0%, 49% { opacity: 1; }
-    50%, 100% { opacity: 0; }
-}
 
 /* ==========================================================
-   "LIMIT DOLDU" CHOICE SCREEN (js/chat.js)
+   SOURCE BADGE  (answers that used live web results)
    ========================================================== */
 
-.message.limit-message .message-content {
-    border: 1px solid rgba(168, 85, 247, 0.35);
+.message-source {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    justify-self: start;
+
+    margin-top: 8px;
+    padding: 4px 11px 4px 9px;
+
+    color: var(--accent-light);
+
+    font-size: 11.5px;
+    font-weight: 500;
+
+    border: 1px solid var(--line-accent);
+    border-radius: 999px;
+
+    background: rgba(168, 85, 247, 0.1);
 }
 
-.limit-choices {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 10px;
+.message-source .ic {
+    width: 13px;
+    height: 13px;
 }
 
-.message-choice-button {
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    text-align: left;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.04);
-    color: var(--text, #F5F5F7);
-}
-
-.message-choice-button.primary {
-    background: linear-gradient(135deg, var(--accent, #A855F7), var(--accent-soft, #F472B6));
-    border: none;
-    color: #08080C;
-    font-weight: 600;
-}
-
-.message-choice-button.secondary {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: var(--muted, #a0a0b0);
-}
-
-.message-choice-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.limit-key-form {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.limit-key-form.hidden {
-    display: none;
-}
-
-.limit-key-input {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 8px;
-    padding: 8px 10px;
-    color: var(--text, #F5F5F7);
-    font-size: 0.85rem;
-}
 
 /* ==========================================================
-   MESSAGE ACTIONS — copy / edit / regenerate (js/chat.js)
+   MESSAGE ACTIONS  (copy / edit / regenerate)
    ========================================================== */
 
 .message-actions {
     display: flex;
-    gap: 6px;
+    gap: 2px;
+
     margin-top: 6px;
+
     opacity: 0;
-    transition: opacity 0.15s ease;
+    transform: translateY(-3px);
+
+    transition: opacity 0.22s ease, transform 0.22s var(--ease);
 }
 
-.message:hover .message-actions {
+.user-message .message-actions {
+    justify-self: end;
+}
+
+.message:hover .message-actions,
+.message:focus-within .message-actions,
+.ai-message:last-child .message-actions {
     opacity: 1;
+    transform: none;
+}
+
+.ai-message:last-child:not(:hover) .message-actions {
+    opacity: 0.55;
+}
+
+@media (hover: none) {
+
+    .message-actions {
+        opacity: 0.7;
+        transform: none;
+    }
 }
 
 .message-action-button {
-    background: transparent;
-    border: none;
-    color: var(--muted, #a0a0b0);
-    font-size: 0.8rem;
-    cursor: pointer;
-    padding: 2px 4px;
-    border-radius: 6px;
+    display: grid;
+    place-items: center;
+
+    width: 32px;
+    height: 32px;
+
+    color: var(--muted);
+
+    border-radius: 10px;
+
+    transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        transform 0.15s ease;
+}
+
+.message-action-button .ic {
+    width: 16px;
+    height: 16px;
 }
 
 .message-action-button:hover {
-    color: var(--accent, #A855F7);
-    background: rgba(168, 85, 247, 0.1);
+    color: #fff;
+    background: rgba(168, 85, 247, 0.22);
 }
 
+.message-action-button:active {
+    transform: scale(0.88);
+}
+
+.message-action-button.is-done {
+    color: var(--success);
+    background: rgba(74, 222, 128, 0.12);
+}
+
+.message-action-button.is-failed {
+    color: var(--danger);
+    background: rgba(248, 113, 113, 0.12);
+}
+
+
 /* ==========================================================
-   MESSAGE EDIT MODE (js/chat.js)
+   EDITING A SENT MESSAGE
    ========================================================== */
 
+.user-message .message-content:has(.message-edit-textarea) {
+    width: min(100%, 580px);
+
+    white-space: normal;
+}
+
 .message-edit-textarea {
+    display: block;
+
     width: 100%;
-    min-height: 60px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(168, 85, 247, 0.3);
-    border-radius: 8px;
-    padding: 8px 10px;
-    color: var(--text, #F5F5F7);
-    font-family: inherit;
-    font-size: 0.9rem;
+    min-width: min(72vw, 420px);
+    min-height: 96px;
+    max-height: 42vh;
+
+    padding: 11px 13px;
+
+    color: #fff;
+
+    font: inherit;
+    line-height: 1.6;
+
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 14px;
+    outline: none;
+
+    background: rgba(0, 0, 0, 0.3);
+
     resize: vertical;
+}
+
+.message-edit-textarea:focus {
+    border-color: rgba(255, 255, 255, 0.7);
+
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.16);
 }
 
 .message-edit-actions {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    margin-top: 8px;
+
+    margin-top: 10px;
 }
+
+.user-message .message-edit-actions .message-choice-button {
+    min-height: 38px;
+    padding: 0 15px;
+
+    font-size: 13px;
+}
+
+.user-message .message-edit-actions .secondary {
+    color: #fff;
+
+    border-color: rgba(255, 255, 255, 0.2);
+
+    background: rgba(0, 0, 0, 0.26);
+}
+
+.user-message .message-edit-actions .primary {
+    color: #6d28d9;
+
+    background: #fff;
+
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
 
 /* ==========================================================
-   ATTACHMENT CHIP (js/attachments.js)
+   LONG MESSAGES (collapsed behind a toggle)
    ========================================================== */
 
-#attachment-chip {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    width: fit-content;
-    max-width: calc(100% - 24px);
-    margin: 0 auto 6px;
-    position: relative;
-    z-index: 50;
+.message-content.collapsible.collapsed {
+    max-height: 200px;
+
+    overflow: hidden;
+
+    -webkit-mask-image: linear-gradient(#000 55%, transparent);
+    mask-image: linear-gradient(#000 55%, transparent);
 }
 
-#attachment-chip.hidden {
+.message-expand-toggle {
+    justify-self: end;
+
+    margin-top: 7px;
+    padding: 5px 13px;
+
+    color: var(--accent-light);
+
+    font-size: 12px;
+    font-weight: 500;
+
+    border: 1px solid var(--line-accent);
+    border-radius: 999px;
+
+    background: rgba(168, 85, 247, 0.12);
+
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.message-expand-toggle:hover {
+    background: rgba(168, 85, 247, 0.24);
+}
+
+.message-expand-toggle:active {
+    transform: scale(0.95);
+}
+
+
+/* ==========================================================
+   TYPING / THINKING INDICATOR
+   ========================================================== */
+
+.typing-message::before {
+    animation: lotus-avatar-glow 1.6s ease-in-out infinite;
+}
+
+.typing-message .message-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+
+    justify-self: start;
+
+    padding: 12px 18px;
+
+    color: var(--muted);
+
+    font-size: 14px;
+}
+
+.typing-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.typing-dots span {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: var(--grad);
+
+    box-shadow: 0 0 10px rgba(192, 38, 211, 0.55);
+
+    animation: lotus-typing-bounce 1.2s ease-in-out infinite;
+}
+
+.typing-dots span:nth-child(2) { animation-delay: 0.16s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.32s; }
+
+
+/* ==========================================================
+   ERROR MESSAGE
+   ========================================================== */
+
+.error-message::before {
+    border-color: rgba(248, 113, 113, 0.45);
+
+    box-shadow: 0 0 20px rgba(248, 113, 113, 0.22);
+}
+
+.error-message .message-content {
+    color: #fecaca;
+
+    border-color: rgba(248, 113, 113, 0.32);
+
+    background: linear-gradient(165deg, rgba(86, 24, 40, 0.5), rgba(34, 13, 24, 0.72));
+}
+
+.message-retry-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-top: 12px;
+    padding: 8px 15px;
+
+    color: #fecaca;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    border-radius: 999px;
+
+    background: rgba(248, 113, 113, 0.14);
+
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.message-retry-button:hover {
+    background: rgba(248, 113, 113, 0.26);
+}
+
+.message-retry-button:active {
+    transform: scale(0.96);
+}
+
+
+/* ==========================================================
+   "LIMIT DOLDU" CHOICE CARD
+   ========================================================== */
+
+.limit-message .message-content {
+    border-color: rgba(251, 191, 36, 0.3);
+
+    background: linear-gradient(165deg, rgba(60, 44, 20, 0.5), rgba(26, 20, 14, 0.72));
+}
+
+.limit-message .message-content > p {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.limit-message .message-content > p .ic {
+    margin-top: 3px;
+
+    color: var(--warn);
+}
+
+.limit-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    margin-top: 14px;
+}
+
+.limit-choices .message-choice-button {
+    justify-content: flex-start;
+
+    width: 100%;
+}
+
+.limit-key-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    margin-top: 14px;
+}
+
+.limit-key-form.hidden {
     display: none;
 }
 
-.attachment-chip-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(168, 85, 247, 0.12);
-    border: 1px solid rgba(168, 85, 247, 0.3);
-    border-radius: 999px;
-    padding: 4px 12px 4px 4px;
-    font-size: 0.78rem;
-    color: var(--text, #F5F5F7);
+.limit-key-form .settings-note {
+    margin: 0;
+
+    color: var(--muted);
+
+    font-size: 13px;
+    line-height: 1.55;
 }
 
-.attachment-chip-thumb {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.attachment-chip-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 160px;
-}
-
-.attachment-chip-remove {
-    background: rgba(255, 255, 255, 0.08);
-    border: none;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    line-height: 18px;
-    text-align: center;
-    color: var(--text, #F5F5F7);
-    cursor: pointer;
-    font-size: 0.7rem;
-    padding: 0;
-}
 
 /* ==========================================================
-   MEMORY ADD FORM (js/memory.js)
+   PHONES
    ========================================================== */
 
-#memory-add-form {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding-bottom: 14px;
-    margin-bottom: 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+@media (max-width: 520px) {
+
+    .message {
+        margin-bottom: 18px;
+    }
+
+    .message-content {
+        font-size: 15.5px;
+        line-height: 1.65;
+    }
+
+    .ai-message {
+        grid-template-columns: 28px minmax(0, 1fr);
+        column-gap: 9px;
+    }
+
+    .ai-message::before {
+        width: 28px;
+        height: 28px;
+
+        border-radius: 10px;
+    }
+
+    .ai-message .message-content {
+        padding: 11px 14px;
+
+        border-radius: 5px 20px 20px 20px;
+    }
+
+    .user-message .message-content {
+        max-width: 90%;
+
+        padding: 10px 15px;
+    }
+
+    .typing-message .message-content {
+        padding: 10px 15px;
+    }
 }
 
-#memory-add-input {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(168, 85, 247, 0.25);
-    border-radius: 10px;
-    padding: 8px 10px;
-    color: var(--text, #F5F5F7);
-    font-family: inherit;
-    font-size: 0.85rem;
-    resize: vertical;
-}
+@media (max-width: 360px) {
 
-#memory-add-row {
-    display: flex;
-    gap: 8px;
-}
+    .ai-message {
+        grid-template-columns: minmax(0, 1fr);
+    }
 
-#memory-add-category {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 8px;
-    padding: 6px 8px;
-    color: var(--text, #F5F5F7);
-    font-size: 0.8rem;
-}
+    .ai-message::before {
+        display: none;
+    }
 
-#memory-add-button {
-    flex: 1;
-    background: linear-gradient(135deg, var(--accent, #A855F7), var(--accent-soft, #F472B6));
-    border: none;
-    border-radius: 8px;
-    color: #08080C;
-    font-weight: 600;
-    font-size: 0.85rem;
-    cursor: pointer;
-}
-
-#memory-add-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+    .ai-message > * {
+        grid-column: 1;
+    }
 }

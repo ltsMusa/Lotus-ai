@@ -26,7 +26,7 @@ export default class GeminiProvider {
             throw new ProviderError("Gemini API anahtarı ayarlanmamış.", "NO_KEY");
         }
 
-        const model = config.providers.gemini.model || "gemini-2.0-flash";
+        const model = config.providers.gemini.model || "gemini-3.8-flash";
 
         let response;
 
@@ -77,7 +77,7 @@ export default class GeminiProvider {
             throw new ProviderError("Gemini API anahtarı ayarlanmamış.", "NO_KEY");
         }
 
-        const model = config.providers.gemini.model || "gemini-2.0-flash";
+        const model = config.providers.gemini.model || "gemini-3.8-flash";
 
         let fullText = "";
 
@@ -127,7 +127,7 @@ export default class GeminiProvider {
             throw new ProviderError("Gemini API anahtarı ayarlanmamış.", "NO_KEY");
         }
 
-        const model = config.providers.gemini.model || "gemini-2.0-flash";
+        const model = config.providers.gemini.model || "gemini-3.8-flash";
 
         const imageParts = images.map(image => ({
             inline_data: {

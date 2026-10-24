@@ -1,19 +1,22 @@
+/**
+ * Local copies of the two brand fonts. index.html also asks Google Fonts
+ * for the full weight range; these files are the offline fallback (packaged
+ * Android app with no network, airplane mode) — the font stacks in
+ * themes.css list "DM Sans" / "Cormorant Garamond" first and fall back here.
+ */
+
 @font-face {
     font-family: "LotusTitle";
-    src: url("../assets/fonts/CormorantGaramond-Regular.ttf");
+    src: url("../assets/fonts/CormorantGaramond-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
 }
 
 @font-face {
     font-family: "LotusText";
-    src: url("../assets/fonts/DMSans_18pt-Regular.ttf");
-}
-
-
-body {
-    font-family: "LotusText", sans-serif;
-}
-
-
-h1, h2 {
-    font-family: "LotusTitle", serif;
+    src: url("../assets/fonts/DMSans_18pt-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
 }

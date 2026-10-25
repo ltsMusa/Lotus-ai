@@ -65,8 +65,8 @@
 }
 
 @keyframes lotus-avatar-glow {
-    0%, 100% { box-shadow: 0 0 14px rgba(168, 85, 247, 0.25); }
-    50%      { box-shadow: 0 0 30px rgba(244, 114, 182, 0.6); }
+    0%, 100% { box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.25); }
+    50%      { box-shadow: 0 0 30px rgba(var(--pink-rgb), 0.6); }
 }
 
 @keyframes lotus-shimmer {
@@ -98,8 +98,8 @@
 }
 
 @keyframes lotus-splash-breathe {
-    0%, 100% { transform: scale(1);    filter: drop-shadow(0 0 22px rgba(192, 132, 252, 0.6)) drop-shadow(0 0 48px rgba(244, 114, 182, 0.25)); }
-    50%      { transform: scale(1.06); filter: drop-shadow(0 0 34px rgba(192, 132, 252, 0.95)) drop-shadow(0 0 70px rgba(244, 114, 182, 0.45)); }
+    0%, 100% { transform: scale(1);    filter: var(--logo-tint) drop-shadow(0 0 22px rgba(var(--accent-2-rgb), 0.6)) drop-shadow(0 0 48px rgba(var(--pink-rgb), 0.25)); }
+    50%      { transform: scale(1.06); filter: var(--logo-tint) drop-shadow(0 0 34px rgba(var(--accent-2-rgb), 0.95)) drop-shadow(0 0 70px rgba(var(--pink-rgb), 0.45)); }
 }
 
 @keyframes lotus-loader {

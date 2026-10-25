@@ -20,6 +20,7 @@ import DeviceProfile, { MODEL_BASE_CREDIT } from "./deviceProfile.js";
 import { showToast, showConfirm } from "./toast.js";
 import { icon } from "./utils.js";
 import { renderLocalSettings, bindLocalSettings } from "./settingsLocal.js";
+import { THEMES } from "./themeList.js";
 import {
     PERSONALIZATION_LIMITS,
     STYLE_OPTIONS,
@@ -266,6 +267,36 @@ function personalizationPreviewText(personalization) {
     return block || "Henüz Lotus'a gönderilecek ek bir talimat yok. Bir alan doldurduğunda burada görünür.";
 }
 
+function renderThemeCards(currentId) {
+
+    const cards = THEMES.map(theme => {
+
+        const sw = theme.swatch;
+
+        const selected = theme.id === currentId;
+
+        return `
+            <button type="button" class="theme-card ${selected ? "is-selected" : ""}"
+                role="radio" aria-checked="${selected}" data-theme-id="${theme.id}">
+                <span class="theme-preview" aria-hidden="true"
+                    style="background:${sw.bg};border-color:${sw.panel}">
+                    <span class="theme-preview-bubble" style="background:linear-gradient(135deg,${sw.from},${sw.to})"></span>
+                    <span class="theme-preview-line" style="background:${sw.panel}"></span>
+                    <span class="theme-preview-line short" style="background:${sw.panel}"></span>
+                    <span class="theme-preview-bar" style="background:${sw.panel}">
+                        <span style="background:linear-gradient(135deg,${sw.from},${sw.to})"></span>
+                    </span>
+                </span>
+                <span class="theme-card-name">${theme.name}</span>
+                <span class="theme-card-hint">${theme.hint}</span>
+                <span class="theme-card-check" aria-hidden="true">${icon("check")}</span>
+            </button>
+        `;
+    }).join("");
+
+    return `<div class="theme-grid" role="radiogroup" aria-label="Tema">${cards}</div>`;
+}
+
 function renderPersonalizationPanel() {
 
     const p = config.personalization;
@@ -273,6 +304,12 @@ function renderPersonalizationPanel() {
     const limits = PERSONALIZATION_LIMITS;
 
     return panelShell("Kişiselleştirme", `
+        ${section("Tema", "Uygulamanın görünümü; bu cihazda hatırlanır")}
+
+        ${renderThemeCards(config.theme)}
+
+        ${section("Lotus'a söyle", "Sohbetlerde Lotus'un nasıl davranacağı")}
+
         ${toggleRow("personalization-enabled", "Kişiselleştirmeyi kullan", p.enabled)}
 
         <p class="settings-note">
@@ -379,6 +416,29 @@ const PANEL_RENDERERS = {
 function bindPersonalizationPanel(container) {
 
     const $ = id => container.querySelector(`#${id}`);
+
+    container.querySelectorAll(".theme-card").forEach(card => {
+
+        card.addEventListener("click", () => {
+
+            const id = card.dataset.themeId;
+
+            if (id === config.theme) return;
+
+            config.setTheme(id);
+
+            container.querySelectorAll(".theme-card").forEach(other => {
+
+                const on = other === card;
+
+                other.classList.toggle("is-selected", on);
+
+                other.setAttribute("aria-checked", String(on));
+            });
+
+            showToast(`Tema: ${THEMES.find(theme => theme.id === config.theme).name}`, "success");
+        });
+    });
 
     const enabledBox = $("personalization-enabled");
     const fields = $("personalization-fields");

@@ -2,24 +2,53 @@
  * ==========================================================
  * Lotus AI - Theme
  * ==========================================================
- * Lotus AI has one fixed visual identity — the premium purple
- * neon glassmorphism theme defined in css/themes.css. There is
- * no light/dark toggle and no "Görünüm" (Appearance) section in
- * Settings; this file just makes that theme explicit on <html>
- * in case future CSS wants to key off it.
+ * Applies the chosen theme (Settings → Kişiselleştirme → Tema) by
+ * setting data-theme on <html>; css/themes.css holds the colors.
+ *
+ * index.html also sets data-theme from the saved config in a tiny
+ * inline script before the stylesheets load, so a returning user
+ * never sees the default theme flash first — this module takes
+ * over from there and reacts to changes.
  * ==========================================================
  */
 
+import config from "./config.js";
+import { themeById } from "./themeList.js";
+
 const Themes = {
 
-    current: "neon-purple",
+    get current() {
+
+        return config.theme;
+    },
+
+    apply(id = config.theme) {
+
+        const theme = themeById(id);
+
+        document.documentElement.setAttribute("data-theme", theme.id);
+
+        // Browser / PWA chrome (address bar, task switcher) follows the theme.
+        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme.browserColor);
+
+        return theme;
+    },
 
     init() {
 
-        document.documentElement.setAttribute("data-theme", this.current);
+        this.apply();
+
+        window.addEventListener("lotus:theme-changed", event => this.apply(event.detail?.theme));
     }
 };
 
-document.addEventListener("DOMContentLoaded", () => Themes.init());
+if (document.readyState === "loading") {
+
+    document.addEventListener("DOMContentLoaded", () => Themes.init());
+
+} else {
+
+    Themes.init();
+}
 
 export default Themes;

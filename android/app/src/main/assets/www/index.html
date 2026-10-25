@@ -13,6 +13,23 @@
         name="theme-color"
         content="#07060B">
 
+    <!-- Apply the saved theme before the stylesheets paint, so the default
+         theme never flashes for someone who picked another one.
+         (js/themes.js takes over once the app has loaded.) -->
+    <script>
+        (function () {
+            var theme = "neon-purple";
+            try {
+                var saved = JSON.parse(localStorage.getItem("lotus_config_v1") || "{}").theme;
+                if (saved === "dark-gray") theme = saved;
+            } catch (e) { /* storage blocked: default theme */ }
+            document.documentElement.setAttribute("data-theme", theme);
+            if (theme === "dark-gray") {
+                document.querySelector('meta[name="theme-color"]').setAttribute("content", "#030303");
+            }
+        })();
+    </script>
+
     <meta
         name="color-scheme"
         content="dark">

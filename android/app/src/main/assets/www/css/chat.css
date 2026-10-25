@@ -58,10 +58,10 @@
 
     border-radius: 22px 22px 6px 22px;
 
-    background: linear-gradient(135deg, #7c3aed 0%, #a21caf 58%, #db2777 100%);
+    background: linear-gradient(135deg, var(--accent-deep) 0%, var(--grad-mid) 58%, var(--grad-end) 100%);
 
     box-shadow:
-        0 10px 28px rgba(147, 51, 234, 0.32),
+        0 10px 28px rgba(var(--accent-strong-rgb), 0.32),
         inset 0 1px 0 rgba(255, 255, 255, 0.24);
 }
 
@@ -109,9 +109,9 @@
 
     background:
         url("../assets/icons/logo.png") center / 70% no-repeat,
-        linear-gradient(145deg, rgba(168, 85, 247, 0.3), rgba(244, 114, 182, 0.12));
+        linear-gradient(145deg, rgba(var(--accent-rgb), 0.3), rgba(var(--pink-rgb), 0.12));
 
-    box-shadow: 0 0 20px rgba(168, 85, 247, 0.28);
+    box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.28);
 }
 
 .ai-message > * {
@@ -126,7 +126,7 @@
     border: 1px solid var(--line);
     border-radius: 6px 22px 22px 22px;
 
-    background: linear-gradient(165deg, rgba(38, 28, 66, 0.6), rgba(19, 14, 34, 0.74));
+    background: linear-gradient(165deg, rgba(var(--surface-2-rgb), 0.6), rgba(var(--surface-rgb), 0.74));
 
     box-shadow:
         0 12px 32px rgba(0, 0, 0, 0.28),
@@ -139,11 +139,11 @@
 }
 
 .ai-message.streaming .message-content {
-    border-color: rgba(168, 85, 247, 0.34);
+    border-color: rgba(var(--accent-rgb), 0.34);
 
     box-shadow:
         0 12px 32px rgba(0, 0, 0, 0.28),
-        0 0 36px rgba(168, 85, 247, 0.12),
+        0 0 36px rgba(var(--accent-rgb), 0.12),
         inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
 
@@ -171,7 +171,7 @@
 
     background: var(--grad);
 
-    box-shadow: 0 0 12px rgba(192, 38, 211, 0.7);
+    box-shadow: 0 0 12px rgba(var(--magenta-rgb), 0.7);
 
     animation: lotus-caret 0.9s steps(2, start) infinite;
 }
@@ -199,7 +199,7 @@
     border: 1px solid var(--line-accent);
     border-radius: 999px;
 
-    background: rgba(168, 85, 247, 0.1);
+    background: rgba(var(--accent-rgb), 0.1);
 }
 
 .message-source .ic {
@@ -271,7 +271,7 @@
 
 .message-action-button:hover {
     color: #fff;
-    background: rgba(168, 85, 247, 0.22);
+    background: rgba(var(--accent-rgb), 0.22);
 }
 
 .message-action-button:active {
@@ -353,7 +353,7 @@
 }
 
 .user-message .message-edit-actions .primary {
-    color: #6d28d9;
+    color: var(--accent-deep-2);
 
     background: #fff;
 
@@ -388,13 +388,13 @@
     border: 1px solid var(--line-accent);
     border-radius: 999px;
 
-    background: rgba(168, 85, 247, 0.12);
+    background: rgba(var(--accent-rgb), 0.12);
 
     transition: background 0.2s ease, transform 0.15s ease;
 }
 
 .message-expand-toggle:hover {
-    background: rgba(168, 85, 247, 0.24);
+    background: rgba(var(--accent-rgb), 0.24);
 }
 
 .message-expand-toggle:active {
@@ -438,7 +438,7 @@
 
     background: var(--grad);
 
-    box-shadow: 0 0 10px rgba(192, 38, 211, 0.55);
+    box-shadow: 0 0 10px rgba(var(--magenta-rgb), 0.55);
 
     animation: lotus-typing-bounce 1.2s ease-in-out infinite;
 }

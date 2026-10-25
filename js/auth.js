@@ -1,9 +1,27 @@
 // ==========================================================
 // LOTUS AI — AUTHENTICATION
 // ==========================================================
+// E-mail + password, Google, "şifremi unuttum", e-mail
+// confirmation (with resend) and password change.
+//
+// The Supabase client itself — and how it copes with the CDN
+// library arriving late or not at all — lives in
+// supabaseClient.js; the Turkish error texts and the small input
+// rules live in authErrors.js (unit-tested).
+// ==========================================================
 
 import { showToast } from "./toast.js";
 import { isPackagedApp } from "./env.js";
+import config from "./config.js";
+import { supabase, ensureSupabase, forgetLocalSession } from "./supabaseClient.js";
+import {
+    describeAuthError,
+    normalizeEmail,
+    isValidEmail,
+    passwordProblem,
+    readAuthRedirect,
+    authRedirectUrl
+} from "./authErrors.js";
 
 /** Messages used to go through the browser's native notify() box, which
  *  looks out of place (and is awkward inside the Android WebView). */
@@ -12,103 +30,20 @@ function notify(message, type = "error") {
     showToast(String(message).replace(/\s*\n\s*/g, " ").trim(), type, 5200);
 }
 
-const SUPABASE_URL =
-    "https://ecveafyfgelsyamoheyn.supabase.co";
+/** Where the links in confirmation / reset e-mails should lead back to. */
+function emailRedirect() {
 
-const SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_qd7Eqg9Cz_9_fxqSlSFXxg_DLtUFVDb";
-
-
-// ==========================================================
-// SUPABASE CLIENT
-// ==========================================================
-// FIX: this used to call window.supabase.createClient(...)
-// directly, with zero guard. If the CDN script tag
-// (cdn.jsdelivr.net/npm/@supabase/supabase-js) fails or is slow
-// to load — flaky network, an ad/script blocker, a corporate
-// firewall, or (very relevant for the AIDE/Android package) the
-// WebView not having network connectivity the instant the page
-// loads — this line threw immediately. Because auth.js is a
-// module that memory.js, storage.js, AND chat.js all import
-// from, that single throw aborted the entire import graph:
-// chat.js's module-level `new ChatManager()` never ran, so the
-// send button (and everything else) silently had NO click
-// handler at all — "butona basınca hiçbir şey olmuyor" with no
-// visible error unless you opened devtools.
-//
-// Now: if window.supabase isn't available, we log a clear
-// warning and fall back to a stub client that resolves to
-// "logged out" / "no data" instead of throwing. The app keeps
-// working — chat, local history, everything not requiring
-// cloud sync — instead of the whole thing going dark.
-
-function createOfflineStubClient() {
-
-    console.warn(
-        "⚠️ Supabase yüklenemedi (CDN'e ulaşılamadı) — hesap/senkronizasyon " +
-        "özellikleri bu oturumda kapalı, ama uygulamanın geri kalanı (sohbet, " +
-        "yerel geçmiş) normal çalışmaya devam ediyor."
-    );
-
-    function stubQuery() {
-
-        const result = Promise.resolve({
-            data: null,
-            error: { message: "Sunucuya (Supabase) ulaşılamıyor." }
-        });
-
-        for (const method of ["select", "insert", "update", "upsert", "delete", "eq", "neq", "in", "is", "gt", "gte", "lt", "lte", "like", "ilike", "or", "not", "match", "order", "limit", "range", "single", "maybeSingle"]) {
-
-            result[method] = () => stubQuery();
-        }
-
-        return result;
-    }
-
-    const authError = { message: "Sunucuya (Supabase) ulaşılamıyor. İnterneti kontrol et." };
-
-    return {
-        auth: {
-            getSession: () => Promise.resolve({ data: { session: null }, error: null }),
-            getUser: () => Promise.resolve({ data: { user: null }, error: null }),
-            onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
-            signInWithPassword: () => Promise.resolve({ data: null, error: authError }),
-            signUp: () => Promise.resolve({ data: null, error: authError }),
-            signOut: () => Promise.resolve({ error: null }),
-            signInWithOAuth: () => Promise.resolve({ data: null, error: authError }),
-            resetPasswordForEmail: () => Promise.resolve({ data: null, error: authError }),
-            updateUser: () => Promise.resolve({ data: null, error: authError }),
-            refreshSession: () => Promise.resolve({ data: { session: null }, error: null })
-        },
-        from() {
-            return stubQuery();
-        }
-    };
+    return authRedirectUrl({
+        packaged: isPackagedApp(),
+        origin: window.location.origin,
+        pathname: window.location.pathname,
+        proxyBaseUrl: config.backendProxyBaseUrl
+    });
 }
 
-let supabase;
-
-try {
-
-    if (!window.supabase) throw new Error("window.supabase is undefined");
-
-    supabase = window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_PUBLISHABLE_KEY,
-        {
-            auth: {
-                autoRefreshToken: true,
-                persistSession: true,
-                detectSessionInUrl: true
-            }
-        }
-    );
-
-} catch (error) {
-
-    supabase = createOfflineStubClient();
-}
-
+// What the page was opened for (e-mail link, expired link…). Read once,
+// before supabase-js tidies the address bar.
+const urlIntent = readAuthRedirect(window.location.hash, window.location.search);
 
 // ==========================================================
 // AUTH
@@ -121,6 +56,12 @@ const Auth = {
     initialized: false,
 
     authSubscription: null,
+
+    /** True while the page was opened from a password-reset e-mail link. */
+    recoveryMode: urlIntent.isRecovery,
+
+    /** Last e-mail typed into a sign-in form (used by "yeniden gönder"). */
+    pendingEmail: "",
 
     // ------------------------------------------------------
     // STORAGE KEY
@@ -344,7 +285,7 @@ const Auth = {
     // OPEN AUTH MODAL
     // ------------------------------------------------------
 
-    openAuthModal() {
+    openAuthModal(panel = "login") {
 
         const modal =
             document.getElementById(
@@ -353,11 +294,11 @@ const Auth = {
 
         if (!modal) return;
 
-
         this.closeAccountModal();
 
         this.closeGoogleAccountModal();
 
+        this.showAuthPanel(panel);
 
         modal.classList.remove(
             "hidden"
@@ -382,7 +323,6 @@ const Auth = {
 
         if (!modal) return;
 
-
         modal.classList.add(
             "hidden"
         );
@@ -390,6 +330,66 @@ const Auth = {
         modal.hidden = true;
 
         modal.style.display = "none";
+
+        // Do not leave typed passwords sitting in a hidden form.
+        modal.querySelectorAll('input[type="password"]').forEach(input => {
+
+            input.value = "";
+        });
+    },
+
+
+    // ------------------------------------------------------
+    // PANELS INSIDE THE SIGN-IN WINDOW
+    // ------------------------------------------------------
+
+    AUTH_PANELS: ["login", "register", "forgot", "recovery"],
+
+    showAuthPanel(name = "login") {
+
+        const target = this.AUTH_PANELS.includes(name) ? name : "login";
+
+        for (const panel of this.AUTH_PANELS) {
+
+            document.getElementById(`${panel}-panel`)?.classList.toggle("hidden", panel !== target);
+        }
+
+        this.setAuthMessage("");
+
+        document.getElementById("resend-confirmation-button")?.classList.add("hidden");
+
+        // Carry the e-mail across panels so nobody has to retype it.
+        if (this.pendingEmail) {
+
+            for (const id of ["login-email", "register-email", "forgot-email"]) {
+
+                const input = document.getElementById(id);
+
+                if (input && !input.value) input.value = this.pendingEmail;
+            }
+        }
+
+        // Pop the keyboard up only where there is a real keyboard.
+        if (window.matchMedia?.("(pointer: fine)").matches) {
+
+            document.querySelector(`#${target}-panel input`)?.focus?.();
+        }
+    },
+
+    /** Shows (or, with "", clears) the line of text at the top of the sign-in window. */
+    setAuthMessage(text, type = "error") {
+
+        const box = document.getElementById("auth-message");
+
+        if (!box) return;
+
+        box.textContent = text || "";
+
+        box.classList.toggle("hidden", !text);
+
+        box.classList.remove("is-error", "is-success", "is-info");
+
+        if (text) box.classList.add(`is-${type}`);
     },
 
 
@@ -457,6 +457,32 @@ const Auth = {
         modal.hidden = true;
 
         modal.style.display = "none";
+
+        this.resetAccountPasswordForm();
+    },
+
+    /** Collapses "Şifreyi değiştir" and wipes what was typed into it. */
+    resetAccountPasswordForm() {
+
+        document.getElementById("account-password-form")?.classList.add("hidden");
+
+        document.getElementById("account-password-toggle")?.setAttribute("aria-expanded", "false");
+
+        for (const id of ["account-new-password", "account-new-password-repeat"]) {
+
+            const input = document.getElementById(id);
+
+            if (input) input.value = "";
+        }
+
+        const box = document.getElementById("account-password-message");
+
+        if (box) {
+
+            box.textContent = "";
+
+            box.classList.add("hidden");
+        }
     },
 
 
@@ -593,6 +619,11 @@ const Auth = {
         );
 
 
+        // Bring the Supabase library in without making the app wait for
+        // it; the session shows up through the auth listener when it does.
+        ensureSupabase();
+
+
         await this.refreshSession();
 
 
@@ -612,6 +643,19 @@ const Auth = {
 
 
     // ------------------------------------------------------
+    // CONNECTION
+    // ------------------------------------------------------
+
+    /** Makes sure the Supabase library is there before an account action. */
+    async ensureConnection() {
+
+        if (await ensureSupabase()) return null;
+
+        return describeAuthError({ name: "AuthRetryableFetchError", message: "Failed to fetch" });
+    },
+
+
+    // ------------------------------------------------------
     // REGISTER
     // ------------------------------------------------------
 
@@ -620,13 +664,25 @@ const Auth = {
         password
     ) {
 
+        email = normalizeEmail(email);
+
+        this.pendingEmail = email;
+
+        const offline = await this.ensureConnection();
+
+        if (offline) return { success: false, kind: offline.kind, error: offline.message };
+
+
         const {
             data,
             error
         } =
             await supabase.auth.signUp({
                 email,
-                password
+                password,
+                options: {
+                    emailRedirectTo: emailRedirect()
+                }
             });
 
 
@@ -637,15 +693,20 @@ const Auth = {
                 error
             );
 
+            const info = describeAuthError(error);
 
-            return {
+            return { success: false, kind: info.kind, error: info.message };
+        }
 
-                success: false,
 
-                error:
-                    error.message
+        // Supabase does not say "already registered" when e-mail
+        // confirmation is on (so strangers cannot probe for accounts);
+        // it returns a user with no identities and sends nothing.
+        if (Array.isArray(data?.user?.identities) && data.user.identities.length === 0) {
 
-            };
+            const info = describeAuthError({ code: "user_already_exists" });
+
+            return { success: false, kind: info.kind, error: info.message };
         }
 
 
@@ -669,6 +730,8 @@ const Auth = {
 
             success: true,
 
+            needsConfirmation: !data.session,
+
             user:
                 data.user ?? null,
 
@@ -687,6 +750,15 @@ const Auth = {
         email,
         password
     ) {
+
+        email = normalizeEmail(email);
+
+        this.pendingEmail = email;
+
+        const offline = await this.ensureConnection();
+
+        if (offline) return { success: false, kind: offline.kind, error: offline.message };
+
 
         const {
             data,
@@ -708,15 +780,9 @@ const Auth = {
                 error
             );
 
+            const info = describeAuthError(error);
 
-            return {
-
-                success: false,
-
-                error:
-                    error.message
-
-            };
+            return { success: false, kind: info.kind, error: info.message };
         }
 
 
@@ -754,6 +820,102 @@ const Auth = {
 
 
     // ------------------------------------------------------
+    // RESEND CONFIRMATION E-MAIL
+    // ------------------------------------------------------
+
+    async resendConfirmation(email) {
+
+        email = normalizeEmail(email || this.pendingEmail);
+
+        if (!isValidEmail(email)) return { success: false, kind: "invalid-email", error: "Önce geçerli bir e-posta adresi yaz." };
+
+        const offline = await this.ensureConnection();
+
+        if (offline) return { success: false, kind: offline.kind, error: offline.message };
+
+        const { error } = await supabase.auth.resend({
+            type: "signup",
+            email,
+            options: { emailRedirectTo: emailRedirect() }
+        });
+
+        if (error) {
+
+            console.error("Doğrulama e-postası gönderilemedi:", error);
+
+            const info = describeAuthError(error);
+
+            return { success: false, kind: info.kind, error: info.message };
+        }
+
+        return { success: true };
+    },
+
+
+    // ------------------------------------------------------
+    // FORGOT PASSWORD
+    // ------------------------------------------------------
+
+    async sendPasswordReset(email) {
+
+        email = normalizeEmail(email);
+
+        if (!isValidEmail(email)) return { success: false, kind: "invalid-email", error: "Geçerli bir e-posta adresi yaz." };
+
+        this.pendingEmail = email;
+
+        const offline = await this.ensureConnection();
+
+        if (offline) return { success: false, kind: offline.kind, error: offline.message };
+
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: emailRedirect() });
+
+        if (error) {
+
+            console.error("Şifre sıfırlama hatası:", error);
+
+            const info = describeAuthError(error);
+
+            return { success: false, kind: info.kind, error: info.message };
+        }
+
+        // Same answer whether or not the address has an account.
+        return { success: true };
+    },
+
+
+    // ------------------------------------------------------
+    // CHANGE PASSWORD (also the last step of "şifremi unuttum")
+    // ------------------------------------------------------
+
+    async updatePassword(password) {
+
+        const problem = passwordProblem(password);
+
+        if (problem) return { success: false, kind: "weak", error: problem };
+
+        const offline = await this.ensureConnection();
+
+        if (offline) return { success: false, kind: offline.kind, error: offline.message };
+
+        const { error } = await supabase.auth.updateUser({ password });
+
+        if (error) {
+
+            console.error("Şifre güncellenemedi:", error);
+
+            const info = describeAuthError(error);
+
+            return { success: false, kind: info.kind, error: info.message };
+        }
+
+        this.recoveryMode = false;
+
+        return { success: true };
+    },
+
+
+    // ------------------------------------------------------
     // GOOGLE LOGIN
     // ------------------------------------------------------
 
@@ -777,6 +939,10 @@ const Auth = {
                     "Lütfen web sürümünden giriş yap, ya da e-posta/şifre ile devam et."
             };
         }
+
+        const offline = await this.ensureConnection();
+
+        if (offline) return { success: false, kind: offline.kind, error: offline.message };
 
         const redirectTo =
             `${window.location.origin}${window.location.pathname}`;
@@ -825,7 +991,7 @@ const Auth = {
                 success: false,
 
                 error:
-                    error.message
+                    describeAuthError(error).message
 
             };
         }
@@ -847,10 +1013,13 @@ const Auth = {
 
     async logout() {
 
+        // "local": sign out of THIS device only. The default ("global")
+        // also kicked the account out of the phone/web app it was
+        // open on elsewhere.
         const {
             error
         } =
-            await supabase.auth.signOut();
+            await supabase.auth.signOut({ scope: "local" });
 
 
         if (error) {
@@ -860,23 +1029,18 @@ const Auth = {
                 error
             );
 
-
-            return {
-
-                success: false,
-
-                error:
-                    error.message
-
-            };
+            // Could not reach the server (offline / expired session):
+            // still sign out on this device instead of leaving the
+            // person stuck in an account they cannot leave.
+            forgetLocalSession();
         }
 
 
         this.user = null;
 
+        this.recoveryMode = false;
 
         this.clearAuthMethod();
-
 
         this.closeAuthModal();
 
@@ -886,16 +1050,12 @@ const Auth = {
 
         this.updateAccountUI();
 
-
         console.log(
             "🚪 Lotus hesabından çıkış yapıldı."
         );
 
-
         return {
-
             success: true
-
         };
     },
 
@@ -1049,6 +1209,26 @@ const {
 
 
             // ----------------------------------------------
+            // PASSWORD RESET LINK OPENED
+            // ----------------------------------------------
+
+            if (
+                event === "PASSWORD_RECOVERY"
+            ) {
+
+                Auth.recoveryMode = true;
+
+                Auth.setUser(
+                    session?.user ?? null
+                );
+
+                Auth.openAuthModal("recovery");
+
+                return;
+            }
+
+
+            // ----------------------------------------------
             // SIGNED OUT
             // ----------------------------------------------
 
@@ -1084,7 +1264,8 @@ const {
             // ----------------------------------------------
 
             if (
-                event === "SIGNED_IN"
+                event === "SIGNED_IN" &&
+                !Auth.recoveryMode
             ) {
 
                 Auth.closeAuthModal();
@@ -1158,6 +1339,36 @@ document.addEventListener(
             );
 
 
+        const forgotLink =
+            document.getElementById(
+                "forgot-password-button"
+            );
+
+
+        const forgotButton =
+            document.getElementById(
+                "forgot-button"
+            );
+
+
+        const forgotBack =
+            document.getElementById(
+                "forgot-back"
+            );
+
+
+        const recoveryButton =
+            document.getElementById(
+                "recovery-button"
+            );
+
+
+        const resendButton =
+            document.getElementById(
+                "resend-confirmation-button"
+            );
+
+
         // ==================================================
         // ACCOUNT ELEMENTS
         // ==================================================
@@ -1197,6 +1408,88 @@ document.addEventListener(
 
 
         // ==================================================
+        // SHARED HELPERS
+        // ==================================================
+
+        /** Runs an action with the button locked and its label swapped. */
+        async function busy(button, label, action) {
+
+            if (!button || button.disabled) return;
+
+            const original = button.textContent;
+
+            button.disabled = true;
+
+            button.textContent = label;
+
+            try {
+
+                return await action();
+
+            } finally {
+
+                button.disabled = false;
+
+                button.textContent = original;
+            }
+        }
+
+        /** "Doğrulama e-postasını yeniden gönder" — shown after a sign-up or a refused sign-in. */
+        let resendTimer = null;
+
+        function offerResend(show) {
+
+            if (!resendButton) return;
+
+            resendButton.classList.toggle("hidden", !show);
+
+            if (!show) {
+
+                clearInterval(resendTimer);
+
+                resendButton.disabled = false;
+
+                resendButton.textContent = "Doğrulama e-postasını yeniden gönder";
+            }
+        }
+
+        function cooldownResend(seconds = 60) {
+
+            if (!resendButton) return;
+
+            let left = seconds;
+
+            resendButton.disabled = true;
+
+            clearInterval(resendTimer);
+
+            const tick = () => {
+
+                if (left <= 0) {
+
+                    clearInterval(resendTimer);
+
+                    resendButton.disabled = false;
+
+                    resendButton.textContent = "Doğrulama e-postasını yeniden gönder";
+
+                    return;
+                }
+
+                resendButton.textContent = `Yeniden gönder (${left} sn)`;
+
+                left -= 1;
+            };
+
+            tick();
+
+            resendTimer = setInterval(tick, 1000);
+        }
+
+        const valueOf = id => document.getElementById(id)?.value ?? "";
+
+
+        // ==================================================
         // LOGIN
         // ==================================================
 
@@ -1204,71 +1497,43 @@ document.addEventListener(
             "click",
             async () => {
 
-                const email =
-                    document
-                        .getElementById(
-                            "login-email"
-                        )
-                        ?.value
-                        .trim();
+                const email = normalizeEmail(valueOf("login-email"));
 
+                const password = valueOf("login-password");
 
-                const password =
-                    document
-                        .getElementById(
-                            "login-password"
-                        )
-                        ?.value;
+                Auth.setAuthMessage("");
 
+                offerResend(false);
 
-                if (
-                    !email ||
-                    !password
-                ) {
+                if (!email || !password) {
 
-                    notify(
-                        "E-posta ve şifre gerekli."
-                    );
+                    Auth.setAuthMessage("E-posta ve şifre gerekli.");
 
                     return;
                 }
 
+                if (!isValidEmail(email)) {
 
-                loginButton.disabled =
-                    true;
+                    Auth.setAuthMessage("E-posta adresi geçersiz görünüyor. Yazım hatası olmadığından emin ol.");
 
+                    return;
+                }
 
-                loginButton.textContent =
-                    "Giriş yapılıyor...";
+                await busy(loginButton, "Giriş yapılıyor...", async () => {
 
+                    const result = await Auth.login(email, password);
 
-                try {
+                    if (result.success) {
 
-                    const result =
-                        await Auth.login(
-                            email,
-                            password
-                        );
+                        notify("Giriş yapıldı. Hoş geldin!", "success");
 
-
-                    if (
-                        !result.success
-                    ) {
-
-                        notify(
-                            "Giriş başarısız:\n" +
-                            result.error
-                        );
+                        return;
                     }
 
-                } finally {
+                    Auth.setAuthMessage(result.error);
 
-                    loginButton.disabled =
-                        false;
-
-                    loginButton.textContent =
-                        "Giriş Yap";
-                }
+                    if (result.kind === "unconfirmed") offerResend(true);
+                });
             }
         );
 
@@ -1281,103 +1546,241 @@ document.addEventListener(
             "click",
             async () => {
 
-                const email =
-                    document
-                        .getElementById(
-                            "register-email"
-                        )
-                        ?.value
-                        .trim();
+                const email = normalizeEmail(valueOf("register-email"));
 
+                const password = valueOf("register-password");
 
-                const password =
-                    document
-                        .getElementById(
-                            "register-password"
-                        )
-                        ?.value;
+                Auth.setAuthMessage("");
 
+                offerResend(false);
 
-                if (
-                    !email ||
-                    !password
-                ) {
+                if (!email || !password) {
 
-                    notify(
-                        "E-posta ve şifre gerekli."
-                    );
+                    Auth.setAuthMessage("E-posta ve şifre gerekli.");
 
                     return;
                 }
 
+                if (!isValidEmail(email)) {
 
-                if (
-                    password.length < 6
-                ) {
-
-                    notify(
-                        "Şifre en az 6 karakter olmalı."
-                    );
+                    Auth.setAuthMessage("E-posta adresi geçersiz görünüyor. Yazım hatası olmadığından emin ol.");
 
                     return;
                 }
 
+                const problem = passwordProblem(password);
 
-                registerButton.disabled =
-                    true;
+                if (problem) {
 
+                    Auth.setAuthMessage(problem);
 
-                registerButton.textContent =
-                    "Hesap oluşturuluyor...";
+                    return;
+                }
 
+                await busy(registerButton, "Hesap oluşturuluyor...", async () => {
 
-                try {
+                    const result = await Auth.register(email, password);
 
-                    const result =
-                        await Auth.register(
-                            email,
-                            password
-                        );
+                    if (!result.success) {
 
-
-                    if (
-                        !result.success
-                    ) {
-
-                        notify(
-                            "Kayıt başarısız:\n" +
-                            result.error
-                        );
+                        Auth.setAuthMessage(result.error);
 
                         return;
                     }
 
+                    if (result.needsConfirmation) {
 
-                    if (
-                        !result.session
-                    ) {
-
-                        notify(
-                            "Hesabın oluşturuldu! " +
-                            "E-posta adresini doğrulaman gerekebilir.",
+                        Auth.setAuthMessage(
+                            `Hesabın oluşturuldu. ${email} adresine bir doğrulama bağlantısı gönderdik; ` +
+                            "bağlantıya dokunduktan sonra buraya dönüp giriş yap. Gelmediyse spam klasörüne bak.",
                             "success"
                         );
 
-                    } else {
+                        offerResend(true);
 
-                        Auth.closeAuthModal();
+                        return;
                     }
 
-                } finally {
+                    notify("Hesabın oluşturuldu. Hoş geldin!", "success");
 
-                    registerButton.disabled =
-                        false;
-
-                    registerButton.textContent =
-                        "Hesap Oluştur";
-                }
+                    Auth.closeAuthModal();
+                });
             }
         );
+
+
+        // ==================================================
+        // RESEND CONFIRMATION
+        // ==================================================
+
+        resendButton?.addEventListener(
+            "click",
+            async () => {
+
+                if (resendButton.disabled) return;
+
+                const email = normalizeEmail(
+                    Auth.pendingEmail || valueOf("login-email") || valueOf("register-email")
+                );
+
+                resendButton.disabled = true;
+
+                resendButton.textContent = "Gönderiliyor...";
+
+                const result = await Auth.resendConfirmation(email);
+
+                if (!result.success) {
+
+                    Auth.setAuthMessage(result.error);
+
+                    resendButton.disabled = false;
+
+                    resendButton.textContent = "Doğrulama e-postasını yeniden gönder";
+
+                    return;
+                }
+
+                Auth.setAuthMessage(`Doğrulama e-postası ${email} adresine yeniden gönderildi. Spam klasörüne de bak.`, "success");
+
+                cooldownResend(60);
+            }
+        );
+
+
+        // ==================================================
+        // FORGOT PASSWORD
+        // ==================================================
+
+        forgotLink?.addEventListener(
+            "click",
+            () => {
+
+                const typed = normalizeEmail(valueOf("login-email"));
+
+                if (typed) Auth.pendingEmail = typed;
+
+                Auth.showAuthPanel("forgot");
+            }
+        );
+
+        forgotBack?.addEventListener(
+            "click",
+            () => Auth.showAuthPanel("login")
+        );
+
+        forgotButton?.addEventListener(
+            "click",
+            async () => {
+
+                const email = normalizeEmail(valueOf("forgot-email"));
+
+                Auth.setAuthMessage("");
+
+                if (!isValidEmail(email)) {
+
+                    Auth.setAuthMessage("Hesabında kullandığın e-posta adresini yaz.");
+
+                    return;
+                }
+
+                await busy(forgotButton, "Gönderiliyor...", async () => {
+
+                    const result = await Auth.sendPasswordReset(email);
+
+                    if (!result.success) {
+
+                        Auth.setAuthMessage(result.error);
+
+                        return;
+                    }
+
+                    Auth.setAuthMessage(
+                        `Bu adreste bir hesap varsa ${email} adresine şifre sıfırlama bağlantısı gönderdik. ` +
+                        "Bağlantıya dokun, yeni şifreni belirle ve sonra giriş yap. Gelmediyse spam klasörüne bak.",
+                        "success"
+                    );
+                });
+            }
+        );
+
+
+        // ==================================================
+        // NEW PASSWORD (after the reset link)
+        // ==================================================
+
+        recoveryButton?.addEventListener(
+            "click",
+            async () => {
+
+                const first = valueOf("recovery-password");
+
+                const second = valueOf("recovery-password-repeat");
+
+                Auth.setAuthMessage("");
+
+                const problem = passwordProblem(first);
+
+                if (problem) {
+
+                    Auth.setAuthMessage(problem);
+
+                    return;
+                }
+
+                if (first !== second) {
+
+                    Auth.setAuthMessage("Şifreler birbiriyle aynı değil.");
+
+                    return;
+                }
+
+                await busy(recoveryButton, "Güncelleniyor...", async () => {
+
+                    const result = await Auth.updatePassword(first);
+
+                    if (!result.success) {
+
+                        Auth.setAuthMessage(result.error);
+
+                        return;
+                    }
+
+                    Auth.setAuthMethod("password");
+
+                    Auth.closeAuthModal();
+
+                    notify("Şifren güncellendi. Artık yeni şifrenle giriş yapabilirsin.", "success");
+                });
+            }
+        );
+
+
+        // ==================================================
+        // ENTER KEY
+        // ==================================================
+
+        const enterSubmits = {
+            "login-email": loginButton,
+            "login-password": loginButton,
+            "register-email": registerButton,
+            "register-password": registerButton,
+            "forgot-email": forgotButton,
+            "recovery-password": recoveryButton,
+            "recovery-password-repeat": recoveryButton
+        };
+
+        for (const [id, button] of Object.entries(enterSubmits)) {
+
+            document.getElementById(id)?.addEventListener("keydown", event => {
+
+                if (event.key === "Enter" && !event.isComposing) {
+
+                    event.preventDefault();
+
+                    button?.click();
+                }
+            });
+        }
 
 
         // ==================================================
@@ -1387,6 +1790,8 @@ document.addEventListener(
         googleButton?.addEventListener(
             "click",
             async () => {
+
+                Auth.setAuthMessage("");
 
                 googleButton.disabled =
                     true;
@@ -1406,10 +1811,7 @@ document.addEventListener(
                         !result.success
                     ) {
 
-                        notify(
-                            "Google girişi başarısız:\n" +
-                            result.error
-                        );
+                        Auth.setAuthMessage(result.error);
                     }
 
                 } catch (error) {
@@ -1420,8 +1822,8 @@ document.addEventListener(
                     );
 
 
-                    notify(
-                        "Google girişi başlatılamadı.\n" +
+                    Auth.setAuthMessage(
+                        "Google girişi başlatılamadı: " +
                         (
                             error?.message ??
                             error
@@ -1446,17 +1848,7 @@ document.addEventListener(
 
         showRegister?.addEventListener(
             "click",
-            () => {
-
-                loginPanel?.classList.add(
-                    "hidden"
-                );
-
-
-                registerPanel?.classList.remove(
-                    "hidden"
-                );
-            }
+            () => Auth.showAuthPanel("register")
         );
 
 
@@ -1466,17 +1858,7 @@ document.addEventListener(
 
         showLogin?.addEventListener(
             "click",
-            () => {
-
-                registerPanel?.classList.add(
-                    "hidden"
-                );
-
-
-                loginPanel?.classList.remove(
-                    "hidden"
-                );
-            }
+            () => Auth.showAuthPanel("login")
         );
 
 
@@ -1554,13 +1936,9 @@ document.addEventListener(
 
 
                 // ------------------------------------------
-                // GOOGLE-COMİNG SOON
+                // GOOGLE HESABI
                 // ------------------------------------------
 
-                if (googleButton) {
-                    googleButton.disabled = true;
-                   }
-                
                 if (
                     method === "google"
                 ) {
@@ -1721,10 +2099,99 @@ document.addEventListener(
 
 
         // ==================================================
+        // CHANGE PASSWORD (inside "Hesabım")
+        // ==================================================
+
+        const passwordToggle = document.getElementById("account-password-toggle");
+
+        const passwordForm = document.getElementById("account-password-form");
+
+        const passwordSave = document.getElementById("account-password-save");
+
+        const passwordMessage = document.getElementById("account-password-message");
+
+        function passwordNote(text, type = "error") {
+
+            if (!passwordMessage) return;
+
+            passwordMessage.textContent = text || "";
+
+            passwordMessage.classList.toggle("hidden", !text);
+
+            passwordMessage.classList.remove("is-error", "is-success", "is-info");
+
+            if (text) passwordMessage.classList.add(`is-${type}`);
+        }
+
+        passwordToggle?.addEventListener(
+            "click",
+            () => {
+
+                const open = passwordForm?.classList.contains("hidden");
+
+                passwordForm?.classList.toggle("hidden", !open);
+
+                passwordToggle.setAttribute("aria-expanded", String(open));
+
+                passwordNote("");
+
+                if (open && window.matchMedia?.("(pointer: fine)").matches) {
+
+                    document.getElementById("account-new-password")?.focus();
+                }
+            }
+        );
+
+        passwordSave?.addEventListener(
+            "click",
+            async () => {
+
+                const first = valueOf("account-new-password");
+
+                const second = valueOf("account-new-password-repeat");
+
+                passwordNote("");
+
+                const problem = passwordProblem(first);
+
+                if (problem) return passwordNote(problem);
+
+                if (first !== second) return passwordNote("Şifreler birbiriyle aynı değil.");
+
+                await busy(passwordSave, "Kaydediliyor...", async () => {
+
+                    const result = await Auth.updatePassword(first);
+
+                    if (!result.success) return passwordNote(result.error);
+
+                    Auth.resetAccountPasswordForm();
+
+                    notify("Şifren güncellendi.", "success");
+                });
+            }
+        );
+
+        for (const id of ["account-new-password", "account-new-password-repeat"]) {
+
+            document.getElementById(id)?.addEventListener("keydown", event => {
+
+                if (event.key === "Enter" && !event.isComposing) {
+
+                    event.preventDefault();
+
+                    passwordSave?.click();
+                }
+            });
+        }
+
+
+        // ==================================================
         // INITIAL AUTH
         // ==================================================
 
         await Auth.init();
+
+        handleAuthRedirect();
 
 
         Auth.updateAccountUI();
@@ -1734,6 +2201,82 @@ document.addEventListener(
         Auth.updateGoogleAccountModalUI();
     }
 );
+
+
+// ==========================================================
+// E-MAIL LINKS (doğrulama / şifre sıfırlama)
+// ==========================================================
+
+/** Reacts to what the page was opened for — see `urlIntent` above. Runs once, after Auth.init(). */
+function handleAuthRedirect() {
+
+    if (urlIntent.hasError) {
+
+        const info = describeAuthError({ code: urlIntent.errorCode, message: urlIntent.errorDescription });
+
+        notify(info.message, "error");
+
+        // A used / expired link: go straight to asking for a new one.
+        if (info.kind === "expired") Auth.openAuthModal(urlIntent.type === "recovery" || /recover|reset/i.test(urlIntent.errorDescription) ? "forgot" : "login");
+
+    } else if (urlIntent.isRecovery) {
+
+        // The PASSWORD_RECOVERY event normally opens this already; this covers a late library load.
+        if (Auth.user) Auth.openAuthModal("recovery");
+
+    } else if (urlIntent.isConfirmation) {
+
+        if (Auth.user) {
+
+            notify("E-postan doğrulandı. Hoş geldin!", "success");
+
+        } else {
+
+            notify("E-postan doğrulandı. Şimdi giriş yapabilirsin.", "success");
+
+            Auth.openAuthModal("login");
+        }
+    }
+
+    // Tidy the address bar so a refresh doesn't replay the link — but only
+    // once the Supabase library has read the tokens out of it. Wiping the
+    // address while the library is still loading would throw the e-mail
+    // link away (that is exactly how "doğrulama bağlantısı çalışmıyor" happens).
+    if (/access_token|refresh_token|error_code|type=/.test(window.location.hash)) {
+
+        ensureSupabase().then(ready => {
+
+            if (!ready) return; // offline: keep the link so the next attempt can still use it
+
+            // The library finishes reading the address a moment after it is created.
+            setTimeout(() => {
+
+                if (!/access_token|refresh_token|error_code|type=/.test(window.location.hash)) return;
+
+                try {
+
+                    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+
+                } catch { /* some WebViews refuse; harmless */ }
+
+            }, 1500);
+
+            // Safety net: if the "password reset" event was missed, open the form anyway.
+            if (urlIntent.isRecovery) {
+
+                setTimeout(() => {
+
+                    const modal = document.getElementById("auth-modal");
+
+                    const showing = modal && !modal.classList.contains("hidden") && !document.getElementById("recovery-panel")?.classList.contains("hidden");
+
+                    if (Auth.recoveryMode && Auth.user && !showing) Auth.openAuthModal("recovery");
+
+                }, 600);
+            }
+        });
+    }
+}
 
 
 // ==========================================================

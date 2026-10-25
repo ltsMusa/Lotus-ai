@@ -2,14 +2,21 @@
  * ==========================================================
  * Lotus AI — Design tokens
  * ==========================================================
- * One fixed theme: deep-violet "noir" glass with violet → pink
- * neon accents. (No light/dark toggle and no Appearance section
- * on purpose.) Every stylesheet reads from these variables, so
- * the whole look can be tuned from this file alone.
+ * Two themes, chosen in Settings → Kişiselleştirme → Tema
+ * (js/themes.js sets data-theme on <html>):
+ *
+ *   neon-purple  "Lotus Mor"   deep-violet noir glass, violet → pink neon (default)
+ *   dark-gray    "Karanlık"    black and graphite, neutral gray accents
+ *
+ * Every stylesheet reads from these variables — colors are never
+ * written inline — so a theme is just a set of values below.
+ * The *-rgb variables are bare "r, g, b" triplets so that
+ * rgba(var(--accent-rgb), 0.3) can set its own opacity.
  * ==========================================================
  */
 
-:root {
+:root,
+:root[data-theme="neon-purple"] {
     color-scheme: dark;
 
     /* surfaces */
@@ -19,27 +26,59 @@
     --panel: rgba(22, 16, 40, 0.62);
     --panel-solid: #120f1f;
 
+    --ink-rgb: 5, 3, 12; /* darkest glass: scrims, code blocks */
+    --surface-rgb: 17, 12, 31; /* dark glass cards */
+    --surface-2-rgb: 28, 21, 49; /* raised glass: menus, modals */
+
     /* brand */
     --accent: #a855f7;
     --accent-strong: #9333ea;
+    --accent-deep: #7c3aed;
+    --accent-deep-2: #6d28d9;
+    --accent-2: #c084fc;
     --accent-light: #d8b4fe;
+    --accent-lightest: #e9d5ff;
     --accent-soft: #f472b6;
-    --accent-glow: rgba(168, 85, 247, 0.45);
+    --accent-pink-light: #f9a8d4;
+    --accent-fuchsia: #f0abfc;
+
+    --accent-rgb: 168, 85, 247;
+    --accent-strong-rgb: 147, 51, 234;
+    --accent-deep-rgb: 124, 58, 237;
+    --accent-2-rgb: 192, 132, 252;
+    --accent-light-rgb: 216, 180, 254;
+    --pink-rgb: 244, 114, 182;
+    --magenta-rgb: 192, 38, 211;
+    --indigo-rgb: 99, 102, 241;
+
+    --grad-mid: #a21caf;
+    --grad-end: #db2777;
+
+    /* the lotus logo is a purple PNG; the dark theme turns it gray */
+    --logo-tint: grayscale(0);
+
+    --accent-glow: rgba(var(--accent-rgb), 0.45);
 
     --grad: linear-gradient(135deg, #8b5cf6 0%, #c026d3 52%, #f472b6 100%);
-    --grad-soft: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(244, 114, 182, 0.12));
-    --grad-border: linear-gradient(140deg, rgba(168, 85, 247, 0.55), rgba(255, 255, 255, 0.07) 46%, rgba(244, 114, 182, 0.4));
+    --grad-soft: linear-gradient(135deg, rgba(var(--accent-rgb), 0.22), rgba(var(--pink-rgb), 0.12));
+    --grad-border: linear-gradient(140deg, rgba(var(--accent-rgb), 0.55), rgba(255, 255, 255, 0.07) 46%, rgba(var(--pink-rgb), 0.4));
 
     /* text */
+    --text-rgb: 245, 243, 250;
     --text: #f5f3fa;
-    --text-2: rgba(245, 243, 250, 0.76);
+    --text-2: rgba(var(--text-rgb), 0.76);
     --muted: #9c98ae;
-    --faint: rgba(245, 243, 250, 0.44);
+    --faint: rgba(var(--text-rgb), 0.44);
+    --text-tint: #e9e4f5;
+
+    /* code highlighting that follows the theme */
+    --code-comment: #7a7396;
+    --code-punct: #a8a0c4;
 
     /* lines */
     --line: rgba(255, 255, 255, 0.08);
     --line-strong: rgba(255, 255, 255, 0.15);
-    --line-accent: rgba(192, 132, 252, 0.3);
+    --line-accent: rgba(var(--accent-2-rgb), 0.3);
 
     /* state */
     --danger: #f87171;
@@ -55,7 +94,7 @@
     --shadow-1: 0 6px 20px rgba(0, 0, 0, 0.3);
     --shadow-2: 0 16px 48px rgba(0, 0, 0, 0.45);
     --shadow-3: 0 30px 90px rgba(0, 0, 0, 0.62);
-    --glow: 0 0 28px rgba(168, 85, 247, 0.3);
+    --glow: 0 0 28px rgba(var(--accent-rgb), 0.3);
 
     /* motion */
     --ease: cubic-bezier(0.16, 1, 0.3, 1);
@@ -71,6 +110,73 @@
     --sidebar-w: 308px;
     --chat-w: 820px;
     --header-h: 64px;
+}
+
+/* ==========================================================
+   KARANLIK — siyah ve grafit, nötr gri vurgu
+   Only color values differ; shapes, motion and type are shared.
+   ========================================================== */
+
+:root[data-theme="dark-gray"] {
+    color-scheme: dark;
+
+    --bg: #030303;
+    --bg-raised: #09090a;
+    --bg-elevated: #151517;
+    --panel: rgba(20, 20, 22, 0.66);
+    --panel-solid: #0e0e10;
+
+    --ink-rgb: 2, 2, 3;
+    --surface-rgb: 14, 14, 16;
+    --surface-2-rgb: 26, 26, 29;
+
+    --accent: #8b8b95;
+    --accent-strong: #6f6f79;
+    --accent-deep: #55555e;
+    --accent-deep-2: #3f3f46;
+    --accent-2: #b4b4bc;
+    --accent-light: #d4d4d8;
+    --accent-lightest: #ececee;
+    --accent-soft: #c4c4cb;
+    --accent-pink-light: #e0e0e4;
+    --accent-fuchsia: #dcdce0;
+
+    --accent-rgb: 150, 150, 160;
+    --accent-strong-rgb: 111, 111, 121;
+    --accent-deep-rgb: 85, 85, 94;
+    --accent-2-rgb: 180, 180, 188;
+    --accent-light-rgb: 212, 212, 216;
+    --pink-rgb: 200, 200, 207;
+    --magenta-rgb: 120, 120, 130;
+    --indigo-rgb: 110, 110, 120;
+
+    --grad-mid: #4a4a52;
+    --grad-end: #6b6b75;
+
+    --logo-tint: grayscale(1) brightness(1.12);
+
+    --grad: linear-gradient(135deg, #3b3b42 0%, #55555e 52%, #7a7a85 100%);
+
+    --text-rgb: 244, 244, 245;
+    --text: #f4f4f5;
+    --muted: #9d9da6;
+    --text-tint: #e4e4e7;
+
+    --code-comment: #71717a;
+    --code-punct: #a1a1aa;
+
+    --line: rgba(255, 255, 255, 0.075);
+    --line-strong: rgba(255, 255, 255, 0.14);
+
+    --shadow-1: 0 6px 20px rgba(0, 0, 0, 0.5);
+    --shadow-2: 0 16px 48px rgba(0, 0, 0, 0.62);
+    --shadow-3: 0 30px 90px rgba(0, 0, 0, 0.78);
+    --glow: 0 0 24px rgba(var(--accent-rgb), 0.16);
+}
+
+/* the logo as the AI avatar is a CSS background, so tint the whole avatar */
+:root[data-theme="dark-gray"] .ai-message::before {
+    filter: grayscale(1);
 }
 
 /* Reusable frosted panel */

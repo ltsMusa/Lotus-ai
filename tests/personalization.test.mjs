@@ -222,3 +222,115 @@ test("service worker precaches every module under js/", async () => {
 
     assert.deepEqual(missing, [], "add these to APP_SHELL in sw.js");
 });
+
+// ---------- themes ----------
+
+const { THEMES, DEFAULT_THEME, normalizeTheme, themeById } = await import("../js/themeList.js");
+
+const cssBlock = (css, selector) => {
+    const start = css.indexOf(selector);
+    assert.notEqual(start, -1, `${selector} not found in css/themes.css`);
+    const open = css.indexOf("{", start);
+    const close = css.indexOf("\n}\n", open);
+    return css.slice(open + 1, close);
+};
+
+const declaredVars = block => new Set([...block.matchAll(/^\s*(--[a-z0-9-]+)\s*:/gm)].map(m => m[1]));
+
+test("themes: list, default and validation", () => {
+    assert.deepEqual(THEMES.map(theme => theme.id), ["neon-purple", "dark-gray"]);
+    assert.equal(DEFAULT_THEME, "neon-purple");
+    assert.equal(normalizeTheme("dark-gray"), "dark-gray");
+    for (const bad of [undefined, null, "", "light", "DARK-GRAY", 3, {}]) assert.equal(normalizeTheme(bad), "neon-purple");
+    assert.equal(themeById("nope").id, "neon-purple");
+    for (const theme of THEMES) {
+        assert.match(theme.browserColor, /^#[0-9A-Fa-f]{6}$/);
+        assert.equal(Boolean(theme.name && theme.hint && theme.swatch?.bg), true, theme.id);
+    }
+});
+
+test("themes: every theme has its css block and the early script knows it", async () => {
+    const css = await read("css/themes.css");
+    const html = await read("index.html");
+
+    for (const theme of THEMES) {
+        if (theme.id !== DEFAULT_THEME) {
+            assert.equal(css.includes(`:root[data-theme="${theme.id}"] {`), true, `css block for ${theme.id}`);
+            assert.equal(html.includes(`saved === "${theme.id}"`), true, `index.html early script for ${theme.id}`);
+            assert.equal(html.includes(theme.browserColor.toLowerCase()) || html.includes(theme.browserColor.slice(1)), true, "theme-color in early script");
+        }
+    }
+});
+
+test("themes: a theme overrides every color token (nothing stays purple by accident)", async () => {
+    const css = await read("css/themes.css");
+
+    const base = declaredVars(cssBlock(css, ':root,\n:root[data-theme="neon-purple"]'));
+    const dark = declaredVars(cssBlock(css, ':root[data-theme="dark-gray"] {'));
+
+    // Not colors, or derived from other tokens (they follow the override automatically),
+    // or meaningful in every theme (state colors, line-accent via accent-2-rgb).
+    const shared = new Set([
+        "--panel", // overridden anyway; kept in the list for clarity
+        "--text-2", "--faint", "--line-accent", "--accent-glow", "--grad-soft", "--grad-border",
+        "--danger", "--success", "--warn",
+        "--ease", "--ease-spring", "--ease-in", "--font-ui", "--font-display", "--font-mono",
+        "--sidebar-w", "--chat-w", "--header-h", "--r-sm", "--r-md", "--r-lg", "--r-xl"
+    ]);
+
+    const missing = [...base].filter(name => !dark.has(name) && !shared.has(name));
+
+    assert.deepEqual(missing, [], "dark-gray must override these tokens in css/themes.css");
+
+    // and every override really is a token the default theme defines
+    assert.deepEqual([...dark].filter(name => !base.has(name)), []);
+});
+
+test("themes: no hard-coded purple outside css/themes.css", async () => {
+    const files = (await readdir(join(root, "css"))).filter(name => name.endsWith(".css") && name !== "themes.css");
+
+    const purple = /rgba?\(\s*(168|192|244|147|124|216)\s*,\s*(85|132|114|51|58|180|38)\s*,|#(a855f7|7c3aed|9333ea|c026d3|8b5cf6|d8b4fe|c084fc|f472b6|f0abfc|e9d5ff|f9a8d4|a21caf|db2777|6d28d9)\b/i;
+
+    for (const name of files) {
+        const text = await read(`css/${name}`);
+        text.split("\n").forEach((line, index) => {
+            assert.equal(purple.test(line), false, `css/${name}:${index + 1} hard-codes a theme color: ${line.trim()}`);
+        });
+    }
+});
+
+test("themes: every var(--x-rgb) used in css is defined", async () => {
+    const themes = await read("css/themes.css");
+    const defined = declaredVars(cssBlock(themes, ':root,\n:root[data-theme="neon-purple"]'));
+
+    const used = new Set();
+    for (const name of (await readdir(join(root, "css"))).filter(file => file.endsWith(".css"))) {
+        for (const m of (await read(`css/${name}`)).matchAll(/var\((--[a-z0-9-]+-rgb)\)/g)) used.add(m[1]);
+    }
+
+    assert.deepEqual([...used].filter(name => !defined.has(name)), []);
+});
+
+test("themes: config.setTheme validates, persists and repairs damaged storage", async () => {
+    store.clear();
+
+    const { default: config } = await import("../js/config.js?theme-a");
+
+    assert.equal(config.theme, "neon-purple");
+    assert.equal(config.setTheme("dark-gray"), "dark-gray");
+    assert.equal(JSON.parse(store.get("lotus_config_v1")).theme, "dark-gray");
+    assert.equal(config.setTheme("pink"), "neon-purple");
+
+    // personalization reset must not touch the look
+    config.setTheme("dark-gray");
+    config.resetPersonalization();
+    assert.equal(config.theme, "dark-gray");
+
+    store.set("lotus_config_v1", JSON.stringify({ theme: "hotpink" }));
+    const { default: repaired } = await import("../js/config.js?theme-b");
+    assert.equal(repaired.theme, "neon-purple");
+
+    store.set("lotus_config_v1", JSON.stringify({ theme: "dark-gray" }));
+    const { default: restored } = await import("../js/config.js?theme-c");
+    assert.equal(restored.theme, "dark-gray");
+});

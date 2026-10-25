@@ -44,7 +44,7 @@ Yol haritasının bir kısmı **bugün zaten çalışıyor**: otomatik sağlayı
 | 🔌 **Çoklu sağlayıcı** | Groq · OpenRouter · Gemini · OpenAI (+ isteğe bağlı kendi Ollama sunucun) |
 | ⚡ **Otomatik yönlendirme** | Kotası dolan sağlayıcıdan sıradakine geçer; hiçbiri yoksa ya da internet kesikse cihazdaki Lotus Mini yanıtlar |
 | 📱 **Lotus Mini** | Uygulamanın içinde çalışan yerel model — sunucu, Ollama ya da Termux gerekmez |
-| 🎨 **Kişiselleştirme** | Hitap, üslup, cevap uzunluğu, dil ve özel talimatlar; canlı önizleme |
+| 🎨 **Kişiselleştirme** | **Tema** (Lotus Mor ya da Karanlık siyah-gri), hitap, üslup, cevap uzunluğu, dil ve özel talimatlar; canlı önizleme |
 | 🧠 **Hafıza** | `hatırla: …`, `unut: …`, `neler hatırlıyorsun?` |
 | 🌐 **Web araması** | Tavily / Jina / anahtarsız yedekler; sayfa özetleme ve çeviri araçları |
 | 🖼️ **Görseller** | Görsel oluşturma (Pollinations, anahtarsız) + galeri, görsel ve dosya analizi |
@@ -94,7 +94,7 @@ Soğuyunca Güçlü'ye geri döner. "Isınmaya göre değiştir" Ayarlar'dan kap
 
 İkisi ayrı şeylerdir:
 
-- **Kişiselleştirme** (Ayarlar → Kişiselleştirme) — senin koyduğun kalıcı tercihler: nasıl hitap edileceğin, kendin hakkında kısa not, cevap uzunluğu, üslup, dil ve özel talimatlar. Her sohbette Lotus'a ek talimat olarak gider; neyin gönderildiğini canlı önizlemeden görürsün, istediğin an kapatır ya da sıfırlarsın.
+- **Kişiselleştirme** (Ayarlar → Kişiselleştirme) — önce **tema** seçersin: *Lotus Mor* (pembe-mor neon, varsayılan) ya da *Karanlık* (siyah ve gri); seçim bu cihazda hatırlanır. Sonra Lotus'a söylediklerin — senin koyduğun kalıcı tercihler: nasıl hitap edileceğin, kendin hakkında kısa not, cevap uzunluğu, üslup, dil ve özel talimatlar. Her sohbette Lotus'a ek talimat olarak gider; neyin gönderildiğini canlı önizlemeden görürsün, istediğin an kapatır ya da sıfırlarsın.
 - **Hafıza** — Lotus'un senden öğrendiği kısa bilgiler. Misafirken cihazda, giriş yapınca Supabase'de tutulur.
 
 Lotus'un kişiliği tek bir dosyada yaşar: [`js/prompts/systemPrompt.js`](js/prompts/systemPrompt.js). Bütün sağlayıcılar, Lotus Mini ve Ollama kurulumu aynı metinden beslenir.
@@ -156,6 +156,7 @@ Kendi sunucunda ya da telefonda Termux ile çalıştırmak istersen: [`ollama/te
 index.html, css/, js/, assets/    Web uygulaması (vanilla JS, ES modules)
 ├─ js/prompts/systemPrompt.js     Lotus'un kişiliği (tek yerde)
 ├─ js/personalization.js          Kişiselleştirme ayarları
+├─ js/themeList.js, themes.js     Temalar (renkler css/themes.css içinde)
 ├─ js/router.js, localPolicy.js,
 │  deviceMonitor.js, autoSwitch.js Yönlendirme ve cihaza göre model seçimi
 └─ js/providers/                  groq · openrouter · gemini · openai · ollama · local (Lotus Mini)

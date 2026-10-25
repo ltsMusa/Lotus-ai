@@ -22,6 +22,7 @@
 
 import { isPackagedApp } from "./env.js";
 import { DEFAULT_PERSONALIZATION, normalizePersonalization } from "./personalization.js";
+import { DEFAULT_THEME, normalizeTheme } from "./themeList.js";
 
 const STORAGE_KEY = "lotus_config_v1";
 
@@ -84,6 +85,10 @@ const DEFAULTS = {
         useGpu: false, // WebGPU offload is experimental on phones
         idleUnloadMinutes: 5 // free the RAM after this long without a message
     },
+
+    // Look of the app: "neon-purple" (Lotus Mor) or "dark-gray" (Karanlık),
+    // chosen in Settings → Kişiselleştirme → Tema (js/themeList.js).
+    theme: DEFAULT_THEME,
 
     // Kişiselleştirme: the user's own standing instructions and style
     // choices, added to the system prompt of every request
@@ -170,6 +175,7 @@ const config = deepMerge(DEFAULTS, loadStoredConfig());
 
 // A hand-edited or damaged saved value must never reach the prompt.
 config.personalization = normalizePersonalization(config.personalization);
+config.theme = normalizeTheme(config.theme);
 
 function migrateRetiredModels(target) {
 
@@ -305,6 +311,24 @@ config.setLocal = function (updates = {}) {
 
         // no window (tests)
     }
+};
+
+config.setTheme = function (id) {
+
+    this.theme = normalizeTheme(id);
+
+    persist();
+
+    try {
+
+        window.dispatchEvent(new CustomEvent("lotus:theme-changed", { detail: { theme: this.theme } }));
+
+    } catch {
+
+        // no window (tests)
+    }
+
+    return this.theme;
 };
 
 config.setPersonalization = function (updates = {}) {

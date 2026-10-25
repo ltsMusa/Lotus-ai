@@ -74,6 +74,7 @@ const APP_SHELL = [
     "./js/statusIndicator.js",
     "./js/storage.js",
     "./js/streaming.js",
+    "./js/themeList.js",
     "./js/themes.js",
     "./js/toast.js",
     "./js/tools.js",

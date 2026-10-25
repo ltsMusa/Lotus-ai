@@ -984,6 +984,13 @@
 
         <div id="auth-content">
 
+            <p
+                id="auth-message"
+                class="auth-message hidden"
+                role="alert"
+                aria-live="polite">
+            </p>
+
             <div id="login-panel">
 
                 <h3>Giriş Yap</h3>
@@ -1003,6 +1010,13 @@
                     id="login-password"
                     placeholder="Şifren"
                     autocomplete="current-password">
+
+                <button
+                    id="forgot-password-button"
+                    class="auth-link"
+                    type="button">
+                    Şifremi unuttum
+                </button>
 
                 <button id="login-button">
                     Giriş Yap
@@ -1048,6 +1062,65 @@
                 </button>
 
             </div>
+
+
+            <div id="forgot-panel" class="hidden">
+
+                <h3>Şifremi Unuttum</h3>
+
+                <p>
+                    Hesabındaki e-posta adresini yaz; sana şifreni yenileyeceğin bir bağlantı gönderelim.
+                </p>
+
+                <input
+                    type="email"
+                    id="forgot-email"
+                    placeholder="E-posta adresin"
+                    autocomplete="email">
+
+                <button id="forgot-button">
+                    Bağlantı Gönder
+                </button>
+
+                <button id="forgot-back" type="button">
+                    Girişe dön
+                </button>
+
+            </div>
+
+
+            <div id="recovery-panel" class="hidden">
+
+                <h3>Yeni Şifre Belirle</h3>
+
+                <p>
+                    Bağlantı doğrulandı. Lotus hesabın için yeni bir şifre seç.
+                </p>
+
+                <input
+                    type="password"
+                    id="recovery-password"
+                    placeholder="Yeni şifre (en az 6 karakter)"
+                    autocomplete="new-password">
+
+                <input
+                    type="password"
+                    id="recovery-password-repeat"
+                    placeholder="Yeni şifre (tekrar)"
+                    autocomplete="new-password">
+
+                <button id="recovery-button">
+                    Şifreyi Kaydet
+                </button>
+
+            </div>
+
+            <button
+                id="resend-confirmation-button"
+                class="auth-link hidden"
+                type="button">
+                Doğrulama e-postasını yeniden gönder
+            </button>
 
         </div>
 
@@ -1112,6 +1185,51 @@
                 <strong>
                     ••••••••
                 </strong>
+
+            </div>
+
+        </div>
+
+
+        <div id="account-password-section" class="account-password">
+
+            <button
+                id="account-password-toggle"
+                class="account-password-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="account-password-form"
+            >
+                Şifreyi değiştir
+            </button>
+
+            <div id="account-password-form" class="account-password-form hidden">
+
+                <input
+                    type="password"
+                    id="account-new-password"
+                    placeholder="Yeni şifre (en az 6 karakter)"
+                    autocomplete="new-password">
+
+                <input
+                    type="password"
+                    id="account-new-password-repeat"
+                    placeholder="Yeni şifre (tekrar)"
+                    autocomplete="new-password">
+
+                <p
+                    id="account-password-message"
+                    class="auth-message hidden"
+                    role="alert"
+                    aria-live="polite">
+                </p>
+
+                <button
+                    id="account-password-save"
+                    type="button"
+                >
+                    Şifreyi Kaydet
+                </button>
 
             </div>
 
@@ -1207,7 +1325,15 @@
 <!-- JAVASCRIPT -->
 <!-- ===================================================== -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Supabase kütüphanesi: sayfayı bloklamaz. Yüklenemezse js/supabaseClient.js
+     yedek kaynakları dener ve internet gelince kendini toparlar. -->
+<script
+    async
+    id="supabase-cdn"
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"
+    onload="window.__supabaseCdn='ok'"
+    onerror="window.__supabaseCdn='fail'">
+</script>
     
 <script
     type="module"

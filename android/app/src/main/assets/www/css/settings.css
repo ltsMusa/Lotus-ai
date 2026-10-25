@@ -21,7 +21,8 @@
     .settings-field select,
     #memory-add-input,
     #memory-add-category,
-    #auth-modal input
+    #auth-modal input,
+    #account-modal input
 ) {
     width: 100%;
     min-height: 46px;
@@ -56,7 +57,8 @@
     .settings-field select,
     #memory-add-input,
     #memory-add-category,
-    #auth-modal input
+    #auth-modal input,
+    #account-modal input
 ):focus {
     border-color: rgba(var(--accent-2-rgb), 0.7);
 
@@ -71,7 +73,8 @@
     .tools-field textarea,
     .settings-field textarea,
     #memory-add-input,
-    #auth-modal input
+    #auth-modal input,
+    #account-modal input
 )::placeholder {
     color: var(--faint);
 }
@@ -1029,7 +1032,9 @@
 }
 
 #login-panel,
-#register-panel {
+#register-panel,
+#forgot-panel,
+#recovery-panel {
     display: flex;
     flex-direction: column;
 
@@ -1037,12 +1042,16 @@
 }
 
 #login-panel:not(.hidden),
-#register-panel:not(.hidden) {
+#register-panel:not(.hidden),
+#forgot-panel:not(.hidden),
+#recovery-panel:not(.hidden) {
     animation: lotus-slide-in 0.4s var(--ease) both;
 }
 
 #login-panel h3,
-#register-panel h3 {
+#register-panel h3,
+#forgot-panel h3,
+#recovery-panel h3 {
     margin-bottom: 6px;
 
     font-family: var(--font-display);
@@ -1053,7 +1062,9 @@
 }
 
 #login-panel p,
-#register-panel p {
+#register-panel p,
+#forgot-panel p,
+#recovery-panel p {
     margin: 0 0 22px;
 
     color: var(--muted);
@@ -1071,7 +1082,10 @@
 }
 
 #login-button,
-#register-button {
+#register-button,
+#forgot-button,
+#recovery-button,
+#account-password-save {
     width: 100%;
     height: 54px;
 
@@ -1092,19 +1106,28 @@
 }
 
 #login-button:hover,
-#register-button:hover {
+#register-button:hover,
+#forgot-button:hover,
+#recovery-button:hover,
+#account-password-save:hover {
     filter: brightness(1.1);
 
     box-shadow: 0 14px 34px rgba(var(--accent-rgb), 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.34);
 }
 
 #login-button:active,
-#register-button:active {
+#register-button:active,
+#forgot-button:active,
+#recovery-button:active,
+#account-password-save:active {
     transform: scale(0.97);
 }
 
 #login-button:disabled,
-#register-button:disabled {
+#register-button:disabled,
+#forgot-button:disabled,
+#recovery-button:disabled,
+#account-password-save:disabled {
     opacity: 0.55;
 }
 
@@ -1142,7 +1165,9 @@
 }
 
 #show-register,
-#show-login {
+#show-login,
+#forgot-back,
+#resend-confirmation-button {
     width: 100%;
 
     margin-top: 14px;
@@ -1157,8 +1182,77 @@
 }
 
 #show-register:hover,
-#show-login:hover {
+#show-login:hover,
+#forgot-back:hover,
+#resend-confirmation-button:hover {
     color: var(--accent-soft);
+}
+
+#resend-confirmation-button:disabled {
+    opacity: 0.6;
+}
+
+/* "Şifremi unuttum" sits right under the password field */
+#forgot-password-button {
+    align-self: flex-end;
+
+    margin: -3px 0 4px;
+    padding: 6px 2px;
+
+    color: var(--accent-light);
+
+    font-size: 13px;
+    font-weight: 500;
+
+    transition: color 0.2s ease;
+}
+
+#forgot-password-button:hover {
+    color: var(--accent-soft);
+}
+
+/* One line of feedback at the top of the sign-in window / password form */
+.auth-message {
+    margin: 0 0 16px;
+    padding: 11px 14px;
+
+    font-size: 13.5px;
+    line-height: 1.5;
+
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+
+    background: rgba(255, 255, 255, 0.05);
+
+    overflow-wrap: anywhere;
+}
+
+.auth-message.hidden {
+    display: none;
+}
+
+.auth-message.is-error {
+    color: #fecaca;
+
+    border-color: rgba(248, 113, 113, 0.42);
+
+    background: rgba(248, 113, 113, 0.1);
+}
+
+.auth-message.is-success {
+    color: #bbf7d0;
+
+    border-color: rgba(74, 222, 128, 0.4);
+
+    background: rgba(74, 222, 128, 0.1);
+}
+
+.auth-message.is-info {
+    color: var(--text-2);
+
+    border-color: var(--line-accent);
+
+    background: rgba(var(--accent-rgb), 0.1);
 }
 
 
@@ -1288,6 +1382,60 @@
     font-weight: 600;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.account-password {
+    margin-top: 18px;
+}
+
+.account-password-toggle {
+    width: 100%;
+    height: 48px;
+
+    color: var(--text);
+
+    font-size: 14px;
+    font-weight: 600;
+
+    border: 1px solid var(--line-strong);
+    border-radius: 16px;
+
+    background: rgba(255, 255, 255, 0.05);
+
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.account-password-toggle:hover {
+    border-color: var(--line-accent);
+
+    background: rgba(255, 255, 255, 0.09);
+}
+
+.account-password-toggle:active {
+    transform: scale(0.98);
+}
+
+.account-password-form {
+    display: flex;
+    flex-direction: column;
+
+    margin-top: 12px;
+}
+
+.account-password-form.hidden {
+    display: none;
+}
+
+.account-password-form input {
+    min-height: 50px;
+
+    margin-bottom: 10px;
+}
+
+.account-password-form #account-password-save {
+    height: 50px;
+
+    margin-top: 2px;
 }
 
 .account-logout {

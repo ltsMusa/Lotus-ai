@@ -6,6 +6,11 @@
 -- js/storage.js today), with Row Level Security so users can
 -- only ever read/write their own rows — closing the "Güvenli
 -- database policy'leri" / "RLS policies" gap from the audit.
+--
+-- Safe to run again and again: tables/indexes use "if not exists",
+-- policies are dropped and recreated, grants are repeatable.
+-- (Sign-in itself — e-mail confirmation, redirect URLs, Google —
+-- is NOT set here; see supabase/KURULUM.md.)
 -- ==========================================================
 
 -- ----------------------------------------------------------
@@ -25,17 +30,26 @@ create index if not exists conversations_user_id_updated_at_idx
 
 alter table public.conversations enable row level security;
 
+drop policy if exists "conversations_select_own" on public.conversations;
+
 create policy "conversations_select_own"
     on public.conversations for select
     using (auth.uid() = user_id);
+
+drop policy if exists "conversations_insert_own" on public.conversations;
 
 create policy "conversations_insert_own"
     on public.conversations for insert
     with check (auth.uid() = user_id);
 
+drop policy if exists "conversations_update_own" on public.conversations;
+
 create policy "conversations_update_own"
     on public.conversations for update
-    using (auth.uid() = user_id);
+    using (auth.uid() = user_id)
+    with check (auth.uid() = user_id);
+
+drop policy if exists "conversations_delete_own" on public.conversations;
 
 create policy "conversations_delete_own"
     on public.conversations for delete
@@ -61,6 +75,8 @@ alter table public.messages enable row level security;
 
 -- Messages don't carry user_id directly — ownership is checked
 -- through the parent conversation.
+drop policy if exists "messages_select_own" on public.messages;
+
 create policy "messages_select_own"
     on public.messages for select
     using (
@@ -71,6 +87,8 @@ create policy "messages_select_own"
         )
     );
 
+drop policy if exists "messages_insert_own" on public.messages;
+
 create policy "messages_insert_own"
     on public.messages for insert
     with check (
@@ -80,6 +98,8 @@ create policy "messages_insert_own"
             and c.user_id = auth.uid()
         )
     );
+
+drop policy if exists "messages_delete_own" on public.messages;
 
 create policy "messages_delete_own"
     on public.messages for delete
@@ -111,21 +131,50 @@ create index if not exists memories_user_id_importance_idx
 
 alter table public.memories enable row level security;
 
+drop policy if exists "memories_select_own" on public.memories;
+
 create policy "memories_select_own"
     on public.memories for select
     using (auth.uid() = user_id);
+
+drop policy if exists "memories_insert_own" on public.memories;
 
 create policy "memories_insert_own"
     on public.memories for insert
     with check (auth.uid() = user_id);
 
+drop policy if exists "memories_update_own" on public.memories;
+
 create policy "memories_update_own"
     on public.memories for update
-    using (auth.uid() = user_id);
+    using (auth.uid() = user_id)
+    with check (auth.uid() = user_id);
+
+drop policy if exists "memories_delete_own" on public.memories;
 
 create policy "memories_delete_own"
     on public.memories for delete
     using (auth.uid() = user_id);
+
+
+-- ----------------------------------------------------------
+-- PERMISSIONS
+-- ----------------------------------------------------------
+-- Tables made through the SQL editor on some projects are not
+-- reachable from the API until the "authenticated" role gets
+-- table privileges (symptom: "permission denied for table …").
+-- RLS above still limits every user to their own rows, and
+-- "anon" (not signed in) gets nothing.
+
+grant usage on schema public to authenticated;
+
+grant select, insert, update, delete on public.conversations to authenticated;
+grant select, insert, update, delete on public.messages      to authenticated;
+grant select, insert, update, delete on public.memories      to authenticated;
+
+revoke all on public.conversations from anon;
+revoke all on public.messages      from anon;
+revoke all on public.memories      from anon;
 
 
 -- ----------------------------------------------------------
@@ -144,7 +193,7 @@ begin
 
     return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 drop trigger if exists messages_touch_conversation on public.messages;
 

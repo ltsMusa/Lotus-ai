@@ -3,7 +3,7 @@
 // Run:  node --test tests/personalization.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile, readdir } from "node:fs/promises";
+import { readFile, readdir, access } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -238,7 +238,7 @@ const cssBlock = (css, selector) => {
 const declaredVars = block => new Set([...block.matchAll(/^\s*(--[a-z0-9-]+)\s*:/gm)].map(m => m[1]));
 
 test("themes: list, default and validation", () => {
-    assert.deepEqual(THEMES.map(theme => theme.id), ["neon-purple", "dark-gray"]);
+    assert.deepEqual(THEMES.map(theme => theme.id), ["neon-purple", "dark-gray", "ocean-blue", "sun-green"]);
     assert.equal(DEFAULT_THEME, "neon-purple");
     assert.equal(normalizeTheme("dark-gray"), "dark-gray");
     for (const bad of [undefined, null, "", "light", "DARK-GRAY", 3, {}]) assert.equal(normalizeTheme(bad), "neon-purple");
@@ -256,17 +256,15 @@ test("themes: every theme has its css block and the early script knows it", asyn
     for (const theme of THEMES) {
         if (theme.id !== DEFAULT_THEME) {
             assert.equal(css.includes(`:root[data-theme="${theme.id}"] {`), true, `css block for ${theme.id}`);
-            assert.equal(html.includes(`saved === "${theme.id}"`), true, `index.html early script for ${theme.id}`);
-            assert.equal(html.includes(theme.browserColor.toLowerCase()) || html.includes(theme.browserColor.slice(1)), true, "theme-color in early script");
+            assert.equal(html.includes(`"${theme.id}": "${theme.browserColor.toLowerCase()}"`), true, `index.html early script knows ${theme.id} and its theme-color`);
         }
     }
 });
 
-test("themes: a theme overrides every color token (nothing stays purple by accident)", async () => {
+test("themes: every theme overrides every color token (nothing stays purple by accident)", async () => {
     const css = await read("css/themes.css");
 
     const base = declaredVars(cssBlock(css, ':root,\n:root[data-theme="neon-purple"]'));
-    const dark = declaredVars(cssBlock(css, ':root[data-theme="dark-gray"] {'));
 
     // Not colors, or derived from other tokens (they follow the override automatically),
     // or meaningful in every theme (state colors, line-accent via accent-2-rgb).
@@ -278,12 +276,30 @@ test("themes: a theme overrides every color token (nothing stays purple by accid
         "--sidebar-w", "--chat-w", "--header-h", "--r-sm", "--r-md", "--r-lg", "--r-xl"
     ]);
 
-    const missing = [...base].filter(name => !dark.has(name) && !shared.has(name));
+    for (const theme of THEMES.filter(item => item.id !== DEFAULT_THEME)) {
 
-    assert.deepEqual(missing, [], "dark-gray must override these tokens in css/themes.css");
+        const own = declaredVars(cssBlock(css, `:root[data-theme="${theme.id}"] {`));
 
-    // and every override really is a token the default theme defines
-    assert.deepEqual([...dark].filter(name => !base.has(name)), []);
+        // the gray theme tints the default avatar logo with a filter instead of a second image
+        const skip = theme.id === "dark-gray" ? new Set([...shared, "--logo-avatar"]) : shared;
+
+        const missing = [...base].filter(name => !own.has(name) && !skip.has(name));
+
+        assert.deepEqual(missing, [], `${theme.id} must override these tokens in css/themes.css`);
+
+        // and every override really is a token the default theme defines
+        assert.deepEqual([...own].filter(name => !base.has(name)), [], theme.id);
+    }
+});
+
+test("themes: each theme's avatar logo exists and is cached offline", async () => {
+    const css = await read("css/themes.css");
+    const sw = await read("sw.js");
+
+    for (const match of css.matchAll(/--logo-avatar:\s*url\("\.\.\/(assets\/[^"]+)"\)/g)) {
+        await access(join(root, match[1])); // throws when the file is missing
+        assert.equal(sw.includes(`"./${match[1]}"`), true, `${match[1]} missing from APP_SHELL in sw.js`);
+    }
 });
 
 test("themes: no hard-coded purple outside css/themes.css", async () => {

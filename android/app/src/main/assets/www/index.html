@@ -18,14 +18,16 @@
          (js/themes.js takes over once the app has loaded.) -->
     <script>
         (function () {
+            // id → browser/PWA chrome color. Keep in step with js/themeList.js.
+            var colors = { "dark-gray": "#030303", "ocean-blue": "#050914", "sun-green": "#060903" };
             var theme = "neon-purple";
             try {
                 var saved = JSON.parse(localStorage.getItem("lotus_config_v1") || "{}").theme;
-                if (saved === "dark-gray") theme = saved;
+                if (Object.prototype.hasOwnProperty.call(colors, saved)) theme = saved;
             } catch (e) { /* storage blocked: default theme */ }
             document.documentElement.setAttribute("data-theme", theme);
-            if (theme === "dark-gray") {
-                document.querySelector('meta[name="theme-color"]').setAttribute("content", "#030303");
+            if (colors[theme]) {
+                document.querySelector('meta[name="theme-color"]').setAttribute("content", colors[theme]);
             }
         })();
     </script>

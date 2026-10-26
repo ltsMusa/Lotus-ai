@@ -108,7 +108,7 @@
     border-radius: 12px;
 
     background:
-        url("../assets/icons/logo.png") center / 70% no-repeat,
+        var(--logo-avatar) center / 70% no-repeat,
         linear-gradient(145deg, rgba(var(--accent-rgb), 0.3), rgba(var(--pink-rgb), 0.12));
 
     box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.28);

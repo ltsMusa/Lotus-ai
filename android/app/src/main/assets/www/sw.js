@@ -88,6 +88,8 @@ const APP_SHELL = [
     "./assets/icons/icon-192.png",
     "./assets/icons/icon-512.png",
     "./assets/icons/logo.png",
+    "./assets/icons/logo-avatar-ocean-blue.png",
+    "./assets/icons/logo-avatar-sun-green.png",
     "./assets/fonts/CormorantGaramond-Regular.ttf",
     "./assets/fonts/DMSans_18pt-Regular.ttf"
 ];

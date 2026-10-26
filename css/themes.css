@@ -2,11 +2,13 @@
  * ==========================================================
  * Lotus AI — Design tokens
  * ==========================================================
- * Two themes, chosen in Settings → Kişiselleştirme → Tema
+ * Four themes, chosen in Settings → Kişiselleştirme → Tema
  * (js/themes.js sets data-theme on <html>):
  *
  *   neon-purple  "Lotus Mor"   deep-violet noir glass, violet → pink neon (default)
  *   dark-gray    "Karanlık"    black and graphite, neutral gray accents
+ *   ocean-blue   "Mavi-Beyaz"  navy glass, blue accents, white text
+ *   sun-green    "Sarı-Yeşil"  forest-black glass, green → yellow accents
  *
  * Every stylesheet reads from these variables — colors are never
  * written inline — so a theme is just a set of values below.
@@ -56,6 +58,10 @@
 
     /* the lotus logo is a purple PNG; the dark theme turns it gray */
     --logo-tint: grayscale(0);
+
+    /* the AI avatar paints the logo as a CSS background (it cannot be filtered
+       on its own), so each theme points at a logo in its own color */
+    --logo-avatar: url("../assets/icons/logo.png");
 
     --accent-glow: rgba(var(--accent-rgb), 0.45);
 
@@ -172,6 +178,131 @@
     --shadow-2: 0 16px 48px rgba(0, 0, 0, 0.62);
     --shadow-3: 0 30px 90px rgba(0, 0, 0, 0.78);
     --glow: 0 0 24px rgba(var(--accent-rgb), 0.16);
+}
+
+/* ==========================================================
+   MAVİ-BEYAZ — lacivert cam, mavi vurgu, beyaz yazı
+   ========================================================== */
+
+:root[data-theme="ocean-blue"] {
+    color-scheme: dark;
+
+    --bg: #050914;
+    --bg-raised: #0a1122;
+    --bg-elevated: #0f1c38;
+    --panel: rgba(12, 24, 48, 0.64);
+    --panel-solid: #0a1429;
+
+    --ink-rgb: 2, 5, 14;
+    --surface-rgb: 9, 17, 36;
+    --surface-2-rgb: 15, 29, 58;
+
+    --accent: #3b82f6;
+    --accent-strong: #2563eb;
+    --accent-deep: #1d4ed8;
+    --accent-deep-2: #1e40af;
+    --accent-2: #60a5fa;
+    --accent-light: #bfdbfe;
+    --accent-lightest: #eff6ff;
+    --accent-soft: #7dd3fc;
+    --accent-pink-light: #dbeafe;
+    --accent-fuchsia: #e0f2fe;
+
+    --accent-rgb: 59, 130, 246;
+    --accent-strong-rgb: 37, 99, 235;
+    --accent-deep-rgb: 29, 78, 216;
+    --accent-2-rgb: 96, 165, 250;
+    --accent-light-rgb: 191, 219, 254;
+    --pink-rgb: 125, 211, 252;
+    --magenta-rgb: 14, 165, 233;
+    --indigo-rgb: 79, 70, 229;
+
+    --grad-mid: #2563eb;
+    --grad-end: #0ea5e9;
+
+    --logo-tint: hue-rotate(-76deg) saturate(1.2);
+    --logo-avatar: url("../assets/icons/logo-avatar-ocean-blue.png");
+
+    --grad: linear-gradient(135deg, #1d4ed8 0%, #2563eb 52%, #0284c7 100%);
+
+    --text-rgb: 241, 247, 255;
+    --text: #f1f7ff;
+    --muted: #94a6c4;
+    --text-tint: #dfeaff;
+
+    --code-comment: #6580a8;
+    --code-punct: #9db6d8;
+
+    --line: rgba(255, 255, 255, 0.09);
+    --line-strong: rgba(255, 255, 255, 0.17);
+
+    --shadow-1: 0 6px 20px rgba(0, 3, 12, 0.4);
+    --shadow-2: 0 16px 48px rgba(0, 3, 12, 0.55);
+    --shadow-3: 0 30px 90px rgba(0, 3, 12, 0.72);
+    --glow: 0 0 28px rgba(var(--accent-rgb), 0.32);
+}
+
+/* ==========================================================
+   SARI-YEŞİL — orman karası cam, yeşil → sarı vurgu
+   (düğme yazıları beyaz kaldığı için gradyan koyu tonlarda tutuldu)
+   ========================================================== */
+
+:root[data-theme="sun-green"] {
+    color-scheme: dark;
+
+    --bg: #060903;
+    --bg-raised: #0b1006;
+    --bg-elevated: #141d0b;
+    --panel: rgba(20, 29, 12, 0.64);
+    --panel-solid: #0e1508;
+
+    --ink-rgb: 3, 5, 1;
+    --surface-rgb: 13, 19, 8;
+    --surface-2-rgb: 23, 33, 13;
+
+    --accent: #84cc16;
+    --accent-strong: #65a30d;
+    --accent-deep: #4d7c0f;
+    --accent-deep-2: #3f6212;
+    --accent-2: #a3e635;
+    --accent-light: #d9f99d;
+    --accent-lightest: #f7fee7;
+    --accent-soft: #facc15;
+    --accent-pink-light: #fde68a;
+    --accent-fuchsia: #fef08a;
+
+    --accent-rgb: 132, 204, 22;
+    --accent-strong-rgb: 101, 163, 13;
+    --accent-deep-rgb: 77, 124, 15;
+    --accent-2-rgb: 163, 230, 53;
+    --accent-light-rgb: 217, 249, 157;
+    --pink-rgb: 250, 204, 21;
+    --magenta-rgb: 34, 197, 94;
+    --indigo-rgb: 22, 163, 74;
+
+    --grad-mid: #65a30d;
+    --grad-end: #ca8a04;
+
+    --logo-tint: hue-rotate(145deg) saturate(1.2);
+    --logo-avatar: url("../assets/icons/logo-avatar-sun-green.png");
+
+    --grad: linear-gradient(135deg, #15803d 0%, #4d7c0f 50%, #b7791f 100%);
+
+    --text-rgb: 247, 250, 238;
+    --text: #f7faee;
+    --muted: #a3ae92;
+    --text-tint: #ecf3d9;
+
+    --code-comment: #7b8a62;
+    --code-punct: #b2c096;
+
+    --line: rgba(255, 255, 255, 0.08);
+    --line-strong: rgba(255, 255, 255, 0.15);
+
+    --shadow-1: 0 6px 20px rgba(2, 4, 0, 0.42);
+    --shadow-2: 0 16px 48px rgba(2, 4, 0, 0.56);
+    --shadow-3: 0 30px 90px rgba(2, 4, 0, 0.74);
+    --glow: 0 0 28px rgba(var(--accent-rgb), 0.28);
 }
 
 /* the logo as the AI avatar is a CSS background, so tint the whole avatar */

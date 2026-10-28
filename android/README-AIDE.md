@@ -4,44 +4,28 @@ Bu klasör, `Lotus AI` web uygulamasını (chat.js, api.js, vb. — aynı kod)
 tam ekran bir WebView içinde çalıştıran, standart bir Gradle/Android
 projesidir. AIDE'de doğrudan açılabilir.
 
-## ⚠️ ÖNCE BUNU OKU — Signed APK için gradlew'e hiç gerek yok
+## Gradle wrapper (`gradlew`) — pakette hazır
 
-`gradle/wrapper/gradle-wrapper.jar` bu pakette yok — derlenmiş bir Java
-binary'si, benim ortamımda internet ve Gradle kurulumu olmadığı için
-üretemiyorum. Ama iyi haber: **buna hiç ihtiyacın yok.** `gradlew`
-sadece AIDE'nin "Build **Signed** APK" menüsünün özel olarak çağırdığı
-bir yol — normal "Build APK" AIDE'nin kendi bundled Gradle'ını
-kullanıyor ve `./gradlew`'e hiç dokunmuyor. Yani imzalamayı Gradle'ın
-dışına çıkarıp elle yapıyoruz:
+`gradlew`, `gradlew.bat` ve `gradle/wrapper/gradle-wrapper.jar` pakette var; wrapper Gradle **6.1.1**'i
+kullanacak şekilde ayarlı (`gradle/wrapper/gradle-wrapper.properties`, Android Gradle eklentisi 4.0.1 ile uyumlu).
+Jar'ı gerçek bir Gradle ile ürettik ve yerel bir Gradle dağıtımıyla uçtan uca çalıştığını denedik; **AIDE'nin
+içinde ve telefonda denemedik.**
 
-### Adımlar
-1. AIDE'de projeyi aç, **normal Build/Run** ile derle (Signed APK
-   menüsünü KULLANMA). Bu sana imzasız (veya debug-imzalı) bir
-   `app-release-unsigned.apk` / `app-debug.apk` üretir — genelde
-   `app/build/outputs/apk/` altında.
-2. AIDE'nin terminalini aç, `apksigner`'ı bul:
-   ```
-   find / -name "apksigner*" 2>/dev/null
-   ```
-   (Genelde AIDE'nin kendi Android SDK build-tools klasöründe olur.)
-3. (Varsa) `zipalign` ile hizala — bazı cihazlar/Play Store bunu ister:
-   ```
-   zipalign -p 4 app-release-unsigned.apk app-release-aligned.apk
-   ```
-4. `apksigner` ile kendi keystore'unla imzala:
-   ```
-   apksigner sign --ks lotusai.jks --ks-key-alias lotusai \
-       --out app-release-signed.apk \
-       app-release-aligned.apk
-   ```
-   (zipalign adımını atladıysan doğrudan `app-release-unsigned.apk`
-   dosyasını ver.) Keystore ve key şifreleri sorulacak.
-5. `apksigner verify app-release-signed.apk` ile imzayı doğrula
-   (opsiyonel ama önerilir).
-6. Üretilen `app-release-signed.apk`'yı cihaza kur.
+- `./gradlew` ilk çalıştığında Gradle 6.1.1'i internetten indirir (yaklaşık 100 MB), sonra önbellekten çalışır.
+- Normal **Build/Run** AIDE'nin kendi Gradle'ını kullanır ve wrapper'a dokunmaz; wrapper, AIDE'nin "Signed APK"
+  menüsü ya da terminalden `./gradlew assembleRelease` gibi komutlar içindir.
+- Wrapper'ı bir sürüme sabitlemek istersen `gradle-wrapper.properties` içindeki `distributionUrl`'yi değiştir
+  (Android Gradle eklentisi sürümüyle `build.gradle`'daki birlikte değişmeli).
 
-Bu yol tamamen `gradlew`/`gradle-wrapper.jar`'dan bağımsız — hiçbir
-şeyi başka bir projeden taşımana gerek yok.
+### İmzasız derleyip elle imzalamak istersen (Gradle'a hiç dokunmadan)
+
+1. AIDE'de projeyi aç, **normal Build/Run** ile derle. Bu sana imzasız (veya debug-imzalı)
+   bir `app-release-unsigned.apk` / `app-debug.apk` üretir — genelde `app/build/outputs/apk/` altında.
+2. AIDE'nin terminalinde `apksigner`'ı bul: `find / -name "apksigner*" 2>/dev/null`
+3. (Varsa) `zipalign -p 4 app-release-unsigned.apk app-release-aligned.apk`
+4. `apksigner sign --ks lotusai.jks --ks-key-alias lotusai --out app-release-signed.apk app-release-aligned.apk`
+   (zipalign'ı atladıysan doğrudan `app-release-unsigned.apk` dosyasını ver.)
+5. İstersen `apksigner verify app-release-signed.apk` ile doğrula, sonra cihaza kur.
 
 ## Nasıl açılır
 
@@ -121,12 +105,10 @@ sağlayıcı için kendi kişisel API anahtarını gir (proxy hiç gerekmez).
 
 ## Sürüm notu
 
-`build.gradle` bilerek eski/tutucu sürümler kullanıyor
-(AGP 7.4.2 + Gradle 7.5) — AIDE'nin yerleşik (offline) araç zinciri
-genelde en yeni AGP'den çok bu aralıkla daha sorunsuz çalışıyor. Daha
-yeni bir AIDE sürümün varsa ve farklı bir AGP istiyorsa, hem
-`build.gradle` hem `gradle/wrapper/gradle-wrapper.properties`
-dosyalarını birlikte güncelle.
+`build.gradle` bilerek eski/tutucu sürümler kullanıyor (Android Gradle eklentisi 4.0.1 + Gradle 6.1.1,
+`compileSdkVersion 29`) — AIDE'nin yerleşik (offline) araç zinciri genelde en yeni sürümden çok bu aralıkla
+daha sorunsuz çalışıyor. Daha yeni bir AIDE sürümün varsa ve farklı bir sürüm istiyorsa, hem `build.gradle`
+hem `gradle/wrapper/gradle-wrapper.properties` dosyalarını birlikte güncelle.
 
 ## Not: eski sürümden güncelleme
 Önceki paket `file://` adresini kullanıyordu; yeni paket farklı bir

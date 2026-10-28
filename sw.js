@@ -22,7 +22,7 @@
  * ==========================================================
  */
 
-const VERSION = "7.0";
+const VERSION = "7.0-beta.1";
 const SHELL_CACHE = `lotus-shell-${VERSION}`;
 const ASSET_CACHE = `lotus-assets-${VERSION}`;
 

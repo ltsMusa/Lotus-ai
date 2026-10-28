@@ -988,6 +988,17 @@
     color: var(--text-2);
 }
 
+.about-note a {
+    color: var(--accent-light);
+
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.about-note a:hover {
+    color: var(--accent-soft);
+}
+
 
 /* ==========================================================
    SIGN-IN

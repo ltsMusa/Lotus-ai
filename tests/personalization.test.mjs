@@ -182,20 +182,20 @@ test("config: setPersonalization normalizes, persists and survives reload; damag
     assert.equal(reloaded.routeMode, "local");
 });
 
-// ---------- version 7.0 everywhere ----------
+// ---------- version 7.0 Beta 1 everywhere ----------
 
-test("version is 7.0 everywhere", async () => {
+test("version is 7.0 Beta 1 everywhere", async () => {
     const pkg = JSON.parse(await read("package.json"));
-    assert.equal(pkg.version, "7.0.0");
+    assert.equal(pkg.version, "7.0.0-beta.1");
 
-    assert.match(await read("index.html"), /Lotus AI · v7\.0</);
-    assert.match(await read("index.html"), /Sürüm 7\.0/);
-    assert.match(await read("sw.js"), /const VERSION = "7\.0";/);
+    assert.match(await read("index.html"), /Lotus AI · v7\.0 Beta 1</);
+    assert.match(await read("index.html"), /Sürüm 7\.0 Beta 1/);
+    assert.match(await read("sw.js"), /const VERSION = "7\.0-beta\.1";/);
     // The web package ships without android/, so only check it when present.
     const gradle = await read("android/app/build.gradle").catch(() => null);
     if (gradle) {
-        assert.match(gradle, /versionName "7\.0"/);
-        assert.match(gradle, /versionCode 70/);
+        assert.match(gradle, /versionName "7\.0-beta\.1"/);
+        assert.match(gradle, /versionCode 71/);
     }
 
     for (const file of ["js/api.js", "js/chat.js", "js/commands.js"]) {

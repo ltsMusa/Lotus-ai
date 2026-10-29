@@ -6,8 +6,20 @@ android {
     defaultConfig {
         applicationId "com.lotusai.app"
         minSdkVersion 21
-        targetSdkVersion 29
-        versionCode 71
+
+        // Play Protect "Bu uygulama Android'in eski bir sürümü için tasarlanmış" uyarısını verir,
+        // eğer targetSdkVersion cihazın Android API seviyesinden 2'den fazla geriyse
+        // (örn. Android 16 = API 36 → hedef 34'ün altıysa uyarı çıkar).
+        // 35, Android 17'ye (API 37) kadar uyarısız geçer.
+        //
+        // DİKKAT: hedef 30 ve üstüyse Android 11+ APK'nın (1) APK Signature Scheme v2/v3 ile
+        // imzalı ve (2) resources.arsc'nin sıkıştırılmamış + 4 bayt hizalı olmasını ŞART koşar,
+        // yoksa "Uygulama yüklenemedi" der. AIDE'nin kendi "Signed APK" çıktısı bunu sağlamayabilir;
+        // o durumda GitHub'daki "Android APK" iş akışıyla derle (android/README-AIDE.md → "Play Protect uyarısı").
+        // Acil durumda burayı geçici olarak 29 yapabilirsin (uyarı geri gelir ama AIDE APK'sı yüklenir).
+        targetSdkVersion 35
+
+        versionCode 72
         versionName "7.0-beta.1"
     }
 

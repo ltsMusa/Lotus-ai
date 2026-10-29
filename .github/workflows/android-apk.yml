@@ -1,0 +1,192 @@
+name: Android APK
+
+# Telefondan çalıştır: GitHub → bu depo → Actions → "Android APK" → Run workflow.
+# (İş akışı varsayılan dalda — main — olmalı ki listede görünsün.)
+#
+# Ne yapar: android/ içindeki AYNI kaynak kodu modern araçlarla (AGP 8.7, JDK 17) derler;
+# hedef SDK 35, APK v1+v2+v3 imzalı, zipalign'lı ve resources.arsc sıkıştırılmamış olur.
+# Yani Play Protect'in "Android'in eski bir sürümü için tasarlanmış" uyarısı çıkmaz ve
+# Android 11+ cihazlar APK'yı sorunsuz yükler (AIDE'nin kendi imzası bunu sağlamayabilir).
+#
+# İmza anahtarı:
+#  - Depo "Secrets"ında ANDROID_KEYSTORE_BASE64 varsa KALICI anahtar kullanılır
+#    (diğer secret'lar: ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD).
+#    Güncellemelerin eskisinin üstüne kurulabilmesi için hep aynı anahtar gerekir.
+#  - Yoksa her çalıştırmada GEÇİCİ bir anahtar üretilir: APK yüklenir ama sonraki derleme
+#    farklı imzalı olur, üstüne güncelleme yerine önce eskisini kaldırman gerekir.
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "APK'yı GitHub Releases'a (ön sürüm) da yükle - telefondan direkt indirmek için"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: false
+
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: İmzalama anahtarı
+        id: key
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS_SECRET: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KS_ALIAS_SECRET: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KS_KEY_PASS_SECRET: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          KS="$RUNNER_TEMP/lotus-release.p12"
+
+          if [ -n "${KS_B64:-}" ]; then
+            printf '%s' "$KS_B64" | base64 -d > "$KS"
+            STORE_PASS="$KS_PASS_SECRET"
+            ALIAS="${KS_ALIAS_SECRET:-lotus}"
+            KEY_PASS="${KS_KEY_PASS_SECRET:-$KS_PASS_SECRET}"
+            echo "type=kalici" >> "$GITHUB_OUTPUT"
+          else
+            STORE_PASS="$(openssl rand -hex 16)"
+            echo "::add-mask::$STORE_PASS"
+            ALIAS="lotus"
+            KEY_PASS="$STORE_PASS"
+            keytool -genkeypair -keystore "$KS" -storetype PKCS12 \
+              -alias "$ALIAS" -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass "$STORE_PASS" -keypass "$KEY_PASS" \
+              -dname "CN=Lotus AI (gecici anahtar)"
+            echo "type=gecici" >> "$GITHUB_OUTPUT"
+          fi
+
+          {
+            echo "LOTUS_KEYSTORE=$KS"
+            echo "LOTUS_KEYSTORE_PASSWORD=$STORE_PASS"
+            echo "LOTUS_KEY_ALIAS=$ALIAS"
+            echo "LOTUS_KEY_PASSWORD=$KEY_PASS"
+          } >> "$GITHUB_ENV"
+
+      - name: Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: APK derle
+        run: gradle -p tools/android-ci assembleRelease --no-daemon --stacktrace
+
+      - name: APK'yı doğrula ve adlandır
+        id: verify
+        env:
+          KEY_TYPE: ${{ steps.key.outputs.type }}
+        run: |
+          set -euo pipefail
+
+          APK="tools/android-ci/app/build/outputs/apk/release/app-release.apk"
+          test -f "$APK"
+
+          BT="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | grep -E '^[0-9]+(\.[0-9]+)*$' | sort -V | tail -1)"
+          echo "build-tools: $BT"
+
+          echo "::group::apksigner verify"
+          "$BT/apksigner" verify --verbose --print-certs "$APK" | tee "$RUNNER_TEMP/verify.txt"
+          echo "::endgroup::"
+          grep -q 'Verified using v2 scheme (APK Signature Scheme v2): true' "$RUNNER_TEMP/verify.txt"
+          grep -q 'Verified using v3 scheme (APK Signature Scheme v3): true' "$RUNNER_TEMP/verify.txt"
+
+          echo "::group::aapt2 badging"
+          "$BT/aapt2" dump badging "$APK" > "$RUNNER_TEMP/badging.txt"
+          grep -E "^package:|^sdkVersion|^targetSdkVersion" "$RUNNER_TEMP/badging.txt"
+          echo "::endgroup::"
+          grep -q "package: name='com.lotusai.app'" "$RUNNER_TEMP/badging.txt"
+          grep -q "targetSdkVersion:'35'" "$RUNNER_TEMP/badging.txt"
+
+          # Hedef 30+ için Android şart koşar: resources.arsc sıkıştırılmamış + 4 bayt hizalı.
+          unzip -v "$APK" resources.arsc | tee "$RUNNER_TEMP/arsc.txt"
+          grep -q 'Stored' "$RUNNER_TEMP/arsc.txt"
+          "$BT/zipalign" -c -v 4 "$APK" | tail -3
+
+          VERSION_NAME="$(grep -oP 'versionName\s+"\K[^"]+' android/app/build.gradle | head -1)"
+          FINGERPRINT="$(grep -m1 'certificate SHA-256 digest' "$RUNNER_TEMP/verify.txt" | awk '{print $NF}')"
+
+          mkdir -p dist
+          cp "$APK" "dist/Lotus-AI-${VERSION_NAME}.apk"
+
+          {
+            echo "apk=dist/Lotus-AI-${VERSION_NAME}.apk"
+            echo "version=$VERSION_NAME"
+            echo "fingerprint=$FINGERPRINT"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## Lotus AI ${VERSION_NAME} - APK hazır"
+            echo
+            echo "- Hedef SDK: **35** (Play Protect'in \"eski Android sürümü\" uyarısı çıkmaz)"
+            echo "- İmza: v1 + v2 + v3, zipalign'lı, resources.arsc sıkıştırılmamış"
+            echo "- İmza parmak izi (SHA-256): \`${FINGERPRINT}\`"
+            if [ "$KEY_TYPE" = "gecici" ]; then
+              echo
+              echo "> ⚠️ **Geçici anahtarla imzalandı.** Bir sonraki derleme farklı imzalı olur; üstüne güncelleme"
+              echo "> yerine önce eski uygulamayı kaldırman gerekir. Kalıcı anahtar için depoya"
+              echo "> \`ANDROID_KEYSTORE_BASE64\`, \`ANDROID_KEYSTORE_PASSWORD\`, \`ANDROID_KEY_ALIAS\`, \`ANDROID_KEY_PASSWORD\` secret'larını ekle."
+            else
+              echo
+              echo "Kalıcı anahtarla imzalandı: aynı anahtarla derlenen sürümler birbirinin üstüne güncellenir."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: APK'yı artifact olarak sakla
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lotus-AI-apk
+          path: dist/*.apk
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
+
+      - name: GitHub Releases'a yükle
+        if: ${{ inputs.publish }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APK_FILE: ${{ steps.verify.outputs.apk }}
+          VERSION_NAME: ${{ steps.verify.outputs.version }}
+          FINGERPRINT: ${{ steps.verify.outputs.fingerprint }}
+          KEY_TYPE: ${{ steps.key.outputs.type }}
+        run: |
+          set -euo pipefail
+
+          TAG="v$(jq -r .version package.json)"
+
+          if [ "$KEY_TYPE" = "gecici" ]; then
+            KEY_NOTE="İmza: geçici anahtar. Sonraki derleme farklı imzalı olur; güncellemeden önce eski uygulamayı kaldır."
+          else
+            KEY_NOTE="İmza: kalıcı anahtar. Bu anahtarla derlenen sürümler birbirinin üstüne güncellenir."
+          fi
+
+          NOTES="Lotus AI ${VERSION_NAME} (Android, ön sürüm / beta). Hedef SDK 35; v1+v2+v3 imzalı.
+          ${KEY_NOTE}
+          İmza parmak izi (SHA-256): ${FINGERPRINT}
+
+          Kurulum: APK'ya dokun, indir, aç. \"Bilinmeyen kaynaklardan yükle\" izni istenirse tarayıcına/dosya yöneticine ver."
+
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --prerelease --target "$GITHUB_SHA" \
+              --title "Lotus AI ${VERSION_NAME}" --notes "$NOTES"
+          fi
+
+          gh release upload "$TAG" "$APK_FILE" --clobber
+          echo "Release: $(gh release view "$TAG" --json url --jq .url)" >> "$GITHUB_STEP_SUMMARY"

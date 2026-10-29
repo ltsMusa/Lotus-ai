@@ -1,0 +1,63 @@
+plugins {
+    id 'com.android.application'
+}
+
+// ---------------------------------------------------------------------------
+// Bu dosya android/app/build.gradle'ın (AIDE için) CI karşılığıdır.
+// applicationId / minSdk / targetSdk / versionCode / versionName DEĞERLERİ
+// ORADAKİYLE AYNI OLMALI — tests/android.test.mjs bunu denetler.
+// ---------------------------------------------------------------------------
+
+def androidMain = '../../../android/app/src/main'
+
+android {
+    namespace 'com.lotusai.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.lotusai.app'
+        minSdk 21
+        targetSdk 35
+        versionCode 72
+        versionName '7.0-beta.1'
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile "${androidMain}/AndroidManifest.xml"
+            java.srcDirs = ["${androidMain}/java"]
+            res.srcDirs = ["${androidMain}/res"]
+            assets.srcDirs = ["${androidMain}/assets"]
+        }
+    }
+
+    // İmza bilgileri ortam değişkenlerinden gelir (iş akışı ayarlar); anahtar
+    // dosyası repoda DURMAZ. AGP 8.x release APK'yı v1+v2+v3 imzalar ve zipalign eder,
+    // resources.arsc'yi de sıkıştırmadan paketler (hedef 30+ için şart).
+    signingConfigs {
+        release {
+            storeFile file(System.getenv('LOTUS_KEYSTORE') ?: 'yok.jks')
+            storePassword System.getenv('LOTUS_KEYSTORE_PASSWORD')
+            keyAlias System.getenv('LOTUS_KEY_ALIAS')
+            keyPassword System.getenv('LOTUS_KEY_PASSWORD')
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    // Sadece paketliyoruz; lint uyarıları APK'yı engellemesin.
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+}

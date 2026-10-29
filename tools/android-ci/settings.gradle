@@ -1,0 +1,22 @@
+// Bulutta (GitHub Actions) APK derlemek için AYRI, modern bir Gradle projesi.
+// AIDE'nin kullandığı android/ klasörüne dokunmaz: kaynak kodu, kaynaklar ve
+// assets oradan okunur (bkz. app/build.gradle). Sadece CI'da kullanılır.
+
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'lotus-ai-ci'
+include ':app'

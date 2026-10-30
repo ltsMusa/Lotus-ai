@@ -1,0 +1,4 @@
+// AGP 8.7.x → JDK 17 + Gradle 8.9+ ister (.github/workflows/android-apk.yml bunları kurar).
+plugins {
+    id 'com.android.application' version '8.7.3' apply false
+}

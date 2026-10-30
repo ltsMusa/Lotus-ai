@@ -27,6 +27,46 @@ içinde ve telefonda denemedik.**
    (zipalign'ı atladıysan doğrudan `app-release-unsigned.apk` dosyasını ver.)
 5. İstersen `apksigner verify app-release-signed.apk` ile doğrula, sonra cihaza kur.
 
+## Play Protect: "Android'in eski bir sürümü için tasarlanmış" uyarısı
+
+**Sebep:** Play Protect, uygulamanın `targetSdkVersion` değeri telefonun Android API seviyesinden 2'den fazla
+gerideyse bu uyarıyı gösterir ([Google'ın açıklaması](https://developers.google.com/android/play-protect/warning-dev-guidance)).
+Eski ayar 29'du; artık **35** (Android 17'ye kadar uyarısız). `MainActivity` da Android 15+'ta ekranın kenardan
+kenara çizilmesine göre uyarlandı (klavye ve çentik için boşluk).
+
+**Bedeli:** Hedef 30 ve üstü olunca Android 11+ şunları **şart koşar**
+([kaynak](https://developer.android.com/about/versions/11/behavior-changes-11)):
+APK **APK Signature Scheme v2 veya üstüyle** imzalı olmalı ve `resources.arsc` sıkıştırılmamış + 4 bayt hizalı olmalı.
+Yoksa APK "Uygulama yüklenemedi" der. AIDE'nin kendi "Signed APK" çıktısının bunu sağlayıp sağlamadığını
+**doğrulayamadık** — sağlamıyorsa aşağıdaki GitHub derlemesini kullan.
+
+### Önerilen: GitHub'da bulutta derle (AIDE gerekmez)
+
+1. Bu değişiklik `main`'e girdikten sonra GitHub → depo → **Actions** → **Android APK** → **Run workflow**.
+   (Telefon tarayıcısında "Run workflow" düğmesi görünmezse tarayıcının **Masaüstü sitesi** seçeneğini aç.)
+2. 5–10 dk sonra bitince depodaki **Releases** sayfasında `v7.0.0-beta.1` ön sürümünün altında
+   `Lotus-AI-7.0-beta.1.apk` görünür; dokunup indir ve kur. (Aynı dosya, Actions çalıştırmasının altında
+   **Artifacts** bölümünde zip olarak da durur.)
+3. İş akışı APK'yı kendisi doğrular (imza v2/v3, hedef 35, `resources.arsc`, hizalama); biri tutmazsa
+   yayın yapmadan hata verir.
+
+**İmza anahtarı:** Depoya `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
+`ANDROID_KEY_PASSWORD` adlı *Secrets* eklenirse (Settings → Secrets and variables → Actions) hep o **kalıcı**
+anahtar kullanılır ve sürümler birbirinin üstüne güncellenir. Eklenmezse her çalıştırmada **geçici** anahtar üretilir:
+APK yine yüklenir ama bir sonraki derleme farklı imzalı olur, bu yüzden güncellemeden önce eskisini kaldırman gerekir
+(giriş yapmadan sadece cihazda duran sohbetler ve indirilen yerel model silinir; Supabase hesabındakiler silinmez).
+Aynı anahtarla imzalanmamış bir APK, eskisinin üstüne **kurulamaz** — AIDE'nin keystore'u ile GitHub'daki farklıdır.
+
+Kullanılan dosyalar: `.github/workflows/android-apk.yml` ve `tools/android-ci/` (AIDE projesiyle aynı kaynak kodu, modern
+Gradle ayarlarıyla derler; `android/` klasörüne dokunmaz).
+
+### AIDE ile denemek istersen
+
+`android/app/build.gradle` → `targetSdkVersion 35` zaten ayarlı. AIDE'de Signed APK üret ve kur:
+yüklenirse sorun yok. "Uygulama yüklenemedi" derse sebep yukarıdaki imza/hizalama şartıdır; çözüm GitHub derlemesi,
+ya da (APK'yı yalnızca kendi telefonunda denemek için) `targetSdkVersion`'ı geçici olarak 29 yapmak — uyarı geri gelir
+ama APK yüklenir.
+
 ## Nasıl açılır
 
 1. Bu klasörün tamamını telefonuna aktar (zip'i aç).
@@ -99,15 +139,16 @@ sağlayıcı için kendi kişisel API anahtarını gir (proxy hiç gerekmez).
   hız kullanılır.
 - **Modeli APK'ya gömmek**: `tools/fetch-local-ai.sh --with-model --android` (bash + npm gerekir; Termux'ta `pkg install nodejs curl`).
   APK yaklaşık 0,5 GB büyür; AIDE'de derleme uzun sürebilir ve bellek isteyebilir — gömmeden de çalışır.
-- Bu proje **imzasız (unsigned) debug APK** üretir — sadece kendi
-  cihazına kurmak için yeterli. Play Store'a yüklemek istersen ayrı bir
-  imzalama (keystore) adımı gerekir, bu pakette yok.
+- Gradle'ın kendi çıktısı imzasızdır; imzalı APK'yı AIDE'nin "Signed APK" menüsü ya da
+  GitHub'daki "Android APK" iş akışı (yukarıda) üretir. Play Store'a yüklemek ayrı bir iştir
+  (kalıcı keystore, `.aab`, mağaza kaydı) ve bu pakette yok.
 
 ## Sürüm notu
 
 `build.gradle` bilerek eski/tutucu sürümler kullanıyor (Android Gradle eklentisi 4.0.1 + Gradle 6.1.1,
-`compileSdkVersion 29`) — AIDE'nin yerleşik (offline) araç zinciri genelde en yeni sürümden çok bu aralıkla
-daha sorunsuz çalışıyor. Daha yeni bir AIDE sürümün varsa ve farklı bir sürüm istiyorsa, hem `build.gradle`
+`compileSdkVersion 29`; yalnızca `targetSdkVersion` 35) — AIDE'nin yerleşik (offline) araç zinciri genelde en yeni
+sürümden çok bu aralıkla daha sorunsuz çalışıyor. `MainActivity` bu yüzden yalnızca `android.jar` 29'da bulunan API'leri
+kullanır; GitHub derlemesi (`tools/android-ci`) ise aynı kodu `compileSdk 35` ile derler. Daha yeni bir AIDE sürümün varsa ve farklı bir sürüm istiyorsa, hem `build.gradle`
 hem `gradle/wrapper/gradle-wrapper.properties` dosyalarını birlikte güncelle.
 
 ## Not: eski sürümden güncelleme

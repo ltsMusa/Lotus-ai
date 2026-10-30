@@ -2,6 +2,7 @@ package com.lotusai.app;
 
 import android.Manifest;
 import android.app.ActivityManager;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -11,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
@@ -23,6 +25,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 import android.app.Activity;
 
 import java.io.ByteArrayInputStream;
@@ -102,7 +105,16 @@ public class MainActivity extends Activity {
         );
 
         webView = new WebView(this);
-        setContentView(webView);
+
+        // The WebView sits in a plain FrameLayout so that, where Android no longer
+        // makes room for the system bars / keyboard itself (see below), the room can
+        // be given back as padding of this one view.
+        FrameLayout root = new FrameLayout(this);
+        root.addView(webView, new FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        setContentView(root);
+
+        applyEdgeToEdgeInsets(root);
 
         configureWebView();
 
@@ -151,7 +163,7 @@ public class MainActivity extends Activity {
                 }
 
                 if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) {
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                    openExternal(url);
                     return true;
                 }
 
@@ -180,7 +192,7 @@ public class MainActivity extends Activity {
                 String url = result != null ? result.getExtra() : null;
 
                 if (url != null) {
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                    openExternal(url);
                 }
 
                 return false;
@@ -226,6 +238,50 @@ public class MainActivity extends Activity {
                 return true;
             }
         });
+    }
+
+    // ------------------------------------------------------
+    // EXTERNAL LINKS + EDGE-TO-EDGE (target SDK 35)
+    // ------------------------------------------------------
+
+    private void openExternal(String url) {
+
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+        } catch (ActivityNotFoundException ignored) {
+            // No browser installed — nothing sensible to do.
+        }
+    }
+
+    /**
+     * Apps that target Android 15 (API 35) and run on Android 15+ are always drawn
+     * edge-to-edge: the system no longer shrinks the window for the status bar,
+     * display cutout or on-screen keyboard, so the chat input would end up under
+     * the keyboard. There the room is handed back here as padding. On older
+     * Android versions or older targets the system already does this, so nothing
+     * is changed (that is also why this only runs for target >= 35 on API >= 35).
+     */
+    private void applyEdgeToEdgeInsets(FrameLayout root) {
+
+        if (Build.VERSION.SDK_INT < 35 || getApplicationInfo().targetSdkVersion < 35) return;
+
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
+        // getSystemWindowInset*() = status/navigation bars + display cutout + keyboard.
+        // (Deprecated since API 30 but still correct, and it compiles against any android.jar.)
+        root.setOnApplyWindowInsetsListener((view, insets) -> {
+
+            view.setPadding(
+                insets.getSystemWindowInsetLeft(),
+                insets.getSystemWindowInsetTop(),
+                insets.getSystemWindowInsetRight(),
+                insets.getSystemWindowInsetBottom()
+            );
+
+            return insets.consumeSystemWindowInsets();
+        });
+
+        root.requestApplyInsets();
     }
 
     // ------------------------------------------------------

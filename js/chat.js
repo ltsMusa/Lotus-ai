@@ -23,6 +23,7 @@ import { generateImage } from "./imageGen.js";
 import { escapeHtml, stripThinking, icon } from "./utils.js";
 import { copyText } from "./clipboard.js";
 import { showToast } from "./toast.js";
+import Notify from "./notify.js";
 import { renderMarkdown, bindCodeCopyButtons } from "./markdown.js";
 
 const GROQ_CONSOLE_URL = "https://console.groq.com/keys";
@@ -255,9 +256,22 @@ class ChatManager {
     // GENERATING STATE (send/stop button swap)
     // ------------------------------------------------------
 
-    setGenerating(isGenerating) {
+    setGenerating(isGenerating, reason = "reply") {
 
         this.isGenerating = isGenerating;
+
+        // Android: keep the app alive (ongoing notification) while an answer is
+        // being made, so leaving the app does not cut it off. No-op elsewhere.
+        this.releaseKeepAlive?.();
+
+        this.releaseKeepAlive = null;
+
+        if (isGenerating) {
+
+            Notify.askPermissionOnce();
+
+            this.releaseKeepAlive = Notify.keepAlive(reason);
+        }
 
         this.sendButton.classList.toggle("hidden", isGenerating);
         this.stopButton?.classList.toggle("hidden", !isGenerating);
@@ -483,7 +497,7 @@ class ChatManager {
 
         this.currentController = controller;
 
-        this.setGenerating(true);
+        this.setGenerating(true, "image");
         this.showTyping("Görsel oluşturuluyor...");
 
         try {
@@ -499,6 +513,8 @@ class ChatManager {
 
             this.addAIMessage(`![${prompt.replace(/[[\]]/g, "")}](${url})`, { speak: false });
 
+            Notify.replyReady({ image: true, text: prompt });
+
         } catch (error) {
 
             if (myId !== this.generationId) return;
@@ -509,6 +525,8 @@ class ChatManager {
             if (error.code === "ABORTED") return;
 
             this.addAIMessage(error.message, { isError: true });
+
+            Notify.notice("Görsel oluşturulamadı", String(error.message).slice(0, 140));
 
         } finally {
 
@@ -1317,6 +1335,8 @@ class ChatManager {
 
                 this.addAIMessage(result.text, { isError: true });
 
+                Notify.notice("Yanıt alınamadı", String(result.text ?? "").slice(0, 140));
+
                 return;
             }
 
@@ -1328,6 +1348,9 @@ class ChatManager {
 
                 this.addAIMessage(result.text, { searchProvider, route: result.route });
             }
+
+            // Only shows when the app is not on screen (see notifyPolicy.js).
+            Notify.replyReady({ text: result.text });
 
         } catch (error) {
 

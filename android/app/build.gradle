@@ -19,7 +19,7 @@ android {
         // Acil durumda burayı geçici olarak 29 yapabilirsin (uyarı geri gelir ama AIDE APK'sı yüklenir).
         targetSdkVersion 35
 
-        versionCode 72
+        versionCode 73
         versionName "7.0-beta.1"
     }
 

@@ -120,8 +120,9 @@ test("workflow builds the CI project and checks what Android 11+ requires", { sk
 test("MainActivity: external links are guarded, edge-to-edge insets only where enforced", { skip: !hasAndroid }, async () => {
     const java = await read("android/app/src/main/java/com/lotusai/app/MainActivity.java");
 
-    // The only raw ACTION_VIEW start is inside openExternal(), which catches a missing browser.
-    assert.equal((java.match(/new Intent\(Intent\.ACTION_VIEW/g) || []).length, 1);
+    // ACTION_VIEW is started in exactly two places, both guarded against a missing browser:
+    // openExternal() (links the page asks for) and openAuthUrl() (Google sign-in, Supabase address only).
+    assert.equal((java.match(/new Intent\(Intent\.ACTION_VIEW/g) || []).length, 2);
     assert.match(java, /private void openExternal\(String url\)[\s\S]*?catch \(ActivityNotFoundException/);
     assert.equal((java.match(/openExternal\(url\)/g) || []).length, 2);
 
@@ -132,4 +133,62 @@ test("MainActivity: external links are guarded, edge-to-edge insets only where e
 
     // Only APIs that exist in the old compileSdk 29 android.jar (AIDE) — newer ones by name/number.
     assert.doesNotMatch(java, /VANILLA_ICE_CREAM|WindowInsetsCompat|WindowInsets\.Type|OnBackInvokedCallback/);
+});
+
+test("every LotusNative method the page calls exists in MainActivity, marked @JavascriptInterface", { skip: !hasAndroid }, async () => {
+    const java = await read("android/app/src/main/java/com/lotusai/app/MainActivity.java");
+
+    const used = new Set();
+
+    for (const file of await walk("js")) {
+        // nativeBridge.js only documents the helpers (hasNative("method") in a comment).
+        if (!file.endsWith(".js") || file.endsWith("nativeBridge.js")) continue;
+
+        const source = await read(file);
+
+        for (const match of source.matchAll(/(?:callNative|hasNative)\(\s*"(\w+)"/g)) used.add(match[1]);
+    }
+
+    assert.ok(used.size >= 7, `expected the page to use the bridge, found ${[...used]}`);
+
+    for (const name of used) {
+        assert.match(
+            java,
+            new RegExp(`@JavascriptInterface\\s+public\\s+\\w+\\s+${name}\\(`),
+            `LotusNative.${name} is called by the page but missing (or not annotated) in MainActivity`
+        );
+    }
+});
+
+test("manifest: sign-in return link, foreground service, permissions", { skip: !hasAndroid }, async () => {
+    const manifest = await read("android/app/src/main/AndroidManifest.xml");
+
+    // Google sign-in comes back as lotusai://auth?code=…
+    assert.match(manifest, /<data android:scheme="lotusai" android:host="auth" \/>/);
+    assert.match(manifest, /android\.intent\.category\.BROWSABLE/);
+    // One running copy, so the browser returns to the app the user left.
+    assert.match(manifest, /android:launchMode="singleTask"/);
+
+    assert.match(manifest, /<service[\s\S]*?android:name="\.LotusService"[\s\S]*?android:foregroundServiceType="dataSync"/);
+    assert.match(manifest, /android:exported="false"/);
+
+    for (const permission of ["POST_NOTIFICATIONS", "FOREGROUND_SERVICE", "FOREGROUND_SERVICE_DATA_SYNC"]) {
+        assert.ok(manifest.includes(`android.permission.${permission}"`), permission);
+    }
+
+    // The redirect the page asks Supabase for must be the one the manifest catches.
+    const { NATIVE_AUTH_REDIRECT } = await import("../js/nativeAuth.js");
+    assert.equal(NATIVE_AUTH_REDIRECT, "lotusai://auth");
+});
+
+test("native code stays within what the old compileSdk 29 / AIDE android.jar knows", { skip: !hasAndroid }, async () => {
+    for (const file of ["MainActivity", "LotusService", "Notifier"]) {
+        const java = await read(`android/app/src/main/java/com/lotusai/app/${file}.java`);
+
+        // Constants / classes added after API 29 would not compile in AIDE.
+        assert.doesNotMatch(java, /Manifest\.permission\.POST_NOTIFICATIONS|FOREGROUND_SERVICE_TYPE_SPECIAL_USE|ForegroundServiceStartNotAllowedException|WindowInsetsCompat|androidx\./, file);
+    }
+
+    // The notification icon is a resource of the project, not a system one.
+    assert.ok(existsSync(join(root, "android/app/src/main/res/drawable/ic_stat_lotus.xml")));
 });

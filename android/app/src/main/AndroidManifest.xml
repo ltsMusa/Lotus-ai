@@ -9,6 +9,13 @@
     <!-- Sesle yazma (js/speech.js, Web Speech API) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <!-- Bildirimler (Android 13+ çalışma anında sorar) ve arka planda çalışma:
+         yanıt hazırlanırken / model indirilirken LotusService sürekli bir bildirimle
+         uygulamayı canlı tutar (js/notify.js). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -23,12 +30,28 @@
             android:name=".MainActivity"
             android:label="Lotus AI"
             android:configChanges="orientation|screenSize|keyboardHidden|keyboard|screenLayout|smallestScreenSize"
+            android:launchMode="singleTask"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- Google ile giriş: tarayıcı girişten sonra lotusai://auth?code=... ile uygulamaya döner
+                 (MainActivity.onNewIntent). Bu adres Supabase → Authentication → URL Configuration →
+                 Redirect URLs listesinde de izinli olmalı. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="lotusai" android:host="auth" />
+            </intent-filter>
         </activity>
+
+        <service
+            android:name=".LotusService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
 
     </application>
 

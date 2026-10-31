@@ -21,6 +21,8 @@ import { showToast, showConfirm } from "./toast.js";
 import { icon } from "./utils.js";
 import { renderLocalSettings, bindLocalSettings } from "./settingsLocal.js";
 import { THEMES } from "./themeList.js";
+import Notify from "./notify.js";
+import { hasNative } from "./nativeBridge.js";
 import {
     PERSONALIZATION_LIMITS,
     STYLE_OPTIONS,
@@ -400,9 +402,116 @@ function renderAboutPanel() {
     `);
 }
 
+
+const PERMISSION_TEXT = {
+    granted: "Bildirim izni verildi.",
+    denied: "Bildirim izni verilmedi. Telefonun Ayarlar → Uygulamalar → Lotus AI → Bildirimler bölümünden açabilirsin.",
+    default: "Henüz bildirim izni istenmedi. “İzin ver” düğmesine dokun.",
+    unsupported: "Bu tarayıcı bildirimleri desteklemiyor."
+};
+
+function renderNotificationsPanel() {
+
+    const n = config.notifications;
+
+    const native = hasNative("keepAlive");
+
+    return panelShell("Bildirimler", `
+        ${toggleRow("settings-notify-enabled", "Bildirimleri aç", n.enabled)}
+        ${toggleRow("settings-notify-reply", "Yanıt veya görsel hazır olunca haber ver", n.reply)}
+        ${toggleRow("settings-notify-download", "Lotus Mini indirme durumu", n.download)}
+        ${toggleRow("settings-notify-alert", "Uyarılar (limit doldu, sağlayıcı değişti, hata)", n.alert)}
+        ${native ? toggleRow("settings-notify-background", "Arka planda çalışmaya izin ver", n.background) : ""}
+
+        <p class="settings-note" id="settings-notify-permission">${PERMISSION_TEXT[Notify.permissionState()] ?? ""}</p>
+
+        <button id="settings-notify-permission-button" class="settings-inline-button" type="button">İzin ver</button>
+        <button id="settings-notify-test-button" class="settings-inline-button" type="button">Test bildirimi gönder</button>
+
+        <p class="settings-note">
+            Bildirimler yalnızca uygulama ekranda değilken gösterilir; yanıt zaten karşındayken rahatsız etmez.
+            ${native
+                ? `“Arka planda çalışma” açıkken yanıt hazırlanırken veya model indirilirken bildirim çubuğunda
+                   “Lotus çalışıyor” yazan sürekli bir bildirim görünür: Android, uygulamayı bu bildirim olmadan arka planda
+                   canlı tutmaz. Pil tasarrufu ya da bazı telefon üreticilerinin “uygulama temizleyicileri” işi yine de
+                   durdurabilir; ayarlardan Lotus AI için pil kısıtlamasını kapatman yardımcı olur.`
+                : "Tarayıcı sekmesi kapalıyken bildirim gelmez; Android uygulamasında arka plan desteği de vardır."}
+        </p>
+    `);
+}
+
+function bindNotificationsPanel(container) {
+
+    const $ = id => container.querySelector(`#${id}`);
+
+    const wire = (id, key) => {
+
+        $(id)?.addEventListener("change", async event => {
+
+            config.setNotifications({ [key]: event.target.checked });
+
+            // Turning notifications on is the natural moment to ask for permission.
+            if (key === "enabled" && event.target.checked && Notify.permissionState() === "default") {
+
+                await Notify.requestPermission();
+
+                refreshPermission();
+            }
+        });
+    };
+
+    wire("settings-notify-enabled", "enabled");
+    wire("settings-notify-reply", "reply");
+    wire("settings-notify-download", "download");
+    wire("settings-notify-alert", "alert");
+    wire("settings-notify-background", "background");
+
+    const refreshPermission = () => {
+
+        const note = $("settings-notify-permission");
+
+        if (note) note.textContent = PERMISSION_TEXT[Notify.permissionState()] ?? "";
+    };
+
+    // The Android permission dialog answers after this code has moved on.
+    const onPermission = () => {
+
+        if (!container.isConnected) {
+
+            window.removeEventListener("lotus:notification-permission", onPermission);
+
+            return;
+        }
+
+        refreshPermission();
+    };
+
+    window.addEventListener("lotus:notification-permission", onPermission);
+
+    $("settings-notify-permission-button")?.addEventListener("click", async () => {
+
+        await Notify.requestPermission();
+
+        refreshPermission();
+    });
+
+    $("settings-notify-test-button")?.addEventListener("click", async () => {
+
+        const shown = await Notify.sendTest();
+
+        refreshPermission();
+
+        showToast(
+            shown ? "Test bildirimi gönderildi." : "Bildirim gösterilemedi — izni ve “Bildirimleri aç” anahtarını kontrol et.",
+            shown ? "success" : "error"
+        );
+    });
+}
+
 const PANEL_RENDERERS = {
     ai: renderAIPanel,
     voice: renderVoicePanel,
+    notifications: renderNotificationsPanel,
     chat: renderChatPanel,
     personalization: renderPersonalizationPanel,
     about: renderAboutPanel
@@ -667,6 +776,11 @@ function bindPanelEvents(container, key) {
     if (key === "personalization") {
 
         bindPersonalizationPanel(container);
+    }
+
+    if (key === "notifications") {
+
+        bindNotificationsPanel(container);
     }
 
     if (key === "voice") {

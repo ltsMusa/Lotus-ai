@@ -57,6 +57,10 @@ const APP_SHELL = [
     "./js/localPolicy.js",
     "./js/markdown.js",
     "./js/memory.js",
+    "./js/nativeAuth.js",
+    "./js/nativeBridge.js",
+    "./js/notify.js",
+    "./js/notifyPolicy.js",
     "./js/personalization.js",
     "./js/prompts/systemPrompt.js",
     "./js/providers/gemini.js",
@@ -210,6 +214,24 @@ async function staleWhileRevalidate(request) {
 
     return cached || refresh;
 }
+
+// A tapped notification brings the app (or the already open tab) to the front.
+self.addEventListener("notificationclick", event => {
+
+    event.notification.close();
+
+    event.waitUntil((async () => {
+
+        const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+
+        for (const client of windows) {
+
+            if ("focus" in client) return client.focus();
+        }
+
+        return self.clients.openWindow("./");
+    })());
+});
 
 self.addEventListener("fetch", event => {
 

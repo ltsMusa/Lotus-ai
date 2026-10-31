@@ -21,6 +21,7 @@ import { showToast } from "./toast.js";
 import LocalAI from "./providers/local.js";
 import DeviceMonitor from "./deviceMonitor.js";
 import { getLocalModel } from "./localModels.js";
+import Notify from "./notify.js";
 
 // The same notice is never shown twice within this window.
 const REPEAT_WINDOW_MS = 25 * 1000;
@@ -36,6 +37,9 @@ function notify(key, message, type = "info", duration = 5200) {
     recent.set(key, now);
 
     showToast(message, type, duration);
+
+    // Same notice as a system notification — shown only while the app is not on screen.
+    Notify.notice("Lotus AI", message);
 }
 
 const providerName = route => route?.label || route?.name || "Sağlayıcı";
@@ -133,12 +137,58 @@ function onLocalState(event) {
     }
 }
 
+// ---------- Lotus Mini download: keep the app alive + progress + "ready" ----------
+
+let releaseDownload = null;
+let downloadingId = null;
+
+function onDownloadState(event) {
+
+    const detail = event.detail || {};
+
+    const downloading = detail.downloading || null;
+
+    if (downloading) {
+
+        if (!releaseDownload) {
+
+            releaseDownload = Notify.keepAlive("download");
+
+            downloadingId = downloading.id;
+        }
+
+        Notify.downloadProgress({
+            name: getLocalModel(downloading.id)?.name,
+            loaded: downloading.loaded,
+            total: downloading.total
+        });
+
+        return;
+    }
+
+    if (!releaseDownload) return;
+
+    releaseDownload();
+
+    releaseDownload = null;
+
+    const id = downloadingId;
+
+    downloadingId = null;
+
+    Notify.downloadFinished({
+        name: getLocalModel(id)?.name,
+        ok: Boolean(id && (detail.installed || []).includes(id))
+    });
+}
+
 export function initAutoSwitch() {
 
     DeviceMonitor.init();
 
     window.addEventListener("lotus:route-changed", onRouteChanged);
     window.addEventListener("lotus:local-state", onLocalState);
+    window.addEventListener("lotus:local-state", onDownloadState);
 
     // The list of installed models comes from the small hint LocalAI keeps in
     // localStorage; the engine itself is only loaded when it is needed (the

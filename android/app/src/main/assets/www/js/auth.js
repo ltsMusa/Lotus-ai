@@ -13,7 +13,18 @@
 import { showToast } from "./toast.js";
 import { isPackagedApp } from "./env.js";
 import config from "./config.js";
-import { supabase, ensureSupabase, forgetLocalSession } from "./supabaseClient.js";
+import { supabase, ensureSupabase, forgetLocalSession, createAuxClient } from "./supabaseClient.js";
+import { hasNative, callNative } from "./nativeBridge.js";
+import {
+    NATIVE_AUTH_REDIRECT,
+    NATIVE_AUTH_STORAGE_KEY,
+    parseNativeAuthUrl,
+    nativeAuthErrorMessage,
+    markNativeAuthPending,
+    isNativeAuthPending,
+    clearNativeAuthPending,
+    isNativeAuthStorageKey
+} from "./nativeAuth.js";
 import {
     describeAuthError,
     normalizeEmail,
@@ -921,24 +932,9 @@ const Auth = {
 
     async loginWithGoogle() {
 
-        // Google OAuth redirects back to a real http(s) URL — that's
-        // fundamentally incompatible with a packaged app loaded from
-        // file:///android_asset/... (no such URL exists to redirect
-        // back to, and Google's OAuth console won't allow file:// as
-        // a redirect URI anyway). Rather than attempting a redirect
-        // that can only fail/hang, fail fast with an honest message.
-        // Making Google sign-in work in the packaged app for real
-        // needs either a native Google Sign-In SDK integration or a
-        // custom URL scheme + Android intent-filter deep link — both
-        // beyond a JS-only fix.
-        if (isPackagedApp()) {
-
-            return {
-                success: false,
-                error: "Google ile giriş, uygulama içinde (paketlenmiş halde) henüz desteklenmiyor. " +
-                    "Lütfen web sürümünden giriş yap, ya da e-posta/şifre ile devam et."
-            };
-        }
+        // Inside the Android app Google refuses to run in the WebView, so the
+        // sign-in happens in the phone's browser and comes back by link.
+        if (isPackagedApp()) return this.loginWithGoogleInApp();
 
         const offline = await this.ensureConnection();
 
@@ -1004,6 +1000,171 @@ const Auth = {
             data
 
         };
+    },
+
+
+    // ------------------------------------------------------
+    // GOOGLE LOGIN INSIDE THE ANDROID APP
+    // ------------------------------------------------------
+    // 1. A helper client (PKCE) builds the Google sign-in address.
+    // 2. MainActivity opens it in the phone's browser.
+    // 3. Google → Supabase → lotusai://auth?code=…  brings the user back.
+    // 4. MainActivity hands that link to completeNativeLogin(), which swaps
+    //    the code for a session and gives it to the real client.
+    // The PKCE verifier lives only in this app, so a link fired by some other
+    // app or web page cannot sign the user in as somebody else.
+
+    async loginWithGoogleInApp() {
+
+        if (!hasNative("openAuthUrl")) {
+
+            return {
+                success: false,
+                error: "Google ile giriş için uygulamanın yeni sürümü gerekiyor (güncel APK'yı kur). " +
+                    "Şimdilik e-posta ve şifre ile devam edebilirsin."
+            };
+        }
+
+        const offline = await this.ensureConnection();
+
+        if (offline) return { success: false, kind: offline.kind, error: offline.message };
+
+        const helper = await createAuxClient({ storageKey: NATIVE_AUTH_STORAGE_KEY, flowType: "pkce" });
+
+        if (!helper) return { success: false, error: "Sunucuya (Supabase) ulaşılamıyor. İnterneti kontrol et." };
+
+        const { data, error } = await helper.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+                redirectTo: NATIVE_AUTH_REDIRECT,
+                skipBrowserRedirect: true,
+                queryParams: { prompt: "select_account" }
+            }
+        });
+
+        if (error || !data?.url) {
+
+            return { success: false, error: describeAuthError(error ?? { message: "Google adresi alınamadı" }).message };
+        }
+
+        markNativeAuthPending();
+
+        const opened = callNative("openAuthUrl", data.url);
+
+        if (opened === false) {
+
+            clearNativeAuthPending();
+
+            return { success: false, error: "Tarayıcı açılamadı. Telefonda bir tarayıcı olduğundan emin ol." };
+        }
+
+        return {
+            success: true,
+            pending: true,
+            message: "Tarayıcı açıldı. Google'da giriş yapınca otomatik olarak buraya döneceksin."
+        };
+    },
+
+    /** Called with the lotusai://auth?… link the browser sent the user back with. */
+    async completeNativeLogin(url) {
+
+        if (this.nativeLoginBusy) return;
+
+        const parsed = parseNativeAuthUrl(url);
+
+        if (!parsed.valid) return;
+
+        if (!isNativeAuthPending()) {
+
+            // Not started by this app (or too long ago): a stray link must not sign anybody in.
+            notify("Beklenmeyen bir giriş bağlantısı yok sayıldı. Giriş yapmak için Google düğmesine dokun.", "info");
+
+            return;
+        }
+
+        this.nativeLoginBusy = true;
+
+        try {
+
+            clearNativeAuthPending();
+
+            if (parsed.error || !parsed.code) {
+
+                notify(parsed.error ? nativeAuthErrorMessage(parsed) : "Google'dan eksik bir yanıt geldi. Tekrar dene.", "error");
+
+                return;
+            }
+
+            const helper = await createAuxClient({ storageKey: NATIVE_AUTH_STORAGE_KEY, flowType: "pkce" });
+
+            if (!helper) {
+
+                notify("Sunucuya (Supabase) ulaşılamıyor. İnterneti kontrol et ve tekrar dene.", "error");
+
+                return;
+            }
+
+            const { data, error } = await helper.auth.exchangeCodeForSession(parsed.code);
+
+            // Never leave a second copy of the session (or the verifier) behind.
+            this.forgetNativeAuthStorage();
+
+            if (error || !data?.session) {
+
+                notify(describeAuthError(error ?? { message: "Oturum alınamadı" }).message, "error");
+
+                return;
+            }
+
+            sessionStorage.setItem("lotus_google_login_pending", "true");
+
+            const { error: sessionError } = await supabase.auth.setSession({
+                access_token: data.session.access_token,
+                refresh_token: data.session.refresh_token
+            });
+
+            if (sessionError) {
+
+                sessionStorage.removeItem("lotus_google_login_pending");
+
+                notify(describeAuthError(sessionError).message, "error");
+
+                return;
+            }
+
+            this.setAuthMessage("");
+
+            this.closeAuthModal();
+
+            notify("Google ile giriş yapıldı.", "success");
+
+        } finally {
+
+            this.nativeLoginBusy = false;
+        }
+    },
+
+    forgetNativeAuthStorage() {
+
+        try {
+
+            for (const key of Object.keys(localStorage)) {
+
+                if (isNativeAuthStorageKey(key)) localStorage.removeItem(key);
+            }
+
+        } catch {
+
+            // storage unavailable
+        }
+    },
+
+    /** The app sends the link as an event (and can be asked for it on start / resume). */
+    pollNativeAuth() {
+
+        const url = callNative("takePendingAuthUrl");
+
+        if (url) this.completeNativeLogin(String(url));
     },
 
 
@@ -1812,6 +1973,10 @@ document.addEventListener(
                     ) {
 
                         Auth.setAuthMessage(result.error);
+
+                    } else if (result.pending) {
+
+                        Auth.setAuthMessage(result.message, "info");
                     }
 
                 } catch (error) {
@@ -2192,6 +2357,23 @@ document.addEventListener(
         await Auth.init();
 
         handleAuthRedirect();
+
+        // Google sign-in that finished in the phone's browser (Android app only).
+        window.addEventListener("lotus-native-auth", () => Auth.pollNativeAuth());
+
+        window.addEventListener("lotus-native-auth-failed", () => {
+
+            clearNativeAuthPending();
+
+            Auth.setAuthMessage("Tarayıcı açılamadı. Telefonda bir tarayıcı olduğundan emin ol.");
+        });
+
+        document.addEventListener("visibilitychange", () => {
+
+            if (!document.hidden) Auth.pollNativeAuth();
+        });
+
+        Auth.pollNativeAuth();
 
 
         Auth.updateAccountUI();

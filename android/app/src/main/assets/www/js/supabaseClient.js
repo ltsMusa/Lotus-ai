@@ -374,3 +374,27 @@ if (typeof window !== "undefined") {
         if (!realClient) ensureSupabase();
     });
 }
+
+/**
+ * A second, separate client — used only for the Google sign-in that runs in the
+ * phone's browser (see nativeAuth.js). It has its own storageKey, so it never
+ * touches the real session, and it never refreshes tokens on its own.
+ * Resolves null when the library is not available.
+ */
+export async function createAuxClient(authOptions = {}) {
+
+    if (!(await ensureSupabase())) return null;
+
+    try {
+
+        return window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+            auth: { autoRefreshToken: false, persistSession: true, detectSessionInUrl: false, ...authOptions }
+        });
+
+    } catch (error) {
+
+        console.warn("⚠️ Yardımcı Supabase istemcisi oluşturulamadı:", error);
+
+        return null;
+    }
+}

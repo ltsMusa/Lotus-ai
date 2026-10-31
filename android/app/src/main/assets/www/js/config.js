@@ -23,6 +23,7 @@
 import { isPackagedApp } from "./env.js";
 import { DEFAULT_PERSONALIZATION, normalizePersonalization } from "./personalization.js";
 import { DEFAULT_THEME, normalizeTheme } from "./themeList.js";
+import { DEFAULT_NOTIFICATIONS, normalizeNotifications } from "./notifyPolicy.js";
 
 const STORAGE_KEY = "lotus_config_v1";
 
@@ -95,6 +96,10 @@ const DEFAULTS = {
     // (js/personalization.js, Settings → Kişiselleştirme). Separate from
     // Hafıza, which holds the short facts Lotus collects.
     personalization: { ...DEFAULT_PERSONALIZATION },
+
+    // Bildirimler ve arka planda çalışma (js/notifyPolicy.js, js/notify.js,
+    // Settings → Bildirimler).
+    notifications: { ...DEFAULT_NOTIFICATIONS },
 
     // "Her mesajda otomatik web araması yapsın" — on by default so
     // answers stay grounded in current info instead of the model's
@@ -176,6 +181,7 @@ const config = deepMerge(DEFAULTS, loadStoredConfig());
 // A hand-edited or damaged saved value must never reach the prompt.
 config.personalization = normalizePersonalization(config.personalization);
 config.theme = normalizeTheme(config.theme);
+config.notifications = normalizeNotifications(config.notifications);
 
 function migrateRetiredModels(target) {
 
@@ -354,6 +360,24 @@ config.setPersonalization = function (updates = {}) {
 config.resetPersonalization = function () {
 
     return this.setPersonalization({ ...DEFAULT_PERSONALIZATION });
+};
+
+config.setNotifications = function (updates = {}) {
+
+    this.notifications = normalizeNotifications({ ...this.notifications, ...updates });
+
+    persist();
+
+    try {
+
+        window.dispatchEvent(new CustomEvent("lotus:notifications-changed", { detail: this.notifications }));
+
+    } catch {
+
+        // no window (tests)
+    }
+
+    return this.notifications;
 };
 
 config.setMemoryEnabled = function (enabled) {

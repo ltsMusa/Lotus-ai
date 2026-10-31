@@ -2,7 +2,10 @@ package com.lotusai.app;
 
 import android.Manifest;
 import android.app.ActivityManager;
+import android.app.NotificationManager;
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -11,6 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.provider.Settings;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -64,6 +68,17 @@ import java.util.Map;
  * temperature/level and power-saver mode. js/deviceMonitor.js uses them
  * to pick a smaller local model when the phone gets hot.
  *
+ * GOOGLE SIGN-IN: Google blocks OAuth inside a WebView, so the page asks
+ * LotusNative.openAuthUrl() to open the sign-in in the phone's browser; the
+ * browser comes back through the lotusai://auth link declared in the manifest
+ * (onNewIntent below), and the page picks the link up with
+ * LotusNative.takePendingAuthUrl(). See js/nativeAuth.js.
+ *
+ * BACKGROUND + NOTIFICATIONS: LotusNative.keepAlive() runs LotusService (an
+ * ongoing notification that keeps the process alive while an answer or a model
+ * download is in progress); LotusNative.notify() posts reply / download / alert
+ * notifications. See js/notify.js.
+ *
  * Honesty notes (read before relying on these):
  * - Sesle yazma (js/speech.js, Web Speech API) needs Google's
  *   online speech recognition service. It sometimes doesn't
@@ -87,6 +102,17 @@ public class MainActivity extends Activity {
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private static final int FILE_CHOOSER_RESULT_CODE = 300;
+    private static final int REQUEST_POST_NOTIFICATIONS = 201;
+
+    // Only Supabase's own sign-in address may be opened in the browser by the page.
+    private static final String AUTH_HOST_SUFFIX = ".supabase.co";
+    private static final String AUTH_PATH_PREFIX = "/auth/v1/authorize";
+
+    // True between onStart and onStop = the app is on screen.
+    private volatile boolean inForeground = false;
+
+    // The lotusai://auth?... link the browser returned the user with, until the page takes it.
+    private volatile String pendingAuthUrl = null;
 
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
@@ -123,7 +149,74 @@ public class MainActivity extends Activity {
 
         webView.loadUrl(APP_URL);
 
+        // Started by the sign-in link (the app had been closed while the browser was open).
+        captureAuthLink(getIntent());
+
         requestMicrophonePermissionIfNeeded();
+    }
+
+    // ------------------------------------------------------
+    // FOREGROUND STATE + RETURN LINKS FROM THE BROWSER
+    // ------------------------------------------------------
+
+    @Override
+    protected void onStart() {
+
+        super.onStart();
+
+        inForeground = true;
+    }
+
+    @Override
+    protected void onStop() {
+
+        inForeground = false;
+
+        super.onStop();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+
+        super.onNewIntent(intent);
+
+        setIntent(intent);
+
+        // Back from the browser (or a notification was tapped).
+        if (captureAuthLink(intent)) dispatchWebEvent("lotus-native-auth");
+    }
+
+    /** Remembers a lotusai://auth link; returns true when the intent carried one. */
+    private boolean captureAuthLink(Intent intent) {
+
+        if (intent == null) return false;
+
+        Uri data = intent.getData();
+
+        if (data == null || !"lotusai".equals(data.getScheme()) || !"auth".equals(data.getHost())) return false;
+
+        String link = data.toString();
+
+        // A real link is a few hundred characters; refuse anything absurd.
+        if (link.length() > 4000) return false;
+
+        pendingAuthUrl = link;
+
+        return true;
+    }
+
+    /** Fires a plain event on window (the name is always one of our own constants). */
+    private void dispatchWebEvent(final String name) {
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                if (webView != null) {
+                    webView.evaluateJavascript("window.dispatchEvent(new Event('" + name + "'))", null);
+                }
+            }
+        });
     }
 
     // ------------------------------------------------------
@@ -392,6 +485,177 @@ public class MainActivity extends Activity {
 
     private class NativeBridge {
 
+        /** Lets the page tell an old APK (fewer methods) from this one. */
+        @JavascriptInterface
+        public int bridgeVersion() {
+
+            return 2;
+        }
+
+        @JavascriptInterface
+        public boolean isForeground() {
+
+            return inForeground;
+        }
+
+        // ---------- Google sign-in in the browser ----------
+
+        /** Opens Supabase's sign-in address in the phone's browser. Only that address is accepted. */
+        @JavascriptInterface
+        public boolean openAuthUrl(String url) {
+
+            final Uri uri;
+
+            try {
+                uri = Uri.parse(url);
+            } catch (Exception e) {
+                return false;
+            }
+
+            String host = uri.getHost();
+            String path = uri.getPath();
+
+            if (!"https".equals(uri.getScheme()) || host == null || !host.endsWith(AUTH_HOST_SUFFIX)
+                || path == null || !path.startsWith(AUTH_PATH_PREFIX)) {
+                return false;
+            }
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                    } catch (ActivityNotFoundException e) {
+                        dispatchWebEvent("lotus-native-auth-failed");
+                    }
+                }
+            });
+
+            return true;
+        }
+
+        /** The returned link, once; an empty string when there is none. */
+        @JavascriptInterface
+        public String takePendingAuthUrl() {
+
+            String link = pendingAuthUrl;
+
+            pendingAuthUrl = null;
+
+            return link == null ? "" : link;
+        }
+
+        // ---------- clipboard (API-key helper) ----------
+
+        /** Current clipboard text — only while the app is on screen (Android 10+ allows nothing else). */
+        @JavascriptInterface
+        public String readClipboard() {
+
+            if (!inForeground) return "";
+
+            try {
+
+                ClipboardManager manager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+
+                if (manager == null || !manager.hasPrimaryClip()) return "";
+
+                ClipData clip = manager.getPrimaryClip();
+
+                if (clip == null || clip.getItemCount() == 0) return "";
+
+                CharSequence text = clip.getItemAt(0).coerceToText(MainActivity.this);
+
+                if (text == null) return "";
+
+                String value = text.toString();
+
+                return value.length() > 500 ? value.substring(0, 500) : value;
+
+            } catch (Exception e) {
+
+                return "";
+            }
+        }
+
+        // ---------- notifications + background ----------
+
+        @JavascriptInterface
+        public boolean notificationsAllowed() {
+
+            return areNotificationsAllowed();
+        }
+
+        /** Android 13+: the permission dialog. If notifications are switched off in system settings: opens those. */
+        @JavascriptInterface
+        public void requestNotificationPermission() {
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    try {
+
+                        if (Build.VERSION.SDK_INT >= 33 && !hasNotificationPermission()) {
+                            requestPermissions(new String[]{ "android.permission.POST_NOTIFICATIONS" }, REQUEST_POST_NOTIFICATIONS);
+                            return;
+                        }
+
+                        if (!areNotificationsAllowed() && Build.VERSION.SDK_INT >= 26) {
+                            Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                            intent.putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+                            startActivity(intent);
+                        }
+
+                    } catch (Exception ignored) {
+                    }
+                }
+            });
+        }
+
+        /** kind: "reply" | "download" | "alert". Returns false when notifications are not allowed. */
+        @JavascriptInterface
+        public boolean notify(String kind, String title, String body, int id) {
+
+            if (!areNotificationsAllowed()) return false;
+
+            try {
+
+                Notifier.post(MainActivity.this, kind, id, clip(title, 80), clip(body, 400));
+
+                return true;
+
+            } catch (Exception e) {
+
+                return false;
+            }
+        }
+
+        /**
+         * on = true: run / refresh the foreground service (ongoing notification) with this text;
+         * percent 0–100 shows a progress bar, negative none. on = false: stop it.
+         */
+        @JavascriptInterface
+        public void keepAlive(final boolean on, final String text, final int percent) {
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    try {
+
+                        if (on) {
+                            LotusService.keepAlive(MainActivity.this, clip(text, 120), percent);
+                        } else {
+                            LotusService.stop(MainActivity.this);
+                        }
+
+                    } catch (Exception ignored) {
+                    }
+                }
+            });
+        }
+
         /**
          * One JSON object, read fresh on every call:
          * { ramMB, cores, thermalStatus, batteryTempC, batteryPct, charging, powerSave }
@@ -481,6 +745,42 @@ public class MainActivity extends Activity {
     }
 
     // ------------------------------------------------------
+    // NOTIFICATION HELPERS
+    // ------------------------------------------------------
+
+    private static String clip(String value, int max) {
+
+        if (value == null) return "";
+
+        return value.length() > max ? value.substring(0, max) : value;
+    }
+
+    private boolean hasNotificationPermission() {
+
+        // Looked up by its text: the constant does not exist in an API 29 android.jar.
+        return Build.VERSION.SDK_INT < 33
+            || checkSelfPermission("android.permission.POST_NOTIFICATIONS") == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean areNotificationsAllowed() {
+
+        try {
+
+            if (!hasNotificationPermission()) return false;
+
+            if (Build.VERSION.SDK_INT < 24) return true;
+
+            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+            return manager == null || manager.areNotificationsEnabled();
+
+        } catch (Exception e) {
+
+            return false;
+        }
+    }
+
+    // ------------------------------------------------------
     // FILE CHOOSER RESULT (js/attachments.js)
     // ------------------------------------------------------
 
@@ -546,6 +846,14 @@ public class MainActivity extends Activity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQUEST_POST_NOTIFICATIONS) {
+
+            // Let the Settings page refresh its "izin verildi / verilmedi" line.
+            dispatchWebEvent("lotus-native-permission");
+
+            return;
+        }
 
         if (requestCode != REQUEST_RECORD_AUDIO_PERMISSION) return;
 

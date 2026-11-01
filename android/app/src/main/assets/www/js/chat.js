@@ -24,9 +24,9 @@ import { escapeHtml, stripThinking, icon } from "./utils.js";
 import { copyText } from "./clipboard.js";
 import { showToast } from "./toast.js";
 import Notify from "./notify.js";
+import { openKeyWizard } from "./keyWizard.js";
 import { renderMarkdown, bindCodeCopyButtons } from "./markdown.js";
 
-const GROQ_CONSOLE_URL = "https://console.groq.com/keys";
 const IMAGE_GEN_PREFIX = "🎨 Görsel oluştur: ";
 
 class ChatManager {
@@ -853,7 +853,7 @@ class ChatManager {
                 <p>${icon("alert")}<span>${escapeHtml(headline)}</span></p>
                 <div class="limit-choices">
                     <button class="message-choice-button primary" data-action="new-key">
-                        ${icon("key")}Yeni Groq API Key al
+                        ${icon("key")}Kendi anahtarını al (Groq / Gemini)
                     </button>
                     <button class="message-choice-button secondary" data-action="local-ollama">
                         ${icon(hasLocal ? "cpu" : "download")}${escapeHtml(localLabel)}
@@ -864,14 +864,6 @@ class ChatManager {
                     <div class="local-progress"><span></span></div>
                     <button class="message-choice-button secondary limit-download-cancel">Vazgeç</button>
                 </div>
-                <div class="limit-key-form hidden">
-                    <p class="settings-note">
-                        Açılan sayfadan ücretsiz bir Groq API key oluşturup buraya yapıştır —
-                        anında kaydedilip kullanılmaya başlanır.
-                    </p>
-                    <input type="password" class="limit-key-input" placeholder="gsk_...">
-                    <button class="message-choice-button primary limit-key-save">Kaydet ve Devam Et</button>
-                </div>
             </div>
         `;
 
@@ -881,35 +873,23 @@ class ChatManager {
 
         const newKeyButton = message.querySelector('[data-action="new-key"]');
         const localButton = message.querySelector('[data-action="local-ollama"]');
-        const keyForm = message.querySelector(".limit-key-form");
-        const keyInput = message.querySelector(".limit-key-input");
-        const keySaveButton = message.querySelector(".limit-key-save");
         const downloadBox = message.querySelector(".limit-download");
         const downloadText = message.querySelector(".limit-download-text");
         const downloadBar = message.querySelector(".local-progress span");
         const downloadCancel = message.querySelector(".limit-download-cancel");
 
+        // The wizard opens the provider's key page, picks the key up from the clipboard,
+        // tries it and saves it; then the message that could not be answered is sent again.
         newKeyButton.addEventListener("click", () => {
 
-            window.open(GROQ_CONSOLE_URL, "_blank", "noopener,noreferrer");
+            openKeyWizard({
+                onDone: () => {
 
-            keyForm.classList.remove("hidden");
+                    message.remove();
 
-            newKeyButton.disabled = true;
-            localButton.disabled = true;
-        });
-
-        keySaveButton.addEventListener("click", () => {
-
-            const key = keyInput.value.trim();
-
-            if (!key) return;
-
-            config.setProviderKey("groq", key);
-
-            message.remove();
-
-            this.retryLastUserMessage();
+                    this.retryLastUserMessage();
+                }
+            });
         });
 
         localButton.addEventListener("click", async () => {

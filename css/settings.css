@@ -2201,3 +2201,328 @@
         transition: none;
     }
 }
+
+/* ==========================================================
+   KEY WIZARD (js/keyWizard.js)
+   ========================================================== */
+
+#key-wizard {
+    z-index: 2300;
+}
+
+.keywiz-content {
+    max-width: 460px;
+}
+
+.keywiz .modal-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    font-size: 25px;
+}
+
+.keywiz .modal-header h2 .ic {
+    flex: none;
+
+    width: 22px;
+    height: 22px;
+
+    color: var(--accent-light);
+}
+
+.keywiz-close {
+    display: grid;
+    place-items: center;
+
+    flex: none;
+
+    width: 40px;
+    height: 40px;
+
+    color: var(--text-2);
+
+    border: 1px solid var(--line);
+    border-radius: 13px;
+
+    background: rgba(255, 255, 255, 0.045);
+
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.keywiz-close .ic {
+    width: 19px;
+    height: 19px;
+}
+
+.keywiz-close:hover {
+    color: var(--text);
+
+    border-color: var(--line-accent);
+
+    background: rgba(var(--accent-rgb), 0.16);
+}
+
+.keywiz-close:active {
+    transform: scale(0.94);
+}
+
+.keywiz-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 14px;
+
+    min-height: 0;
+
+    padding: 18px 20px 22px;
+
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.keywiz-lead {
+    margin: 0;
+
+    color: var(--text);
+
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.keywiz-hint {
+    margin: 0;
+
+    color: var(--text-2);
+
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.keywiz-hint:empty {
+    display: none;
+}
+
+.keywiz-live {
+    position: relative;
+
+    padding-left: 18px;
+}
+
+.keywiz-live::before {
+    content: "";
+
+    position: absolute;
+    top: 0.5em;
+    left: 2px;
+
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: var(--accent-light);
+
+    animation: keywiz-pulse 1.6s ease-in-out infinite;
+}
+
+.keywiz-choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.keywiz-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+
+    padding: 15px 16px;
+
+    color: var(--text);
+
+    text-align: left;
+
+    border: 1px solid var(--line-strong);
+    border-radius: 18px;
+
+    background: rgba(255, 255, 255, 0.05);
+
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.keywiz-card strong {
+    font-size: 18px;
+}
+
+.keywiz-card span {
+    color: var(--text-2);
+
+    font-size: 12.5px;
+    line-height: 1.4;
+}
+
+.keywiz-card:hover,
+.keywiz-card:focus-visible {
+    border-color: var(--line-accent);
+
+    background: rgba(var(--accent-rgb), 0.14);
+}
+
+.keywiz-card:active {
+    transform: scale(0.98);
+}
+
+.keywiz-steps {
+    display: grid;
+    gap: 8px;
+
+    margin: 0;
+    padding-left: 22px;
+
+    color: var(--text-2);
+
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.keywiz-steps li::marker {
+    color: var(--accent-light);
+
+    font-weight: 700;
+}
+
+.keywiz-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.keywiz-actions .message-choice-button {
+    flex: 1 1 140px;
+
+    justify-content: center;
+}
+
+.keywiz-link {
+    align-self: flex-start;
+
+    padding: 8px 2px;
+
+    color: var(--accent-light);
+
+    font-size: 13.5px;
+
+    border: 0;
+
+    background: none;
+
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.keywiz-key {
+    padding: 13px 15px;
+
+    color: var(--text);
+
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+
+    border: 1px dashed var(--line-accent);
+    border-radius: 15px;
+
+    background: rgba(var(--accent-rgb), 0.1);
+
+    overflow-wrap: anywhere;
+}
+
+.keywiz-problem {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+
+    color: var(--danger);
+}
+
+.keywiz-problem .ic {
+    flex: none;
+
+    width: 20px;
+    height: 20px;
+
+    margin-top: 2px;
+}
+
+.keywiz-busy {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.keywiz-spinner {
+    flex: none;
+
+    width: 18px;
+    height: 18px;
+
+    border: 2px solid var(--line-strong);
+    border-top-color: var(--accent-light);
+    border-radius: 50%;
+
+    animation: keywiz-spin 0.8s linear infinite;
+}
+
+.keywiz-done {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    padding: 6px 0 2px;
+
+    text-align: center;
+}
+
+.keywiz-done-icon .ic {
+    width: 56px;
+    height: 56px;
+
+    color: var(--success);
+
+    animation: keywiz-pop 0.5s var(--ease) both;
+}
+
+.keywiz-sync {
+    margin-top: 2px;
+}
+
+@keyframes keywiz-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes keywiz-pulse {
+    0%, 100% { opacity: 0.35; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.15); }
+}
+
+@keyframes keywiz-pop {
+    from { opacity: 0; transform: scale(0.6); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 420px) {
+    .keywiz-choices {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .keywiz-spinner,
+    .keywiz-live::before,
+    .keywiz-done-icon .ic {
+        animation: none;
+    }
+}

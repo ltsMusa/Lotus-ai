@@ -3,8 +3,9 @@
 -- ==========================================================
 -- Run this in the Supabase SQL editor for your project.
 -- Covers memory + chat history (used by js/memory.js and
--- js/storage.js), with Row Level Security so users can only
--- ever read/write their own rows.
+-- js/storage.js) and the optional "keep my API keys in my
+-- account" table (js/keySync.js), with Row Level Security so
+-- users can only ever read/write their own rows.
 --
 -- Safe to run again and again — also on a project that was set up
 -- by hand earlier: tables/indexes use "if not exists", missing
@@ -174,6 +175,50 @@ create policy "memories_delete_own"
 
 
 -- ----------------------------------------------------------
+-- API KEYS (optional: "Anahtarlarımı hesabımda sakla")
+-- ----------------------------------------------------------
+-- A Groq / Gemini key the user chose to keep in their account, so it
+-- shows up by itself after signing in on another phone (js/keySync.js).
+-- One row per user and provider. The key is stored as plain text,
+-- protected by RLS: only its owner can read it through the API — but
+-- whoever administers this Supabase project can read it too (see
+-- GIZLILIK.md). Without this table the app keeps working; keys then
+-- stay on each device.
+
+create table if not exists public.api_keys (
+    user_id     uuid not null references auth.users(id) on delete cascade,
+    provider    text not null check (provider in ('groq', 'gemini')),
+    api_key     text not null check (char_length(api_key) between 20 and 400),
+    updated_at  timestamptz not null default now(),
+    primary key (user_id, provider)
+);
+
+alter table public.api_keys enable row level security;
+
+drop policy if exists "api_keys_select_own" on public.api_keys;
+drop policy if exists "api_keys_insert_own" on public.api_keys;
+drop policy if exists "api_keys_update_own" on public.api_keys;
+drop policy if exists "api_keys_delete_own" on public.api_keys;
+
+create policy "api_keys_select_own"
+    on public.api_keys for select to authenticated
+    using ((select auth.uid()) = user_id);
+
+create policy "api_keys_insert_own"
+    on public.api_keys for insert to authenticated
+    with check ((select auth.uid()) = user_id);
+
+create policy "api_keys_update_own"
+    on public.api_keys for update to authenticated
+    using ((select auth.uid()) = user_id)
+    with check ((select auth.uid()) = user_id);
+
+create policy "api_keys_delete_own"
+    on public.api_keys for delete to authenticated
+    using ((select auth.uid()) = user_id);
+
+
+-- ----------------------------------------------------------
 -- PERMISSIONS
 -- ----------------------------------------------------------
 -- RLS above limits every signed-in user to their own rows. On top of
@@ -185,10 +230,12 @@ grant usage on schema public to authenticated;
 revoke all on public.conversations from anon, authenticated;
 revoke all on public.messages      from anon, authenticated;
 revoke all on public.memories      from anon, authenticated;
+revoke all on public.api_keys      from anon, authenticated;
 
 grant select, insert, update, delete on public.conversations to authenticated;
 grant select, insert, update, delete on public.messages      to authenticated;
 grant select, insert, update, delete on public.memories      to authenticated;
+grant select, insert, update, delete on public.api_keys      to authenticated;
 
 
 -- ----------------------------------------------------------

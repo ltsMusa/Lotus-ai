@@ -53,6 +53,8 @@ const APP_SHELL = [
     "./js/deviceProfile.js",
     "./js/env.js",
     "./js/imageGen.js",
+    "./js/imagePolicy.js",
+    "./js/imageStudio.js",
     "./js/keySync.js",
     "./js/keyTools.js",
     "./js/keyWizard.js",

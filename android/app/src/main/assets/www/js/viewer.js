@@ -229,9 +229,30 @@ async function downloadCurrent() {
     }
 }
 
-function openCurrentInTab() {
+async function openCurrentInTab() {
 
-    if (view.src) window.open(view.src, "_blank", "noopener,noreferrer");
+    if (!view.src) return;
+
+    // Browsers refuse to open a data: address as a page; a picture kept inside the chat goes through a blob.
+    if (view.src.startsWith("data:")) {
+
+        try {
+
+            const url = URL.createObjectURL(await (await fetch(view.src)).blob());
+
+            window.open(url, "_blank", "noopener,noreferrer");
+
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+
+        } catch {
+
+            showToast("Görsel yeni sekmede açılamadı.", "error");
+        }
+
+        return;
+    }
+
+    window.open(view.src, "_blank", "noopener,noreferrer");
 }
 
 // ----------------------------------------------------------

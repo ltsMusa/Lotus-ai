@@ -20,6 +20,7 @@
 import { supabase, Auth } from "./auth.js";
 import { generateId, formatRelativeDate, escapeHtml, debounce, icon } from "./utils.js";
 import { showToast } from "./toast.js";
+import { dropOldInlineImages } from "./imagePolicy.js";
 
 const LOCAL_KEY = "lotus_conversations_v1";
 const ACTIVE_KEY = "lotus_active_conversation";
@@ -36,9 +37,45 @@ function loadLocal() {
     }
 }
 
+// Pictures made by Gemini live inside the chat as base64. A browser keeps only ~5 MB per site,
+// so when the chats outgrow this the OLDEST pictures are replaced by a short note — text is never touched.
+const LOCAL_SOFT_LIMIT_CHARS = 2_500_000;
+
 function saveLocal(conversations) {
 
-    localStorage.setItem(LOCAL_KEY, JSON.stringify(conversations));
+    let json = JSON.stringify(conversations);
+
+    let dropped = 0;
+
+    if (json.length > LOCAL_SOFT_LIMIT_CHARS) {
+
+        dropped += dropOldInlineImages(conversations, LOCAL_SOFT_LIMIT_CHARS).dropped;
+
+        json = JSON.stringify(conversations);
+    }
+
+    for (let round = 0; ; round++) {
+
+        try {
+
+            localStorage.setItem(LOCAL_KEY, json);
+
+            break;
+
+        } catch (error) {
+
+            // Storage is full anyway: free more room from the old pictures, or give up as before.
+            const freed = round < 3 ? dropOldInlineImages(conversations, Math.floor(json.length * 0.6)).dropped : 0;
+
+            if (!freed) throw error;
+
+            dropped += freed;
+
+            json = JSON.stringify(conversations);
+        }
+    }
+
+    if (dropped) showToast("Yer açmak için eski görsellerin bir kısmı bu cihazdaki sohbetlerden silindi. Hesapla giriş yaparsan hepsi saklanır.", "info", 7000);
 }
 
 // ----------------------------------------------------------
@@ -771,7 +808,7 @@ const Storage = {
 
         const titleOf = new Map(conversations.map(c => [c.id, c.title]));
 
-        const pattern = /!\[([^\]]*)\]\((https:\/\/image\.pollinations\.ai\/[^\s)]+)\)/g;
+        const pattern = /!\[([^\]]*)\]\((https:\/\/image\.pollinations\.ai\/[^\s)]+|data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+)\)/g;
 
         const found = [];
 
@@ -795,7 +832,7 @@ const Storage = {
                 .from("messages")
                 .select("conversation_id, content, created_at")
                 .eq("role", "assistant")
-                .ilike("content", "%image.pollinations.ai%")
+                .or("content.ilike.%image.pollinations.ai%,content.ilike.%data:image/%")
                 .order("created_at", { ascending: false })
                 .limit(200);
 

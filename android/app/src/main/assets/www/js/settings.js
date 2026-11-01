@@ -25,6 +25,7 @@ import Notify from "./notify.js";
 import { hasNative } from "./nativeBridge.js";
 import KeySync from "./keySync.js";
 import { openKeyWizard } from "./keyWizard.js";
+import { GEMINI_IMAGE_MODEL } from "./imagePolicy.js";
 import {
     PERSONALIZATION_LIMITS,
     STYLE_OPTIONS,
@@ -201,6 +202,19 @@ function renderAIPanel() {
         <p class="settings-note">
             Görsel veya video eklediğinde sırayla Gemini, OpenAI, Groq ve OpenRouter denenir —
             yalnızca <strong>kendi anahtarını</strong> girdiğin sağlayıcılar kullanılır.
+        </p>
+
+        ${section("Görsel oluşturma", "Sohbette “bana bir kedi çiz” yazabilir ya da Görsel stüdyosunu açabilirsin.")}
+
+        <label class="settings-field">
+            <span>Gemini görsel model adı</span>
+            <input type="text" id="settings-gemini-image-model" value="${escapeAttr(config.providers.gemini.imageModel || GEMINI_IMAGE_MODEL)}" placeholder="${GEMINI_IMAGE_MODEL}" autocomplete="off" autocapitalize="off" spellcheck="false">
+        </label>
+
+        <p class="settings-note">
+            Gemini anahtarın varsa görseller önce Gemini ile yapılır; kota, ücretsiz katman ya da model sorunu olursa
+            ücretsiz Pollinations servisine geçilir (orada görseller arasında yaklaşık 45 saniye bekleme, en fazla 768 piksellik boyut
+            ve küçük bir logo olabilir). Model adı değişirse buraya güncel adı yaz.
         </p>
 
         ${section("Web araması", "Her mesajda otomatik arama Sohbet bölümünden açılıp kapatılır.")}
@@ -842,6 +856,13 @@ function bindPanelEvents(container, key) {
             config.setGroqVisionModel(event.target.value);
 
             event.target.value = config.providers.groq.visionModel;
+        });
+
+        container.querySelector("#settings-gemini-image-model")?.addEventListener("change", event => {
+
+            config.setGeminiImageModel(event.target.value);
+
+            event.target.value = config.providers.gemini.imageModel;
         });
 
         container.querySelector("#settings-ollama-url")?.addEventListener("change", event => {

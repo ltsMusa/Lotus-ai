@@ -2526,3 +2526,176 @@
         animation: none;
     }
 }
+
+/* ==========================================================
+   GÖRSEL STÜDYOSU (js/imageStudio.js)
+   ========================================================== */
+
+#image-studio {
+    z-index: 2300;
+}
+
+.imgstudio-content {
+    max-width: 480px;
+}
+
+.imgstudio .modal-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    font-size: 25px;
+}
+
+.imgstudio .modal-header h2 .ic {
+    flex: none;
+
+    width: 22px;
+    height: 22px;
+
+    color: var(--accent-light);
+}
+
+.imgstudio-close {
+    display: grid;
+    place-items: center;
+
+    flex: none;
+
+    width: 40px;
+    height: 40px;
+
+    color: var(--text-2);
+
+    border: 1px solid var(--line);
+    border-radius: 13px;
+
+    background: rgba(255, 255, 255, 0.045);
+
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.imgstudio-close .ic {
+    width: 19px;
+    height: 19px;
+}
+
+.imgstudio-close:hover {
+    color: var(--text);
+
+    border-color: var(--line-accent);
+
+    background: rgba(var(--accent-rgb), 0.16);
+}
+
+.imgstudio-close:active {
+    transform: scale(0.94);
+}
+
+.imgstudio-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 16px;
+
+    min-height: 0;
+
+    padding: 18px 20px 22px;
+
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.imgstudio-body textarea {
+    min-height: 84px;
+
+    resize: vertical;
+}
+
+.imgstudio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.imgstudio-label {
+    color: var(--text-2);
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.imgstudio-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.imgstudio-chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+
+    min-height: 38px;
+    padding: 0 14px;
+
+    color: var(--text);
+
+    font-size: 14px;
+
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+
+    background: rgba(255, 255, 255, 0.05);
+
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.imgstudio-chip small {
+    color: var(--text-2);
+
+    font-size: 11.5px;
+}
+
+.imgstudio-chip:hover,
+.imgstudio-chip:focus-visible {
+    border-color: var(--line-accent);
+}
+
+.imgstudio-chip:active {
+    transform: scale(0.97);
+}
+
+.imgstudio-chip.is-selected {
+    border-color: var(--line-accent);
+
+    background: rgba(var(--accent-rgb), 0.24);
+}
+
+.imgstudio-hint {
+    margin: 0;
+
+    color: var(--text-2);
+
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.imgstudio-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.imgstudio-actions .message-choice-button {
+    flex: 1 1 130px;
+
+    justify-content: center;
+}
+
+.imgstudio-actions .message-choice-button .ic {
+    width: 17px;
+    height: 17px;
+
+    margin-right: 6px;
+}

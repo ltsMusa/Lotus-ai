@@ -20,14 +20,13 @@ import { getLocalModel, formatBytes, LOCAL_MODEL_NAME } from "./localModels.js";
 import { consumeAttachments, hasAttachment } from "./attachments.js";
 import { shouldSearch, searchWeb, getLastSearchProvider } from "./webSearch.js";
 import { generateImage } from "./imageGen.js";
+import { imagePromptFromMessage, historyText } from "./imagePolicy.js";
 import { escapeHtml, stripThinking, icon } from "./utils.js";
 import { copyText } from "./clipboard.js";
 import { showToast } from "./toast.js";
 import Notify from "./notify.js";
 import { openKeyWizard } from "./keyWizard.js";
 import { renderMarkdown, bindCodeCopyButtons } from "./markdown.js";
-
-const IMAGE_GEN_PREFIX = "🎨 Görsel oluştur: ";
 
 class ChatManager {
 
@@ -486,7 +485,10 @@ class ChatManager {
         if (lastUser) this.processMessage(lastUser.content);
     }
 
-    /** Re-runs real image generation for a "🎨 Görsel oluştur: ..." turn. */
+    /**
+     * Makes a picture for an idea ("🎨 Görsel oluştur: …" turn, a natural request such as
+     * "bana bir kedi çiz", or the studio) with the choices saved in Ayarlar/Görsel stüdyosu.
+     */
     async regenerateImage(prompt) {
 
         const myId = ++this.generationId;
@@ -502,16 +504,22 @@ class ChatManager {
 
         try {
 
-            const url = await generateImage(prompt, {
+            const result = await generateImage(prompt, {
                 signal: controller.signal,
-                onStatus: label => { if (myId === this.generationId) this.showTyping(label); }
+                onStatus: label => { if (myId === this.generationId) this.showTyping(label); },
+                enhancer: (system, user) => this.apiManager.completeOnce(system, user, { controller })
             });
 
             if (myId !== this.generationId) return;
 
             this.hideTyping();
 
-            this.addAIMessage(`![${prompt.replace(/[[\]]/g, "")}](${url})`, { speak: false });
+            const alt = prompt.replace(/[[\]\r\n]+/g, " ").trim().slice(0, 120);
+
+            this.addAIMessage(`![${alt}](${result.url})`, { speak: false });
+
+            // Gemini was tried first and said no: one line, so the switch is not a mystery.
+            if (result.note) showToast(result.note, "info", 7000);
 
             Notify.replyReady({ image: true, text: prompt });
 
@@ -1135,14 +1143,12 @@ class ChatManager {
 
         if (!lastUser) return;
 
-        // Regenerating an image-generation request (🎨 Görsel oluştur: ...)
-        // needs to re-run image generation, not send that text to the
-        // normal text LLM — which would happily "reply" to it in words
-        // instead of actually making a new image.
-        if (lastUser.content.startsWith(IMAGE_GEN_PREFIX)) {
+        // A picture request — the app's own "🎨 Görsel oluştur: …" turn (also when it is
+        // regenerated) or a plain "bana bir kedi çiz" — makes a real picture; sending it to
+        // the text model would only get a description in words.
+        const imageIdea = lastUser.images?.length ? null : imagePromptFromMessage(lastUser.content);
 
-            return this.regenerateImage(lastUser.content.slice(IMAGE_GEN_PREFIX.length));
-        }
+        if (imageIdea) return this.regenerateImage(imageIdea);
 
         const forceLocal = viaLocal || viaOllama;
 
@@ -1228,7 +1234,7 @@ class ChatManager {
             // History sent to the API excludes the message we're replying
             // to (it's passed separately as `message`), so exclude the
             // last entry.
-            const historyForApi = this.messages.slice(0, -1).map(({ role, content }) => ({ role, content }));
+            const historyForApi = this.messages.slice(0, -1).map(({ role, content }) => ({ role, content: typeof content === "string" ? historyText(content) : content }));
 
             const onToken = (_, fullText) => {
 

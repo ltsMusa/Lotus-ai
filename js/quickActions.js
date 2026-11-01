@@ -5,7 +5,8 @@
  * Connects the welcome-screen shortcuts and sidebar About
  * button to real functionality:
  *  - Kod Yaz        → fills a coding-focused starter prompt
- *  - Görsel Oluştur → REAL image generation (js/imageGen.js)
+ *  - Görsel Oluştur → the Görsel stüdyosu (js/imageStudio.js), then REAL
+ *                     image generation (js/imageGen.js)
  *  - Web Analiz     → opens the "Özetle" web tool (js/tools.js):
  *                     a link is fetched and read, or pasted text
  *                     is summarised
@@ -15,7 +16,9 @@
 
 import chatManager from "./chat.js";
 import { openTools } from "./tools.js";
-import { showPrompt, showToast } from "./toast.js";
+import { showToast } from "./toast.js";
+import { openImageStudio } from "./imageStudio.js";
+import { IMAGE_PREFIX } from "./imagePolicy.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -53,13 +56,16 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const prompt = await showPrompt("Ne çizmemi istersin?", "örn. yağmurda duran mor bir lotus çiçeği");
+        // The studio: idea + shape + style (the choices are saved and used for this picture).
+        const choice = await openImageStudio();
 
-        if (!prompt) return;
+        if (!choice) return;
 
         if (chatManager.isGenerating) return;
 
-        chatManager.addUserMessage(`🎨 Görsel oluştur: ${prompt}`);
+        const prompt = choice.prompt;
+
+        chatManager.addUserMessage(`${IMAGE_PREFIX}${prompt}`);
 
         chatManager.scrollToBottom(true);
 

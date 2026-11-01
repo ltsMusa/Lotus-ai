@@ -24,6 +24,7 @@ import { isPackagedApp } from "./env.js";
 import { DEFAULT_PERSONALIZATION, normalizePersonalization } from "./personalization.js";
 import { DEFAULT_THEME, normalizeTheme } from "./themeList.js";
 import { DEFAULT_NOTIFICATIONS, normalizeNotifications } from "./notifyPolicy.js";
+import { DEFAULT_IMAGE_SETTINGS, normalizeImageSettings, GEMINI_IMAGE_MODEL } from "./imagePolicy.js";
 
 const STORAGE_KEY = "lotus_config_v1";
 
@@ -38,7 +39,8 @@ const DEFAULTS = {
     providerPriority: ["groq", "openrouter", "gemini", "openai"],
 
     providers: {
-        gemini: { apiKey: "", model: "gemini-3.8-flash" },
+        // imageModel: used only for pictures ("Görsel stüdyosu"); see js/imagePolicy.js
+        gemini: { apiKey: "", model: "gemini-3.8-flash", imageModel: GEMINI_IMAGE_MODEL },
         groq: { apiKey: "", model: "openai/gpt-oss-120b", visionModel: "qwen/qwen3.8-27b" },
         openai: { apiKey: "", model: "gpt-4o-mini" },
         openrouter: { apiKey: "", model: "openai/gpt-4o-mini" },
@@ -100,6 +102,10 @@ const DEFAULTS = {
     // Bildirimler ve arka planda çalışma (js/notifyPolicy.js, js/notify.js,
     // Settings → Bildirimler).
     notifications: { ...DEFAULT_NOTIFICATIONS },
+
+    // Görsel stüdyosu: the last choices (aspect, style, "improve my idea in English")
+    // are kept for the next picture (js/imageStudio.js, js/imagePolicy.js).
+    image: { ...DEFAULT_IMAGE_SETTINGS },
 
     // "Her mesajda otomatik web araması yapsın" — on by default so
     // answers stay grounded in current info instead of the model's
@@ -182,6 +188,7 @@ const config = deepMerge(DEFAULTS, loadStoredConfig());
 config.personalization = normalizePersonalization(config.personalization);
 config.theme = normalizeTheme(config.theme);
 config.notifications = normalizeNotifications(config.notifications);
+config.image = normalizeImageSettings(config.image);
 
 function migrateRetiredModels(target) {
 
@@ -378,6 +385,33 @@ config.setNotifications = function (updates = {}) {
     }
 
     return this.notifications;
+};
+
+config.setImageSettings = function (updates = {}) {
+
+    this.image = normalizeImageSettings({ ...this.image, ...updates });
+
+    persist();
+
+    return this.image;
+};
+
+/** The Gemini model used for pictures; empty → the default. */
+config.setGeminiImageModel = function (model) {
+
+    this.providers.gemini.imageModel = String(model || "").trim() || GEMINI_IMAGE_MODEL;
+
+    persist();
+
+    try {
+
+        // A new model name deserves a fresh try even if the old one was parked.
+        window.dispatchEvent(new CustomEvent("lotus:image-model-changed", { detail: { model: this.providers.gemini.imageModel } }));
+
+    } catch {
+
+        // no window (tests)
+    }
 };
 
 config.setMemoryEnabled = function (enabled) {

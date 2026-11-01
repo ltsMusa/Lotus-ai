@@ -57,7 +57,8 @@ bilgisi silinir.
 | Bir yapay zekâ sağlayıcısıyla sohbet | Groq, Google Gemini, OpenAI veya OpenRouter (seçtiğine göre) | Mesajların ve gerekirse eklediğin dosya/görsel |
 | "Sunucu üzerinden çalış" açık | Lotus sunucusu (Vercel) → sağlayıcı | Aynısı; sunucu mesajları kendi veritabanına kaydetmez, yalnızca hata durumunda hata kaydı tutar |
 | Web araması açık | Tavily, Brave Search, Jina (ve haber/Vikipedi kaynakları) | Mesajından türetilen arama metni |
-| Görsel oluşturma | Pollinations | Yazdığın görsel tarifi |
+| Görsel oluşturma (ücretsiz servis) | Pollinations | Görsel tarifin; adres (URL) içinde gider. Tarif, görsel stüdyosundaki "İngilizce tarife çevir" açıksa önce seçili yapay zekâ sağlayıcısıyla (Groq, Gemini…) İngilizceye çevrilip zenginleştirilir ve Pollinations'a o hali gider |
+| Görsel oluşturma (Gemini anahtarın varsa) | Google (`generativelanguage.googleapis.com`) | Görsel tarifin ve anahtarın. Gelen görsel sohbetin içinde saklanır: giriş yapmadıysan bu cihazda, yaptıysan hesabındaki sohbetle birlikte |
 | Anahtar sihirbazı | Groq (`api.groq.com`) veya Google (`generativelanguage.googleapis.com`) | Yalnızca anahtarı denemek için model listesi isteği; mesaj gitmez |
 | Sesle yazma / sesli okuma | Telefonun/tarayıcının konuşma servisi (cihaza göre Google dahil) | Ses |
 | İlk kez Lotus Mini indirirken | Hugging Face | Yalnızca model dosyası indirilir; mesajların gitmez |

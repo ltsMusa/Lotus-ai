@@ -529,6 +529,84 @@ export default class APIManager {
     }
 
     /**
+     * One quick, side-channel answer from the first connected cloud provider
+     * (no streaming, no fallback chain, no on-device model — too slow for this).
+     * Used for small helper jobs such as rewriting a picture idea in English.
+     *
+     * Resolves with the text, or `null` when nothing could answer in time
+     * (no provider, offline, error, timeout) — callers always have a plan B.
+     * Only a user-initiated Stop (via `controller`) throws.
+     */
+    async completeOnce(systemPrompt, userText, { controller = null, timeoutMs = 9000 } = {}) {
+
+        if (navigator.onLine === false) return null;
+
+        const now = Date.now();
+
+        const name = this.cloudCandidates().find(candidate => Cooldowns.until(candidate) <= now);
+
+        if (!name) return null;
+
+        const messages = [{ role: "user", content: userText }];
+
+        const hasPersonalKey = Boolean(config.providers[name]?.apiKey);
+
+        let timer = null;
+
+        let onAbort = null;
+
+        const stop = new Promise((_, reject) => {
+
+            timer = setTimeout(() => reject(new ProviderError("Zaman aşımı.", "TIMEOUT")), timeoutMs);
+
+            if (controller) {
+
+                onAbort = () => reject(new ProviderError("Yanıt kullanıcı tarafından durduruldu.", "ABORTED"));
+
+                if (controller.signal.aborted) onAbort();
+
+                else controller.signal.addEventListener("abort", onAbort, { once: true });
+            }
+        });
+
+        // Whatever happens first wins; a late answer is simply ignored.
+        stop.catch(() => {});
+
+        try {
+
+            const work = config.useBackendProxy && !hasPersonalKey
+                ? callBackendProxy(name, {
+                    messages: [{ role: "system", content: systemPrompt }, ...messages],
+                    model: config.providers[name]?.model,
+                    onToken: null,
+                    controller: null
+                })
+                : this.providers[name].sendMessage({ history: messages, systemPrompt });
+
+            work.catch(() => {});
+
+            const text = await Promise.race([work, stop]);
+
+            return typeof text === "string" && text.trim() ? text : null;
+
+        } catch (error) {
+
+            if (error?.code === "ABORTED") throw error;
+
+            // Not worth parking the provider for a helper job — the chat itself decides that.
+            console.warn(`Yardımcı istek (${name}) yanıtlanamadı:`, error?.message ?? error);
+
+            return null;
+
+        } finally {
+
+            clearTimeout(timer);
+
+            if (controller && onAbort) controller.signal.removeEventListener("abort", onAbort);
+        }
+    }
+
+    /**
      * Explicit on-device path — the "Yerel modelle devam et" button on the
      * limit card. Ignores the routing plan: Lotus Mini first, then Ollama.
      */

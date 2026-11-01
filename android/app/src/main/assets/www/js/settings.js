@@ -23,6 +23,8 @@ import { renderLocalSettings, bindLocalSettings } from "./settingsLocal.js";
 import { THEMES } from "./themeList.js";
 import Notify from "./notify.js";
 import { hasNative } from "./nativeBridge.js";
+import KeySync from "./keySync.js";
+import { openKeyWizard } from "./keyWizard.js";
 import {
     PERSONALIZATION_LIMITS,
     STYLE_OPTIONS,
@@ -94,6 +96,50 @@ function section(title, hint = "") {
     `;
 }
 
+const SYNC_ERRORS = {
+    "signed-out": "Önce giriş yapmalısın.",
+    "missing-table": "Hesapta saklama bu sunucuda henüz kurulu değil.",
+    network: "Bağlantı yok — biraz sonra tekrar dene.",
+    other: "Anahtar hesaba kaydedilemedi."
+};
+
+/** Settings → Yapay Zekâ: the key wizard and "keep my keys in my account". */
+function renderKeyWizardBlock() {
+
+    const signedIn = KeySync.isSignedIn();
+    const available = KeySync.syncAvailable();
+
+    const syncRow = signedIn && available
+        ? toggleRow("settings-key-sync", "Anahtarlarımı hesabımda sakla", KeySync.syncPreference() === "on")
+        : "";
+
+    let syncNote = "Giriş yaparsan anahtarlarını hesabında da saklayabilirsin; başka telefonda giriş yapınca otomatik gelir.";
+
+    if (signedIn && available) {
+
+        syncNote = "Açıkken Groq ve Gemini anahtarların hesabına bağlı kaydedilir; başka telefonda giriş yapınca otomatik gelir. " +
+            "Kapatınca hesaptaki kopyalar silinir. Anahtar veritabanında düz metin olarak durur ve yalnızca senin hesabın okuyabilir (ayrıntı: GIZLILIK.md).";
+
+    } else if (signedIn) {
+
+        syncNote = "Hesapta saklama bu sunucuda henüz kurulu değil; anahtarların yalnızca bu cihazda durur.";
+    }
+
+    return `
+        ${section("Anahtar sihirbazı", "Groq ya da Gemini için ücretsiz anahtarı birkaç dokunuşla al.")}
+
+        <p class="settings-note">
+            Sayfayı ben açarım; anahtarı kopyalayıp buraya dönünce yakalar, denerim ve kaydederim.
+        </p>
+
+        <button id="settings-keywizard-button" class="settings-inline-button" type="button">Sihirbazı aç</button>
+
+        ${syncRow}
+
+        <p class="settings-note">${syncNote}</p>
+    `;
+}
+
 function renderAIPanel() {
 
     const providerOptions = Object.keys(PROVIDER_NAMES)
@@ -136,6 +182,8 @@ function renderAIPanel() {
             <span>Aktif sağlayıcı</span>
             <select id="settings-provider-select">${providerOptions}</select>
         </label>
+
+        ${renderKeyWizardBlock()}
 
         ${section("Sağlayıcılar", "Model adları zamanla değişir; “model bulunamadı” hatası alırsan güncel adı buraya yaz.")}
 
@@ -730,6 +778,45 @@ function bindPanelEvents(container, key) {
 
                 config.setProviderKey(input.dataset.providerKey, input.value);
             });
+        });
+
+        container.querySelector("#settings-keywizard-button")?.addEventListener("click", () => openKeyWizard());
+
+        // A key added by the wizard (or pulled from the account) shows up in the boxes right away.
+        const showKeys = () => {
+
+            if (!container.isConnected) return window.removeEventListener("lotus:provider-key-changed", showKeys);
+
+            container.querySelectorAll("[data-provider-key]").forEach(input => {
+
+                if (document.activeElement !== input) input.value = config.providers[input.dataset.providerKey]?.apiKey ?? "";
+            });
+        };
+
+        window.addEventListener("lotus:provider-key-changed", showKeys);
+
+        container.querySelector("#settings-key-sync")?.addEventListener("change", async event => {
+
+            const wanted = event.target.checked;
+
+            event.target.disabled = true;
+
+            const result = await KeySync.setSyncEnabled(wanted);
+
+            event.target.disabled = false;
+
+            if (wanted && !result.ok) {
+
+                event.target.checked = false;
+
+                showToast(SYNC_ERRORS[result.status] ?? SYNC_ERRORS.other, "error");
+
+                return;
+            }
+
+            if (wanted) showToast("Anahtarların artık hesabında da saklanıyor.", "success");
+            else if (result.ok) showToast("Hesaptaki anahtar kopyaları silindi.", "success");
+            else showToast("Ayar kapatıldı, ama hesaptaki kopyalar silinemedi — bağlantını kontrol edip tekrar aç/kapat.", "error", 6000);
         });
 
         container.querySelectorAll("[data-provider-model]").forEach(input => {

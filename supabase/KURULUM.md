@@ -11,6 +11,14 @@ Bu olmazsa doğrulama ve şifre sıfırlama e-postalarındaki bağlantı yanlı�
 
 Android uygulamasında e-posta bağlantıları, ayarlardaki sunucu (proxy) adresine döner; sunucu adresi boşsa Site URL kullanılır.
 
+**Android uygulaması için ayrıca:** Redirect URLs listesine şu adresi **aynen** ekle:
+
+```
+lotusai://auth
+```
+
+Google ile girişte tarayıcı, girişi bitirince uygulamaya bu adresle döner. Listede yoksa Supabase dönüşü reddeder ve uygulamaya geri dönülmez.
+
 ## 2. E-posta doğrulaması — *Authentication → Sign In / Providers → Email*
 
 - **Confirm email açık** (varsayılan): kayıttan sonra kişi e-postadaki bağlantıya dokunmadan giriş yapamaz. Uygulama bunu söyler ve “yeniden gönder” düğmesi gösterir.
@@ -28,11 +36,13 @@ Supabase'in hazır e-posta servisi çok sınırlıdır (saatte birkaç e-posta, 
 2. *Authorized redirect URIs* alanına Supabase'in Google sayfasında yazan **Callback URL**'yi ekle (`https://<proje>.supabase.co/auth/v1/callback`).
 3. Client ID ve Client Secret'ı Supabase'deki Google sayfasına yapıştırıp **Enable** et.
 
-Not: Google girişi paketlenmiş Android uygulamasında çalışmaz (Google, WebView içinde OAuth'u engeller ve uygulamanın dönecek bir web adresi yok). Orada e-posta + şifre kullanılır; Google girişi web/PWA sürümünde çalışır.
+Not: Google, uygulama içi pencerede (WebView) girişe izin vermez. Bu yüzden Android uygulamasında "Google ile devam et" telefonun **tarayıcısını** açar; giriş bitince `lotusai://auth` adresiyle uygulamaya otomatik dönülür. Bunun çalışması için 1. maddedeki `lotusai://auth` kaydı şarttır. Web/PWA sürümünde giriş doğrudan aynı sayfada yapılır.
 
 ## 5. Veritabanı — *SQL Editor*
 
 `supabase/schema.sql` dosyasının tamamını yapıştırıp **Run** et. Dosya tekrar tekrar çalıştırılabilir; sohbet, mesaj ve hafıza tablolarını, güvenlik kurallarını (RLS) ve izinleri kurar/yeniler. Sohbetler kaydedilmiyor ya da “permission denied” görüyorsan bu adımı çalıştır.
+
+Aynı dosya `api_keys` tablosunu da kurar: Ayarlar → Yapay Zekâ’daki **“Anahtarlarımı hesabımda sakla”** seçeneği Groq/Gemini anahtarını burada tutar (yalnızca sahibi okuyabilir, ama anahtar düz metindir — bkz. `GIZLILIK.md`). Dosyayı çalıştırmazsan uygulama bozulmaz; anahtarlar yalnızca cihazda kalır.
 
 ## 6. İstersen
 

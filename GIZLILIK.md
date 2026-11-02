@@ -1,6 +1,6 @@
 # Lotus AI — Gizlilik Notu
 
-**Sürüm:** 7.0 Beta 1 · **Durum:** taslak (beta süresince değişebilir)
+**Sürüm:** 7.1 Beta · **Durum:** taslak (beta süresince değişebilir)
 
 Bu not, Lotus AI'ın hangi verileri nerede tuttuğunu ve nereye gönderdiğini sade bir dille anlatır.
 Hukuki bir metin değildir; uygulamanın bugünkü davranışını anlatır.

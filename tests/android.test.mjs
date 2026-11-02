@@ -27,7 +27,7 @@ const walk = async dir => {
     return out;
 };
 
-// "versionCode 72" / "versionName "7.0-beta.1"" / "targetSdk 35" / "targetSdkVersion 35"
+// "versionCode 72" / "versionName "7.1-beta"" / "targetSdk 35" / "targetSdkVersion 35"
 const field = (gradle, name) => {
     const match = gradle.match(new RegExp(`^\\s*${name}\\s+["']?([^"'\\s]+)["']?`, "m"));
     return match ? match[1] : null;
@@ -69,7 +69,7 @@ test("the cloud build mirrors the AIDE project's identity and versions", { skip:
 test("package.json version, APK versionName and the release tag line up", { skip: !hasAndroid }, async () => {
     const pkg = JSON.parse(await read("package.json"));
     const gradle = await read("android/app/build.gradle");
-    // 7.0.0-beta.1 (npm style) vs 7.0-beta.1 (Android versionName)
+    // 7.1.0-beta (npm style) vs 7.1-beta (Android versionName)
     assert.equal(pkg.version.replace(/^(\d+)\.(\d+)\.0-/, "$1.$2-"), field(gradle, "versionName"));
 });
 
@@ -113,7 +113,7 @@ test("workflow builds the CI project and checks what Android 11+ requires", { sk
         assert.ok(yml.includes(`secrets.${secret}`), secret);
     }
 
-    // The tag the APK is attached to follows package.json (v7.0.0-beta.1).
+    // The tag the APK is attached to follows package.json (v7.1.0-beta).
     assert.match(yml, /jq -r \.version package\.json/);
 });
 

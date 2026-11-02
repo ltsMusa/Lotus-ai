@@ -44,8 +44,8 @@ Yoksa APK "Uygulama yüklenemedi" der. AIDE'nin kendi "Signed APK" çıktısın�
 
 1. Bu değişiklik `main`'e girdikten sonra GitHub → depo → **Actions** → **Android APK** → **Run workflow**.
    (Telefon tarayıcısında "Run workflow" düğmesi görünmezse tarayıcının **Masaüstü sitesi** seçeneğini aç.)
-2. 5–10 dk sonra bitince depodaki **Releases** sayfasında `v7.0.0-beta.1` ön sürümünün altında
-   `Lotus-AI-7.0-beta.1.apk` görünür; dokunup indir ve kur. (Aynı dosya, Actions çalıştırmasının altında
+2. 5–10 dk sonra bitince depodaki **Releases** sayfasında `v7.1.0-beta` ön sürümünün altında
+   `Lotus-AI-7.1-beta.apk` görünür; dokunup indir ve kur. (Aynı dosya, Actions çalıştırmasının altında
    **Artifacts** bölümünde zip olarak da durur.)
 3. İş akışı APK'yı kendisi doğrular (imza v2/v3, hedef 35, `resources.arsc`, hizalama); biri tutmazsa
    yayın yapmadan hata verir.

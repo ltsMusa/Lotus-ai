@@ -801,6 +801,171 @@ const Storage = {
         return { title, filename: `lotus-${slug}.md`, markdown: lines.join("\n") };
     },
 
+    // ------------------------------------------------------
+    // BACKUP / RESTORE (rules: js/backup.js, UI glue: js/dataTools.js)
+    // ------------------------------------------------------
+
+    /** Ids of the pinned chats (pins live in this browser, see PIN_KEY). */
+    pinnedIds() {
+
+        return [...getPinned()];
+    },
+
+    /**
+     * Every chat with all its messages, as stored: { id, title, created_at, updated_at, messages }.
+     * Throws (with a Turkish message) instead of returning a partial copy — a backup that
+     * silently misses chats is worse than no backup.
+     */
+    async exportAll() {
+
+        const wasCloud = this.useSupabase;
+
+        const conversations = await this.listConversations();
+
+        if (wasCloud && !this.useSupabase) throw new Error("Bulut bağlantısı yok; yedek alınamadı. Bağlanınca tekrar dene.");
+
+        if (!this.useSupabase) return conversations.map(c => ({ ...c, messages: [...(c.messages ?? [])] }));
+
+        const user = await Auth.getCurrentUser();
+
+        const byChat = new Map(conversations.map(c => [c.id, []]));
+
+        const PAGE = 1000;
+
+        for (let from = 0; ; from += PAGE) {
+
+            const { data, error } = await supabase
+                .from("messages")
+                .select("conversation_id, role, content, created_at")
+                .eq("user_id", user.id)
+                .order("created_at", { ascending: true })
+                .order("id", { ascending: true })
+                .range(from, from + PAGE - 1);
+
+            if (error) throw new Error("Mesajlar alınamadı; yedek alınamadı. Bağlantını kontrol edip tekrar dene.");
+
+            for (const row of data ?? []) byChat.get(row.conversation_id)?.push({ role: row.role, content: row.content, created_at: row.created_at });
+
+            if ((data ?? []).length < PAGE) break;
+        }
+
+        return conversations.map(c => ({ ...c, messages: byChat.get(c.id) ?? [] }));
+    },
+
+    /**
+     * Adds chats from a backup (already filtered by planRestore, so nothing here overwrites).
+     * Guests keep the ids of the backup unless one is taken; an account gets new ids from the
+     * database but keeps titles, times and order.
+     * @returns {Promise<{ added: number, messages: number, failed: number }>}
+     */
+    async importConversations(conversations, { onProgress } = {}) {
+
+        const result = { added: 0, messages: 0, failed: 0 };
+
+        const pinned = getPinned();
+
+        if (this.useSupabase) {
+
+            const user = await Auth.getCurrentUser();
+
+            for (const [index, conversation] of conversations.entries()) {
+
+                onProgress?.(index, conversations.length);
+
+                const { data, error } = await supabase
+                    .from("conversations")
+                    .insert({ user_id: user.id, title: conversation.title, created_at: conversation.created_at, updated_at: conversation.updated_at })
+                    .select("id")
+                    .single();
+
+                if (error || !data) {
+
+                    result.failed++;
+
+                    continue;
+                }
+
+                // Strictly increasing times: rows with equal times would come back in any order.
+                let last = 0;
+
+                const rows = conversation.messages.map(message => {
+
+                    last = Math.max(last + 1, Date.parse(message.created_at) || 0);
+
+                    return { conversation_id: data.id, role: message.role, content: message.content, created_at: new Date(last).toISOString() };
+                });
+
+                let failed = false;
+
+                for (let at = 0; at < rows.length && !failed; at += 100) {
+
+                    const { error: insertError } = await supabase.from("messages").insert(rows.slice(at, at + 100));
+
+                    if (insertError) failed = true;
+                }
+
+                if (failed) {
+
+                    // No half chats: take the empty/partial one away again.
+                    await supabase.from("messages").delete().eq("conversation_id", data.id);
+                    await supabase.from("conversations").delete().eq("id", data.id);
+
+                    result.failed++;
+
+                    continue;
+                }
+
+                // Every message insert makes the database touch the chat's updated_at ("now"), which
+                // would put all restored chats at the top in import order. Put the backup's time back.
+                if (conversation.updated_at) {
+
+                    await supabase.from("conversations").update({ updated_at: conversation.updated_at }).eq("id", data.id);
+                }
+
+                if (conversation.pinned) pinned.add(data.id);
+
+                result.added++;
+                result.messages += rows.length;
+            }
+
+        } else {
+
+            const existing = loadLocal();
+
+            const taken = new Set(existing.map(c => c.id));
+
+            for (const conversation of conversations) {
+
+                const id = taken.has(conversation.id) ? generateId() : conversation.id;
+
+                taken.add(id);
+
+                existing.push({
+                    id,
+                    title: conversation.title,
+                    created_at: conversation.created_at,
+                    updated_at: conversation.updated_at,
+                    messages: conversation.messages.map(message => ({ ...message }))
+                });
+
+                if (conversation.pinned) pinned.add(id);
+
+                result.added++;
+                result.messages += conversation.messages.length;
+            }
+
+            // saveLocal may free room by replacing the oldest pictures (and says so); a full
+            // storage throws — nothing was written then, and the caller reports it.
+            saveLocal(existing);
+        }
+
+        savePinned(pinned);
+
+        await this.renderSidebar();
+
+        return result;
+    },
+
     /** Every generated image across all chats, newest first. */
     async listImages() {
 

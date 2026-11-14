@@ -26,6 +26,7 @@ import { hasNative } from "./nativeBridge.js";
 import KeySync from "./keySync.js";
 import { openKeyWizard } from "./keyWizard.js";
 import { GEMINI_IMAGE_MODEL } from "./imagePolicy.js";
+import { createBackup, inspectBackup, applyRestore, restoreResultText, savedWhere } from "./dataTools.js";
 import {
     PERSONALIZATION_LIMITS,
     STYLE_OPTIONS,
@@ -570,7 +571,149 @@ function bindNotificationsPanel(container) {
     });
 }
 
+function renderDataPanel() {
+
+    return panelShell("Yedek ve veriler", `
+        ${section("Yedek", "Sohbetlerin, hafıza notların ve tercihlerin tek bir dosyada.")}
+
+        <p class="settings-note">
+            Giriş yapmadıysan sohbetlerin yalnızca bu cihazda durur: uygulamayı silmek ya da tarayıcı verilerini
+            temizlemek hepsini götürür. Yedek dosyasını başka bir telefona ya da yeniden kurulumdan sonra geri yükleyebilirsin.
+            Hesapla giriş yaptıysan sohbetlerin zaten hesabında durur; yedek ikinci bir kopya olur.
+        </p>
+
+        ${toggleRow("settings-backup-keys", "API anahtarlarımı da ekle (dosyayı kimseyle paylaşma)", false)}
+
+        <button id="settings-backup-create" class="settings-inline-button" type="button">Yedeği kaydet</button>
+
+        ${section("Geri yükle", "Sohbetler ve notlar eklenir, mevcut olanlar silinmez; tercihlerin yedekteki haline döner.")}
+
+        <p class="settings-note">
+            Aynı dosyayı iki kez yüklemek bir şeyi tekrarlamaz. Anahtarlar yalnızca henüz anahtarı olmayan sağlayıcıya eklenir.
+        </p>
+
+        <button id="settings-backup-restore" class="settings-inline-button" type="button">Yedekten geri yükle</button>
+
+        <input type="file" id="settings-backup-file" class="hidden" accept="application/json,.json,text/plain">
+
+        <p class="settings-note" id="settings-backup-status" role="status" aria-live="polite"></p>
+    `);
+}
+
+/** Wires Yedek ve veriler: save the file, pick a file, say what will happen, then do it. */
+function bindDataPanel(container) {
+
+    const status = container.querySelector("#settings-backup-status");
+
+    const say = text => { if (status) status.textContent = text; };
+
+    const createButton = container.querySelector("#settings-backup-create");
+    const restoreButton = container.querySelector("#settings-backup-restore");
+    const fileInput = container.querySelector("#settings-backup-file");
+
+    createButton?.addEventListener("click", async () => {
+
+        createButton.disabled = true;
+
+        say("Yedek hazırlanıyor…");
+
+        try {
+
+            const result = await createBackup({ includeKeys: container.querySelector("#settings-backup-keys")?.checked === true });
+
+            const where = savedWhere(result.mode, result.filename);
+
+            say(`${where} (${result.conversations} sohbet, ${result.messages} mesaj, ${result.memories} hafıza notu)`);
+
+            showToast(where, "success", 5000);
+
+        } catch (error) {
+
+            console.warn("Yedek alınamadı:", error);
+
+            say(error?.message || "Yedek alınamadı.");
+
+            showToast(error?.message || "Yedek alınamadı.", "error");
+
+        } finally {
+
+            createButton.disabled = false;
+        }
+    });
+
+    restoreButton?.addEventListener("click", () => fileInput?.click());
+
+    fileInput?.addEventListener("change", async () => {
+
+        const file = fileInput.files?.[0];
+
+        // Picking the same file again must fire "change" again.
+        fileInput.value = "";
+
+        if (!file) return;
+
+        restoreButton.disabled = true;
+
+        try {
+
+            say("Yedek okunuyor…");
+
+            const inspected = await inspectBackup(await file.text());
+
+            if (!inspected.ok) {
+
+                say(inspected.error);
+
+                showToast(inspected.error, "error", 6000);
+
+                return;
+            }
+
+            const nothingNew = !inspected.plan.add.length && !inspected.memoriesToAdd.length && !inspected.keysToAdd.length && !inspected.parsed.stats.hasSettings;
+
+            if (nothingNew) {
+
+                say("Bu yedekte eklenecek yeni bir şey yok; her şey zaten bu cihazda.");
+
+                return;
+            }
+
+            if (!(await showConfirm(inspected.summary, { okLabel: "Geri yükle" }))) {
+
+                say("Vazgeçildi, hiçbir şey değişmedi.");
+
+                return;
+            }
+
+            say("Geri yükleniyor…");
+
+            const result = await applyRestore(inspected, { onProgress: (index, total) => say(`Geri yükleniyor… ${index + 1}/${total}`) });
+
+            const text = restoreResultText(result);
+
+            say(text);
+
+            showToast(text, result.failed ? "info" : "success", 6000);
+
+        } catch (error) {
+
+            console.warn("Geri yükleme başarısız:", error);
+
+            const message = "Geri yüklenemedi: " + (error?.message || "bilinmeyen hata") + ". Hiçbir şey silinmedi.";
+
+            say(message);
+
+            showToast(message, "error", 6000);
+
+        } finally {
+
+            restoreButton.disabled = false;
+        }
+    });
+}
+
 const PANEL_RENDERERS = {
+    data: renderDataPanel,
     ai: renderAIPanel,
     voice: renderVoicePanel,
     notifications: renderNotificationsPanel,
@@ -776,6 +919,8 @@ function bindPanelEvents(container, key) {
 
         renderMenu();
     });
+
+    if (key === "data") bindDataPanel(container);
 
     if (key === "ai") {
 

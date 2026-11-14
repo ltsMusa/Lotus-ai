@@ -52,6 +52,8 @@ const APP_SHELL = [
     "./js/deviceMonitor.js",
     "./js/deviceProfile.js",
     "./js/env.js",
+    "./js/backup.js",
+    "./js/dataTools.js",
     "./js/imageGen.js",
     "./js/imagePolicy.js",
     "./js/imageStudio.js",

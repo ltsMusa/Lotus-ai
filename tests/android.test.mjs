@@ -192,3 +192,28 @@ test("native code stays within what the old compileSdk 29 / AIDE android.jar kno
     // The notification icon is a resource of the project, not a system one.
     assert.ok(existsSync(join(root, "android/app/src/main/res/drawable/ic_stat_lotus.xml")));
 });
+
+test("saveFile: Downloads write is guarded, name-safe and compatible with the old android.jar", { skip: !hasAndroid }, async () => {
+    const java = await read("android/app/src/main/java/com/lotusai/app/MainActivity.java");
+
+    // The page only uses native saving from bridge 3 on.
+    assert.match(java, /public int bridgeVersion\(\)\s*\{\s*return 3;/);
+    assert.match(await read("js/clipboard.js"), /bridgeVersion"\)\)\s*>=\s*3/);
+
+    // Names are reduced to safe characters; only known text types keep their MIME type.
+    assert.match(java, /replaceAll\("\[\^A-Za-z0-9\._-\]", "_"\)/);
+    assert.match(java, /safeMimeType/);
+
+    // Android 10+: public Downloads through MediaStore, written with plain column names (no newer constants).
+    assert.match(java, /Build\.VERSION\.SDK_INT >= 29/);
+    assert.match(java, /content:\/\/media\/external\/downloads/);
+    assert.doesNotMatch(java, /MediaStore\.Downloads|MediaStore\.MediaColumns|IS_PENDING/);
+
+    // Older Android: the app's own folder, so no storage permission is needed.
+    assert.match(java, /getExternalFilesDir\(Environment\.DIRECTORY_DOWNLOADS\)/);
+    const manifest = await read("android/app/src/main/AndroidManifest.xml");
+    assert.doesNotMatch(manifest, /WRITE_EXTERNAL_STORAGE|MANAGE_EXTERNAL_STORAGE/);
+
+    // A failed or huge save returns "" (the page falls back) instead of crashing the app.
+    assert.match(java, /catch \(Throwable ignored\)[\s\S]{0,200}return "";/);
+});

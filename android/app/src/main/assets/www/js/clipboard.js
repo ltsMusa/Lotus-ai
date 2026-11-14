@@ -12,6 +12,8 @@
  */
 
 import { isPackagedApp } from "./env.js";
+import { hasNative, callNative } from "./nativeBridge.js";
+import { utf8ToBase64 } from "./backup.js";
 
 export async function copyText(text) {
 
@@ -61,13 +63,32 @@ export async function copyText(text) {
     return ok;
 }
 
+/** Where the Android app put the last file (a name in Downloads, or a full path on Android 9-). */
+let lastNativeSave = "";
+
+export const nativeSaveLocation = () => lastNativeSave;
+
 /**
- * Saves text as a file. Returns "download" when the browser took
- * the download, "share" when the native share sheet was used, or
- * "copied" when neither is available (WebView without a download
- * listener) and the text was put on the clipboard instead.
+ * Saves text as a file. Returns "native" when the Android app wrote it
+ * into the Downloads folder (see nativeSaveLocation()), "download" when
+ * the browser took the download, "share" when the native share sheet
+ * was used, or "copied" when none is available (WebView without a
+ * download listener) and the text was put on the clipboard instead.
  */
 export async function saveTextFile(filename, text, mime = "text/markdown") {
+
+    // The Android app (bridge 3+) can write straight into Downloads — a real file, however big.
+    if (hasNative("saveFile") && Number(callNative("bridgeVersion")) >= 3) {
+
+        const saved = callNative("saveFile", filename, mime, utf8ToBase64(text));
+
+        if (typeof saved === "string" && saved) {
+
+            lastNativeSave = saved;
+
+            return "native";
+        }
+    }
 
     const isWebView = /;\s*wv\)/.test(navigator.userAgent) || isPackagedApp();
 

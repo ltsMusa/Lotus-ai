@@ -195,7 +195,7 @@ test("version is 7.1 Beta everywhere", async () => {
     const gradle = await read("android/app/build.gradle").catch(() => null);
     if (gradle) {
         assert.match(gradle, /versionName "7\.1-beta"/);
-        assert.match(gradle, /versionCode 76/);
+        assert.match(gradle, /versionCode 77/);
     }
 
     for (const file of ["js/api.js", "js/chat.js", "js/commands.js"]) {

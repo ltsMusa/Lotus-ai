@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -13,8 +14,10 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.PowerManager;
 import android.provider.Settings;
+import android.util.Base64;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -33,8 +36,11 @@ import android.widget.FrameLayout;
 import android.app.Activity;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -480,6 +486,117 @@ public class MainActivity extends Activity {
     }
 
     // ------------------------------------------------------
+    // SAVING FILES FOR THE PAGE (backups)
+    // ------------------------------------------------------
+
+    /** Letters, digits, dot, dash, underscore only; never empty, never hidden, never long. */
+    private static String safeFileName(String name) {
+
+        String clean = name == null ? "" : name.replaceAll("[^A-Za-z0-9._-]", "_");
+
+        if (clean.length() > 80) clean = clean.substring(0, 80);
+
+        if (clean.length() == 0 || clean.startsWith(".")) clean = "lotus" + clean;
+
+        return clean;
+    }
+
+    private static String safeMimeType(String mime) {
+
+        if ("application/json".equals(mime) || "text/markdown".equals(mime) || "text/plain".equals(mime)) return mime;
+
+        return "application/octet-stream";
+    }
+
+    /** Downloads renames a second "name.json" to "name (1).json" — report the name the file really got. */
+    private String displayNameOf(Uri uri, String fallback) {
+
+        android.database.Cursor cursor = null;
+
+        try {
+
+            cursor = getContentResolver().query(uri, new String[] { "_display_name" }, null, null, null);
+
+            if (cursor != null && cursor.moveToFirst()) {
+
+                String real = cursor.getString(0);
+
+                if (real != null && real.length() > 0) return real;
+            }
+
+        } catch (Exception ignored) {
+
+        } finally {
+
+            if (cursor != null) cursor.close();
+        }
+
+        return fallback;
+    }
+
+    /**
+     * Android 10+: a new entry in the public Downloads collection (no permission needed).
+     * Written with the column names as text so it also compiles with an older android.jar.
+     * Android 9 and older: the app's own Downloads folder — the public one would need a
+     * storage permission; the full path is returned so the page can tell the user.
+     */
+    private String saveToDownloads(String name, String mime, byte[] bytes) throws IOException {
+
+        if (Build.VERSION.SDK_INT >= 29) {
+
+            ContentValues values = new ContentValues();
+            values.put("_display_name", name);
+            values.put("mime_type", mime);
+            values.put("relative_path", "Download");
+
+            Uri uri = getContentResolver().insert(Uri.parse("content://media/external/downloads"), values);
+
+            if (uri == null) throw new IOException("Downloads is not available");
+
+            try {
+
+                OutputStream out = getContentResolver().openOutputStream(uri);
+
+                if (out == null) throw new IOException("Cannot open the new file");
+
+                try {
+                    out.write(bytes);
+                    out.flush();
+                } finally {
+                    out.close();
+                }
+
+            } catch (IOException e) {
+
+                // No half-written file is left behind in Downloads.
+                try { getContentResolver().delete(uri, null, null); } catch (Exception ignored) { }
+
+                throw e;
+            }
+
+            return displayNameOf(uri, name);
+        }
+
+        File dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+
+        if (dir == null) throw new IOException("No storage folder");
+
+        dir.mkdirs();
+
+        File file = new File(dir, name);
+
+        FileOutputStream out = new FileOutputStream(file);
+
+        try {
+            out.write(bytes);
+        } finally {
+            out.close();
+        }
+
+        return file.getAbsolutePath();
+    }
+
+    // ------------------------------------------------------
     // NATIVE BRIDGE  (window.LotusNative.getDeviceInfo())
     // ------------------------------------------------------
 
@@ -489,7 +606,30 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public int bridgeVersion() {
 
-            return 2;
+            return 3;
+        }
+
+        /**
+         * Saves a file the page made (a backup, an exported chat) into the phone's
+         * Downloads folder. data is base64. Returns where it went — the file name
+         * (Downloads) or a full path (Android 9 and older) — or "" when saving failed.
+         */
+        @JavascriptInterface
+        public String saveFile(String fileName, String mimeType, String base64Data) {
+
+            try {
+
+                if (base64Data == null || base64Data.length() == 0) return "";
+
+                byte[] bytes = Base64.decode(base64Data, Base64.DEFAULT);
+
+                return saveToDownloads(safeFileName(fileName), safeMimeType(mimeType), bytes);
+
+            } catch (Throwable ignored) {
+
+                // Includes OutOfMemoryError for a very large file: the page then falls back to another way.
+                return "";
+            }
         }
 
         @JavascriptInterface

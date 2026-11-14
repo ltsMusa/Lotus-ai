@@ -44,6 +44,18 @@ anahtarın Supabase'deki `api_keys` tablosuna yazılır; başka bir telefonda gi
   uygulama ekrandayken bakılır.
 - Kapatırsan hesaptaki kopyalar silinir.
 
+## Yedek dosyası
+
+Ayarlar → **Yedek ve veriler** ile sohbetlerini, hafıza notlarını ve tercihlerini tek bir `.json` dosyasına kaydedebilirsin.
+Dosya yalnızca cihazına (Android'de İndirilenler klasörüne) yazılır; Lotus onu hiçbir yere göndermez.
+
+- Dosyanın içinde **sohbetlerin düz metin olarak** durur (görseller dahil). Şifrelenmez; dosyayı kime verdiğine dikkat et.
+- **API anahtarların varsayılan olarak yedeğe girmez.** "API anahtarlarımı da ekle" kutusunu işaretlersen anahtarların da
+  dosyaya düz metin olarak yazılır; o dosyayı kimseyle paylaşma.
+- Geri yüklerken mevcut sohbetlerin ve notların hiçbiri silinmez ya da değiştirilmez: yalnızca bu cihazda olmayan sohbetler
+  ve notlar eklenir. Tercihler (tema, kişiselleştirme vb.) yedekteki haline döner.
+  Yedekteki anahtar, yalnızca henüz anahtarı olmayan sağlayıcıya eklenir.
+
 ## Cihazında kalanlar
 
 Ayarlar, tema, Kişiselleştirme (hitap, talimatlar), misafir sohbetleri ve — kendin girersen — yapay zekâ

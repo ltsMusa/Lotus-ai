@@ -196,6 +196,7 @@ async function runMenuAction(action) {
             const mode = await saveTextFile(filename, markdown);
 
             showToast(
+                mode === "native" ? `${filename} İndirilenler klasörüne kaydedildi` :
                 mode === "download" ? `${filename} indirildi` :
                 mode === "share" ? "Paylaşım menüsü açıldı" :
                 "Sohbet panoya kopyalandı (bu ortamda dosya indirilemiyor)",
